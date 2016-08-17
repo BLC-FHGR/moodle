@@ -1411,7 +1411,11 @@ function assign_get_completion_state($course, $cm, $userid, $type) {
 
     // If completion option is enabled, evaluate it and return true/false.
     if ($assign->get_instance()->completionsubmit) {
-        $submission = $assign->get_user_submission($userid, false);
+        if ($assign->get_instance()->teamsubmission) {
+            $submission = $assign->get_group_submission($userid, 0, false);
+        } else {
+            $submission = $assign->get_user_submission($userid, false);
+        }
         return $submission && $submission->status == ASSIGN_SUBMISSION_STATUS_SUBMITTED;
     } else {
         // Completion option is not enabled so just return $type.
@@ -1473,4 +1477,37 @@ function assign_pluginfile($course,
         return false;
     }
     send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
+ * Serve the grading panel as a fragment.
+ *
+ * @param array $args List of named arguments for the fragment loader.
+ * @return string
+ */
+function mod_assign_output_fragment_gradingpanel($args) {
+    global $CFG;
+
+    $context = $args['context'];
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return null;
+    }
+    require_once($CFG->dirroot . '/mod/assign/locallib.php');
+    $assign = new assign($context, null, null);
+
+    $userid = clean_param($args['userid'], PARAM_INT);
+    $attemptnumber = clean_param($args['attemptnumber'], PARAM_INT);
+    $formdata = array();
+    if (!empty($args['jsonformdata'])) {
+        $serialiseddata = json_decode($args['jsonformdata']);
+        parse_str($serialiseddata, $formdata);
+    }
+    $viewargs = array(
+        'userid' => $userid,
+        'attemptnumber' => $attemptnumber,
+        'formdata' => $formdata
+    );
+
+    return $assign->view('gradingpanel', $viewargs);
 }

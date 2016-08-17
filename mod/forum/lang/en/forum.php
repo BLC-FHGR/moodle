@@ -94,7 +94,7 @@ $string['configcleanreadtime'] = 'The hour of the day to clean old posts from th
 $string['configdigestmailtime'] = 'People who choose to have emails sent to them in digest form will be emailed the digest daily. This setting controls which time of day the daily mail will be sent (the next cron that runs after this hour will send it).';
 $string['configdisplaymode'] = 'The default display mode for discussions if one isn\'t set.';
 $string['configenablerssfeeds'] = 'This switch will enable the possibility of RSS feeds for all forums.  You will still need to turn feeds on manually in the settings for each forum.';
-$string['configenabletimedposts'] = 'Set to \'yes\' if you want to allow setting of display periods when posting a new forum discussion (Experimental as not yet fully tested)';
+$string['configenabletimedposts'] = 'Set to \'yes\' if you want to allow setting of display periods when posting a new forum discussion.';
 $string['configlongpost'] = 'Any post over this length (in characters not including HTML) is considered long. Posts displayed on the site front page, social format course pages, or user profiles are shortened to a natural break somewhere between the forum_shortpost and forum_longpost values.';
 $string['configmanydiscussions'] = 'Maximum number of discussions shown in a forum per page';
 $string['configmaxattachments'] = 'Default maximum number of attachments allowed per post.';
@@ -281,7 +281,7 @@ $string['invalidpostid'] = 'Invalid post ID - {$a}';
 $string['lastpost'] = 'Last post';
 $string['learningforums'] = 'Learning forums';
 $string['longpost'] = 'Long post';
-$string['mailnow'] = 'Mail now';
+$string['mailnow'] = 'Send forum post notifications with no editing-time delay';
 $string['manydiscussions'] = 'Discussions per page';
 $string['markalldread'] = 'Mark all posts in this discussion read.';
 $string['markallread'] = 'Mark all posts in this forum read.';
@@ -443,8 +443,8 @@ $string['rsstype'] = 'RSS feed for this activity';
 $string['rsstype_help'] = 'To enable the RSS feed for this activity, select either discussions or posts to be included in the feed.';
 $string['rsstypedefault'] = 'RSS feed type';
 $string['search'] = 'Search';
-$string['search:post'] = 'Forum posts';
-$string['search:activity'] = 'Forum activities';
+$string['search:post'] = 'Forum - posts';
+$string['search:activity'] = 'Forum - activity information';
 $string['searchdatefrom'] = 'Posts must be newer than this';
 $string['searchdateto'] = 'Posts must be older than this';
 $string['searchforumintro'] = 'Please enter search terms into one or more of the following fields:';
@@ -505,11 +505,11 @@ $string['trackingoff'] = 'Off';
 $string['trackingon'] = 'Forced';
 $string['trackingoptional'] = 'Optional';
 $string['trackingtype'] = 'Read tracking';
-$string['trackingtype_help'] = 'If enabled, participants can track read and unread posts in the forum and in discussions. There are three options:
+$string['trackingtype_help'] = 'Read tracking enables participants to easily check which posts they have not yet seen by highlighting any new posts.
 
-* Optional - Participants can choose whether to turn tracking on or off via a link in the administration block. Forum tracking must also be enabled in the user\'s profile settings.
-* Forced - Tracking is always on, regardless of user setting. Available depending on administrative setting.
-* Off - Read and unread posts are not tracked.';
+If set to optional, participants can choose whether to turn tracking on or off via a link in the administration block. (Users must also enable forum tracking in their forum preferences.)
+
+If \'Allow forced read tracking\' is enabled in the site administration, then a further option is available - forced. This means that tracking is always on, regardless of users\' forum preferences.';
 $string['unread'] = 'Unread';
 $string['unreadposts'] = 'Unread posts';
 $string['unreadpostsnumber'] = '{$a} unread posts';

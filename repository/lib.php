@@ -888,7 +888,9 @@ abstract class repository implements cacheable_object {
         // the file needs to copied to draft area
         $stored_file = self::get_moodle_file($source);
         if ($maxbytes != -1 && $stored_file->get_filesize() > $maxbytes) {
-            throw new file_exception('maxbytes');
+            $maxbytesdisplay = display_size($maxbytes);
+            throw new file_exception('maxbytesfile', (object) array('file' => $filerecord['filename'],
+                                                                    'size' => $maxbytesdisplay));
         }
         // Validate the size of the draft area.
         if (file_is_draft_area_limit_reached($draftitemid, $areamaxbytes, $stored_file->get_filesize())) {
@@ -1615,6 +1617,9 @@ abstract class repository implements cacheable_object {
      * @return file path
      */
     public function prepare_file($filename) {
+        if (empty($filename)) {
+            $filename = 'file';
+        }
         return sprintf('%s/%s', make_request_directory(), $filename);
     }
 
@@ -1699,13 +1704,17 @@ abstract class repository implements cacheable_object {
             // files that are references to local files are already in moodle filepool
             // just validate the size
             if ($maxbytes > 0 && $file->get_filesize() > $maxbytes) {
-                throw new file_exception('maxbytes');
+                $maxbytesdisplay = display_size($maxbytes);
+                throw new file_exception('maxbytesfile', (object) array('file' => $file->get_filename(),
+                                                                        'size' => $maxbytesdisplay));
             }
             return;
         } else {
             if ($maxbytes > 0 && $file->get_filesize() > $maxbytes) {
                 // note that stored_file::get_filesize() also calls synchronisation
-                throw new file_exception('maxbytes');
+                $maxbytesdisplay = display_size($maxbytes);
+                throw new file_exception('maxbytesfile', (object) array('file' => $file->get_filename(),
+                                                                        'size' => $maxbytesdisplay));
             }
             $fs = get_file_storage();
             $contentexists = $fs->content_exists($file->get_contenthash());
@@ -2767,6 +2776,17 @@ abstract class repository implements cacheable_object {
      * @return true|false
      */
     public function supports_relative_file() {
+        return false;
+    }
+
+    /**
+     * Helper function to indicate if this repository uses post requests for uploading files.
+     *
+     * @deprecated since Moodle 3.2, 3.1.1, 3.0.5
+     * @return bool
+     */
+    public function uses_post_requests() {
+        debugging('The method repository::uses_post_requests() is deprecated and must not be used anymore.', DEBUG_DEVELOPER);
         return false;
     }
 }

@@ -923,7 +923,7 @@ class navigation_node_collection implements IteratorAggregate {
         $child = $this->get($key, $type);
         if ($child !== false) {
             foreach ($this->collection as $colkey => $node) {
-                if ($node->key === $key && $node->type == $type) {
+                if ($node->key === $key && (is_null($type) || $node->type == $type)) {
                     unset($this->collection[$colkey]);
                     $this->collection = array_values($this->collection);
                     break;
@@ -2460,9 +2460,7 @@ class global_navigation extends navigation_node {
 
         $coursenode = $parent->add($coursename, $url, self::TYPE_COURSE, $shortname, $course->id);
         $coursenode->hidden = (!$course->visible);
-        // We need to decode &amp;'s here as they will have been added by format_string above and attributes will be encoded again
-        // later.
-        $coursenode->title(str_replace('&amp;', '&', $fullname));
+        $coursenode->title(format_string($course->fullname, true, array('context' => $coursecontext, 'escape' => false)));
         if ($canexpandcourse) {
             // This course can be expanded by the user, make it a branch to make the system aware that its expandable by ajax.
             $coursenode->nodetype = self::NODETYPE_BRANCH;
@@ -3919,7 +3917,7 @@ class settings_navigation extends navigation_node {
         // Reset this course
         if (has_capability('moodle/course:reset', $coursecontext)) {
             $url = new moodle_url('/course/reset.php', array('id'=>$course->id));
-            $coursenode->add(get_string('reset'), $url, self::TYPE_SETTING, null, null, new pix_icon('i/return', ''));
+            $coursenode->add(get_string('reset'), $url, self::TYPE_SETTING, null, 'reset', new pix_icon('i/return', ''));
         }
 
         // Questions
@@ -3969,7 +3967,7 @@ class settings_navigation extends navigation_node {
             }
         }
         if (is_array($roles) && count($roles)>0) {
-            $switchroles = $this->add(get_string('switchroleto'));
+            $switchroles = $this->add(get_string('switchroleto'), null, self::TYPE_CONTAINER, null, 'switchroleto');
             if ((count($roles)==1 && array_key_exists(0, $roles))|| $assumedrole!==false) {
                 $switchroles->force_open();
             }

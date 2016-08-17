@@ -137,7 +137,8 @@ class core_message_external extends external_api {
             if ($success && empty($contactlist[$message['touserid']]) && !empty($blocknoncontacts)) {
                 // The user isn't a contact and they have selected to block non contacts so this message won't be sent.
                 $success = false;
-                $errormessage = get_string('userisblockingyounoncontact', 'message');
+                $errormessage = get_string('userisblockingyounoncontact', 'message',
+                        fullname(core_user::get_user($message['touserid'])));
             }
 
             //now we can send the message (at least try)
@@ -1097,63 +1098,4 @@ class core_message_external extends external_api {
         );
     }
 
-}
-
-/**
- * Deprecated message external functions
- *
- * @package    core_message
- * @copyright  2011 Jerome Mouneyrac
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @since Moodle 2.1
- * @deprecated Moodle 2.2 MDL-29106 - Please do not use this class any more.
- * @see core_notes_external
- */
-class moodle_message_external extends external_api {
-
-    /**
-     * Returns description of method parameters
-     *
-     * @return external_function_parameters
-     * @since Moodle 2.1
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_message_external::send_instant_messages_parameters()
-     */
-    public static function send_instantmessages_parameters() {
-        return core_message_external::send_instant_messages_parameters();
-    }
-
-    /**
-     * Send private messages from the current USER to other users
-     *
-     * @param array $messages An array of message to send.
-     * @return array
-     * @since Moodle 2.1
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_message_external::send_instant_messages()
-     */
-    public static function send_instantmessages($messages = array()) {
-        return core_message_external::send_instant_messages($messages);
-    }
-
-    /**
-     * Returns description of method result value
-     *
-     * @return external_description
-     * @since Moodle 2.1
-     * @deprecated Moodle 2.2 MDL-29106 - Please do not call this function any more.
-     * @see core_message_external::send_instant_messages_returns()
-     */
-    public static function send_instantmessages_returns() {
-        return core_message_external::send_instant_messages_returns();
-    }
-
-    /**
-     * Marking the method as deprecated.
-     *
-     * @return bool
-     */
-    public static function send_instantmessages_is_deprecated() {
-        return true;
-    }
 }

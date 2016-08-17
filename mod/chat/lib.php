@@ -22,6 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot.'/calendar/lib.php');
 
 // The HTML head for the message window to start with (<!-- nix --> is used to get some browsers starting with output.
@@ -749,6 +751,7 @@ function chat_format_message_manually($message, $courseid, $sender, $currentuser
     // Parse the text to clean and filter it.
     $options = new stdClass();
     $options->para = false;
+    $options->blanktarget = true;
     $text = format_text($text, FORMAT_MOODLE, $options, $courseid);
 
     // And now check for special cases.
@@ -922,6 +925,7 @@ function chat_format_message_theme ($message, $chatuser, $currentuser, $grouping
     // Parse the text to clean and filter it.
     $options = new stdClass();
     $options->para = false;
+    $options->blanktarget = true;
     $text = format_text($text, FORMAT_MOODLE, $options, $courseid);
 
     // And now check for special cases.

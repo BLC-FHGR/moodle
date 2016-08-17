@@ -53,7 +53,7 @@ class entry extends \core_search\area\base_mod {
 
         $sql = "SELECT ge.*, g.course FROM {glossary_entries} ge
                   JOIN {glossary} g ON g.id = ge.glossaryid
-                WHERE ge.timemodified >= ?";
+                WHERE ge.timemodified >= ? ORDER BY ge.timemodified ASC";
         return $DB->get_recordset_sql($sql, array($modifiedfrom));
     }
 
@@ -61,9 +61,10 @@ class entry extends \core_search\area\base_mod {
      * Returns the documents associated with this glossary entry id.
      *
      * @param stdClass $entry glossary entry.
+     * @param array    $options
      * @return \core_search\document
      */
-    public function get_document($entry) {
+    public function get_document($entry, $options = array()) {
         global $DB;
 
         $keywords = array();
@@ -89,16 +90,23 @@ class entry extends \core_search\area\base_mod {
 
         // Prepare associative array with data from DB.
         $doc = \core_search\document_factory::instance($entry->id, $this->componentname, $this->areaname);
-        $doc->set('title', $entry->concept);
+        $doc->set('title', content_to_text($entry->concept, false));
         $doc->set('content', content_to_text($entry->definition, $entry->definitionformat));
         $doc->set('contextid', $context->id);
-        $doc->set('type', \core_search\manager::TYPE_TEXT);
         $doc->set('courseid', $entry->course);
         $doc->set('userid', $entry->userid);
+        $doc->set('owneruserid', \core_search\manager::NO_OWNER_ID);
         $doc->set('modified', $entry->timemodified);
+
+        // Check if this document should be considered new.
+        if (isset($options['lastindexedtime']) && ($options['lastindexedtime'] < $entry->timecreated)) {
+            // If the document was created after the last index time, it must be new.
+            $doc->set_is_new(true);
+        }
 
         // Adding keywords as extra info.
         if ($keywords) {
+            // No need to pass through content_to_text here as this is just a list of keywords.
             $doc->set('description1', implode(' ' , $keywords));
         }
 

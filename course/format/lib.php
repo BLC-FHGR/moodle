@@ -984,14 +984,14 @@ abstract class format_base {
         }
         if (!is_object($section)) {
             $section = $DB->get_record('course_sections', array('course' => $this->get_courseid(), 'section' => $section),
-                'id,section,sequence');
+                'id,section,sequence,summary');
         }
         if (!$section || !$section->section) {
             // Not possible to delete 0-section.
             return false;
         }
 
-        if (!$forcedeleteifnotempty && !empty($section->sequence)) {
+        if (!$forcedeleteifnotempty && (!empty($section->sequence) || !empty($section->summary))) {
             return false;
         }
 
@@ -1089,8 +1089,8 @@ abstract class format_base {
      */
     public function inplace_editable_update_section_name($section, $itemtype, $newvalue) {
         if ($itemtype === 'sectionname' || $itemtype === 'sectionnamenl') {
-            require_login($section->course, false, null, true, true);
             $context = context_course::instance($section->course);
+            external_api::validate_context($context);
             require_capability('moodle/course:update', $context);
 
             $newtitle = clean_param($newvalue, PARAM_TEXT);
