@@ -22,7 +22,21 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+ /**
+  * Extended the send_message function with emaillogging
+  *
+  * @author Roger Barras
+  * @date 10.03.2016
+  */
+
 require_once($CFG->dirroot.'/message/output/lib.php');
+
+// Extension start 1.
+include('log4php/Logger.php');
+include($CFG->dirroot.'/htwchur/logging/email/email_log_info.php');
+include($CFG->dirroot.'/htwchur/logging/email/email_log_renderer.php');
+Logger::configure($CFG->dirroot.'/htwchur/logging/email/email_log_config.xml');
+// Extension end 1.
 
 /**
  * The email message processor
@@ -90,8 +104,42 @@ class message_output_email extends message_output {
             }
         }
 
-        $result = email_to_user($recipient, $eventdata->userfrom, $eventdata->subject, $eventdata->fullmessage,
-                                $eventdata->fullmessagehtml, $attachment, $attachname, true, $replyto, $replytoname);
+        //$result = email_to_user($recipient, $eventdata->userfrom, $eventdata->subject, $eventdata->fullmessage,
+        //                        $eventdata->fullmessagehtml, $attachment, $attachname, true, $replyto, $replytoname);
+        // Extension start 2.
+        try {
+                $result = email_to_user($recipient, $eventdata->userfrom, $eventdata->subject, $eventdata->fullmessage,
+                                    $eventdata->fullmessagehtml, $attachment, $attachname, true, $replyto, $replytoname);
+        } finally {
+            // ---- START LOGGING EMAIL ----
+            // added logging email
+            try {
+                // try block; to not cancel the normal program flow of moodle in case of a logging error
+                $emaillogger = Logger::getLogger('emaillogger');
+                $maillog = new email_log_info();
+
+                $maillog->savedmessageid = $eventdata->savedmessageid;
+                $maillog->targetmailadress = $eventdata->userto->email;
+                $maillog->subject = $eventdata->subject;
+                $maillog->smtptime = date('Y/m/d H:i:s');
+
+                if ($result) {
+                    // OK
+                    $emaillogger->info($maillog);
+                } else {
+                    // ERROR
+                    $emaillogger->error($maillog);
+                }
+            } catch (Exeption $ex) {
+                debugging("Error: ". $ex->getMessage());
+            } catch (Throwable $ex) {
+                debugging("Error: ". $ex->getMessage());
+            } finally {
+                unset($maillog);
+            }
+            // ---- END LOGGING EMAIL ----
+        }
+        // Extension end 2.
 
         // Remove an attachment file if any.
         if (!empty($attachment) && file_exists($attachment)) {
