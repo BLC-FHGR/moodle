@@ -133,8 +133,8 @@ class api {
             throw new \moodle_exception("Must provide a timesort to and/or from value");
         }
 
-        if ($limitnum < 1 || $limitnum > 50) {
-            throw new \moodle_exception("Limit must be between 1 and 50 (inclusive)");
+        if ($limitnum < 1 || $limitnum > 1000) {
+            throw new \moodle_exception("Limit must be between 1 and 1000 (inclusive)");
         }
 
         $vault = \core_calendar\local\event\container::get_event_vault();
@@ -168,9 +168,9 @@ class api {
     ) {
         global $USER;
 
-        if ($limitnum < 1 || $limitnum > 50) {
+        if ($limitnum < 1 || $limitnum > 1000) {
             throw new limit_invalid_parameter_exception(
-                "Limit must be between 1 and 50 (inclusive)");
+                "Limit must be between 1 and 1000 (inclusive)");
         }
 
         $vault = \core_calendar\local\event\container::get_event_vault();
