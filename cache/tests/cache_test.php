@@ -188,6 +188,29 @@ class core_cache_testcase extends advanced_testcase {
     }
 
     /**
+     * Tests set_identifiers fails post cache creation.
+     *
+     * set_identifiers cannot be called after initial cache instantiation, as you need to create a difference cache.
+     */
+    public function test_set_identifiers() {
+        $instance = cache_config_testing::instance();
+        $instance->phpunit_add_definition('phpunit/identifier', array(
+            'mode' => cache_store::MODE_APPLICATION,
+            'component' => 'phpunit',
+            'area' => 'identifier',
+            'simplekeys' => true,
+            'simpledata' => true,
+            'staticacceleration' => true
+        ));
+        $cache = cache::make('phpunit', 'identifier', array('area'));
+        $this->assertTrue($cache->set('contest', 'test data 1'));
+        $this->assertEquals('test data 1', $cache->get('contest'));
+
+        $this->expectException('coding_exception');
+        $cache->set_identifiers(array());
+    }
+
+    /**
      * Tests the default application cache
      */
     public function test_default_application_cache() {
@@ -306,15 +329,17 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertTrue($cache->set($key, $dataobject));
         $this->assertEquals($dataobject, $cache->get($key));
 
-        $specobject = new cache_phpunit_dummy_object('red', 'blue');
+        $starttime = microtime(true);
+        $specobject = new cache_phpunit_dummy_object('red', 'blue', $starttime);
         $this->assertTrue($cache->set($key, $specobject));
         $result = $cache->get($key);
         $this->assertInstanceOf('cache_phpunit_dummy_object', $result);
         $this->assertEquals('red_ptc_wfc', $result->property1);
         $this->assertEquals('blue_ptc_wfc', $result->property2);
+        $this->assertGreaterThan($starttime, $result->propertytime);
 
         // Test array of objects.
-        $specobject = new cache_phpunit_dummy_object('red', 'blue');
+        $specobject = new cache_phpunit_dummy_object('red', 'blue', $starttime);
         $data = new cacheable_object_array(array(
             clone($specobject),
             clone($specobject),
@@ -328,6 +353,8 @@ class core_cache_testcase extends advanced_testcase {
             $this->assertInstanceOf('cache_phpunit_dummy_object', $item);
             $this->assertEquals('red_ptc_wfc', $item->property1);
             $this->assertEquals('blue_ptc_wfc', $item->property2);
+            // Ensure that wake from cache is called in all cases.
+            $this->assertGreaterThan($starttime, $item->propertytime);
         }
 
         // Test set many.
@@ -1282,8 +1309,10 @@ class core_cache_testcase extends advanced_testcase {
 
         $configfile = $CFG->dataroot.'/muc/config.php';
 
-        // That's right, we're deleting the config file.
-        $this->assertTrue(@unlink($configfile));
+        // The config file will not exist yet as we've not done anything with the cache.
+        // reset_all_data removes the file and without a call to create a configuration it doesn't exist
+        // as yet.
+        $this->assertFileNotExists($configfile);
 
         // Disable the cache
         cache_phpunit_factory::phpunit_disable();
@@ -1702,6 +1731,16 @@ class core_cache_testcase extends advanced_testcase {
     }
 
     /**
+     * Tests that ad-hoc caches are correctly purged with a purge_all call.
+     */
+    public function test_purge_all_with_adhoc_caches() {
+        $cache = \cache::make_from_params(\cache_store::MODE_REQUEST, 'core_cache', 'test');
+        $cache->set('test', 123);
+        cache_helper::purge_all();
+        $this->assertFalse($cache->get('test'));
+    }
+
+    /**
      * Test that the default stores all support searching.
      */
     public function test_defaults_support_searching() {
@@ -1751,6 +1790,12 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertArrayHasKey('cache_is_searchable', $cache->phpunit_get_store_implements());
     }
 
+    /**
+     * Test static acceleration
+     *
+     * Note: All the assertGreaterThanOrEqual() in this test should be assertGreaterThan() be because of some microtime()
+     * resolution problems under some OSs / PHP versions, we are accepting equal as valid outcome. For more info see MDL-57147.
+     */
     public function test_static_acceleration() {
         $instance = cache_config_testing::instance();
         $instance->phpunit_add_definition('phpunit/accelerated', array(
@@ -1847,6 +1892,43 @@ class core_cache_testcase extends advanced_testcase {
         $this->assertEquals('D', $cache->phpunit_static_acceleration_get('d'));
         $this->assertEquals('E', $cache->phpunit_static_acceleration_get('e'));
 
+        // Store a cacheable_object, get many times and ensure each time wake_for_cache is used.
+        // Both get and get_many are tested.  Two cache entries are used to ensure the times aren't
+        // confused with multiple calls to get()/get_many().
+        $startmicrotime = microtime(true);
+        $cacheableobject = new cache_phpunit_dummy_object(1, 1, $startmicrotime);
+        $cacheableobject2 = new cache_phpunit_dummy_object(2, 2, $startmicrotime);
+        $this->assertTrue($cache->set('a', $cacheableobject));
+        $this->assertTrue($cache->set('b', $cacheableobject2));
+        $staticaccelerationreturntime = $cache->phpunit_static_acceleration_get('a')->propertytime;
+        $staticaccelerationreturntimeb = $cache->phpunit_static_acceleration_get('b')->propertytime;
+        $this->assertGreaterThanOrEqual($startmicrotime, $staticaccelerationreturntime, 'Restore time of static must be newer.');
+
+        // Reset the static cache without resetting backing store.
+        $cache->phpunit_static_acceleration_purge();
+
+        // Get the value from the backend store, populating the static cache.
+        $cachevalue = $cache->get('a');
+        $this->assertInstanceOf('cache_phpunit_dummy_object', $cachevalue);
+        $this->assertGreaterThanOrEqual($staticaccelerationreturntime, $cachevalue->propertytime);
+        $backingstorereturntime = $cachevalue->propertytime;
+
+        $results = $cache->get_many(array('b'));
+        $this->assertInstanceOf('cache_phpunit_dummy_object', $results['b']);
+        $this->assertGreaterThanOrEqual($staticaccelerationreturntimeb, $results['b']->propertytime);
+        $backingstorereturntimeb = $results['b']->propertytime;
+
+        // Obtain the value again and confirm that static cache is using wake_from_cache.
+        // Upon failure, the times are not adjusted as wake_from_cache is skipped as the
+        // value is stored serialized in the static acceleration cache.
+        $cachevalue = $cache->phpunit_static_acceleration_get('a');
+        $this->assertInstanceOf('cache_phpunit_dummy_object', $cachevalue);
+        $this->assertGreaterThanOrEqual($backingstorereturntime, $cachevalue->propertytime);
+
+        $results = $cache->get_many(array('b'));
+        $this->assertInstanceOf('cache_phpunit_dummy_object', $results['b']);
+        $this->assertGreaterThanOrEqual($backingstorereturntimeb, $results['b']->propertytime);
+
         /** @var cache_phpunit_application $cache */
         $cache = cache::make('phpunit', 'accelerated2');
         $this->assertInstanceOf('cache_phpunit_application', $cache);
@@ -1942,6 +2024,16 @@ class core_cache_testcase extends advanced_testcase {
         $returnedinstance2 = $cache->get('a');
         $returnedinstance1->name = 'b';
         $this->assertEquals('b', $returnedinstance2->name);
+    }
+
+    public function test_identifiers_have_separate_caches() {
+        $cachepg = cache::make('core', 'databasemeta', array('dbfamily' => 'pgsql'));
+        $cachepg->set(1, 'here');
+        $cachemy = cache::make('core', 'databasemeta', array('dbfamily' => 'mysql'));
+        $cachemy->set(2, 'there');
+        $this->assertEquals('here', $cachepg->get(1));
+        $this->assertEquals('there', $cachemy->get(2));
+        $this->assertFalse($cachemy->get(1));
     }
 
     public function test_performance_debug() {
@@ -2093,5 +2185,91 @@ class core_cache_testcase extends advanced_testcase {
             $startstats[$requestid]['stores']['cachestore_static']['hits']);
         $this->assertEquals(0, $endstats[$requestid]['stores']['cachestore_static']['sets'] -
             $startstats[$requestid]['stores']['cachestore_static']['sets']);
+    }
+
+    public function test_static_cache() {
+        global $CFG;
+        $this->resetAfterTest(true);
+        $CFG->perfdebug = 15;
+
+        // Create cache store with static acceleration.
+        $instance = cache_config_testing::instance();
+        $applicationid = 'phpunit/applicationperf';
+        $instance->phpunit_add_definition($applicationid, array(
+            'mode' => cache_store::MODE_APPLICATION,
+            'component' => 'phpunit',
+            'area' => 'applicationperf',
+            'simplekeys' => true,
+            'staticacceleration' => true,
+            'staticaccelerationsize' => 3
+        ));
+
+        $application = cache::make('phpunit', 'applicationperf');
+
+        // Check that stores register sets.
+        $this->assertTrue($application->set('setMe1', 1));
+        $this->assertTrue($application->set('setMe2', 0));
+        $this->assertTrue($application->set('setMe3', array()));
+        $this->assertTrue($application->get('setMe1') !== false);
+        $this->assertTrue($application->get('setMe2') !== false);
+        $this->assertTrue($application->get('setMe3') !== false);
+
+        // Check that the static acceleration worked, even on empty arrays and the number 0.
+        $endstats = cache_helper::get_stats();
+        $this->assertEquals(0, $endstats[$applicationid]['stores']['** static acceleration **']['misses']);
+        $this->assertEquals(3, $endstats[$applicationid]['stores']['** static acceleration **']['hits']);
+    }
+
+    public function test_performance_debug_off() {
+        global $CFG;
+        $this->resetAfterTest(true);
+        $CFG->perfdebug = 7;
+
+        $instance = cache_config_testing::instance();
+        $applicationid = 'phpunit/applicationperfoff';
+        $instance->phpunit_add_definition($applicationid, array(
+            'mode' => cache_store::MODE_APPLICATION,
+            'component' => 'phpunit',
+            'area' => 'applicationperfoff'
+        ));
+        $sessionid = 'phpunit/sessionperfoff';
+        $instance->phpunit_add_definition($sessionid, array(
+            'mode' => cache_store::MODE_SESSION,
+            'component' => 'phpunit',
+            'area' => 'sessionperfoff'
+        ));
+        $requestid = 'phpunit/requestperfoff';
+        $instance->phpunit_add_definition($requestid, array(
+            'mode' => cache_store::MODE_REQUEST,
+            'component' => 'phpunit',
+            'area' => 'requestperfoff'
+        ));
+
+        $application = cache::make('phpunit', 'applicationperfoff');
+        $session = cache::make('phpunit', 'sessionperfoff');
+        $request = cache::make('phpunit', 'requestperfoff');
+
+        // Check that no stats are recorded for these definitions yet.
+        $stats = cache_helper::get_stats();
+        $this->assertArrayNotHasKey($applicationid, $stats);
+        $this->assertArrayNotHasKey($sessionid, $stats);
+        $this->assertArrayNotHasKey($requestid, $stats);
+
+        // Trigger cache misses, cache sets and cache hits.
+        $this->assertFalse($application->get('missMe'));
+        $this->assertTrue($application->set('setMe', 1));
+        $this->assertEquals(1, $application->get('setMe'));
+        $this->assertFalse($session->get('missMe'));
+        $this->assertTrue($session->set('setMe', 3));
+        $this->assertEquals(3, $session->get('setMe'));
+        $this->assertFalse($request->get('missMe'));
+        $this->assertTrue($request->set('setMe', 4));
+        $this->assertEquals(4, $request->get('setMe'));
+
+        // Check that no stats are being recorded for these definitions.
+        $endstats = cache_helper::get_stats();
+        $this->assertArrayNotHasKey($applicationid, $endstats);
+        $this->assertArrayNotHasKey($sessionid, $endstats);
+        $this->assertArrayNotHasKey($requestid, $endstats);
     }
 }

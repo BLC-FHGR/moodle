@@ -15,17 +15,19 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Classes for handling embedded media (mainly audio and video).
+ * Deprecated classes and constants.
  *
- * These are used only from within the core media renderer.
+ * DO NOT INCLUDE THIS FILE
  *
- * To embed media from Moodle code, do something like the following:
+ * use $CFG->media_default_width instead of CORE_MEDIA_VIDEO_WIDTH,
+ * $CFG->media_default_height instead of CORE_MEDIA_VIDEO_HEIGHT,
+ * core_media_manager::instance() instead of static methods in core_media,
+ * core_media_manager::OPTION_zzz instead of core_media::OPTION_zzz
  *
- * $mediarenderer = $PAGE->get_renderer('core', 'media');
- * echo $mediarenderer->embed_url(new moodle_url('http://example.org/a.mp3'));
+ * New syntax to include media files:
  *
- * You do not need to require this library file manually. Getting the renderer
- * (the first line above) requires this library file automatically.
+ * $mediamanager = core_media_manager::instance();
+ * echo $mediamanager->embed_url(new moodle_url('http://example.org/a.mp3'));
  *
  * @package core_media
  * @copyright 2012 The Open University
@@ -50,9 +52,16 @@ if (!defined('CORE_MEDIA_AUDIO_WIDTH')) {
     define('CORE_MEDIA_AUDIO_WIDTH', 300);
 }
 
+debugging('Do not include lib/medialib.php, use $CFG->media_default_width instead of CORE_MEDIA_VIDEO_WIDTH, ' .
+    '$CFG->media_default_height instead of CORE_MEDIA_VIDEO_HEIGHT, ' .
+    'core_media_manager::instance() instead of static methods in core_media, ' .
+    'core_media_manager::OPTION_zzz instead of core_media::OPTION_zzz',
+    DEBUG_DEVELOPER);
 
 /**
  * Constants and static utility functions for use with core_media_renderer.
+ *
+ * @deprecated since Moodle 3.2
  *
  * @copyright 2011 The Open University
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -112,43 +121,7 @@ abstract class core_media {
      * @return array Array of 1 or more moodle_url objects
      */
     public static function split_alternatives($combinedurl, &$width, &$height) {
-        $urls = explode('#', $combinedurl);
-        $width = 0;
-        $height = 0;
-        $returnurls = array();
-
-        foreach ($urls as $url) {
-            $matches = null;
-
-            // You can specify the size as a separate part of the array like
-            // #d=640x480 without actually including a url in it.
-            if (preg_match('/^d=([\d]{1,4})x([\d]{1,4})$/i', $url, $matches)) {
-                $width  = $matches[1];
-                $height = $matches[2];
-                continue;
-            }
-
-            // Can also include the ?d= as part of one of the URLs (if you use
-            // more than one they will be ignored except the last).
-            if (preg_match('/\?d=([\d]{1,4})x([\d]{1,4})$/i', $url, $matches)) {
-                $width  = $matches[1];
-                $height = $matches[2];
-
-                // Trim from URL.
-                $url = str_replace($matches[0], '', $url);
-            }
-
-            // Clean up url.
-            $url = clean_param($url, PARAM_URL);
-            if (empty($url)) {
-                continue;
-            }
-
-            // Turn it into moodle_url object.
-            $returnurls[] = new moodle_url($url);
-        }
-
-        return $returnurls;
+        return core_media_manager::instance()->split_alternatives($combinedurl, $width, $height);
     }
 
     /**
@@ -156,14 +129,7 @@ abstract class core_media {
      * @param moodle_url $url URL
      */
     public static function get_extension(moodle_url $url) {
-        // Note: Does not use core_text (. is UTF8-safe).
-        $filename = self::get_filename($url);
-        $dot = strrpos($filename, '.');
-        if ($dot === false) {
-            return '';
-        } else {
-            return strtolower(substr($filename, $dot + 1));
-        }
+        return core_media_manager::instance()->get_extension($url);
     }
 
     /**
@@ -172,21 +138,7 @@ abstract class core_media {
      * @return string Filename only (not escaped)
      */
     public static function get_filename(moodle_url $url) {
-        global $CFG;
-
-        // Use the 'file' parameter if provided (for links created when
-        // slasharguments was off). If not present, just use URL path.
-        $path = $url->get_param('file');
-        if (!$path) {
-            $path = $url->get_path();
-        }
-
-        // Remove everything before last / if present. Does not use textlib as / is UTF8-safe.
-        $slash = strrpos($path, '/');
-        if ($slash !== false) {
-            $path = substr($path, $slash + 1);
-        }
-        return $path;
+        return core_media_manager::instance()->get_filename($url);
     }
 
     /**
@@ -195,6 +147,7 @@ abstract class core_media {
      * @return string MIME type
      */
     public static function get_mimetype(moodle_url $url) {
+<<<<<<< HEAD
         return mimeinfo('type', self::get_filename($url));
     }
 }
@@ -1272,5 +1225,8 @@ class core_media_player_link extends core_media_player {
 
     public function get_rank() {
         return 0;
+=======
+        return core_media_manager::instance()->get_mimetype($url);
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     }
 }

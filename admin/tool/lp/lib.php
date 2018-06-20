@@ -25,6 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
+<<<<<<< HEAD
  * This function extends the course navigation
  *
  * @param navigation_node $navigation The navigation node to extend
@@ -59,6 +60,8 @@ function tool_lp_extend_navigation_course($navigation, $course, $coursecontext) 
 
 
 /**
+=======
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
  * This function extends the user navigation.
  *
  * @param navigation_node $navigation The navigation node to extend
@@ -176,7 +179,7 @@ function tool_lp_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->addElement('header', 'competenciessection', get_string('competencies', 'core_competency'));
 
     MoodleQuickForm::registerElementType('course_competencies',
-                                         "$CFG->dirroot/admin/tool/lp/classes/course_competencies_form_element.php",
+                                         "$CFG->dirroot/$CFG->admin/tool/lp/classes/course_competencies_form_element.php",
                                          'tool_lp_course_competencies_form_element');
     $cmid = null;
     if ($cm = $formwrapper->get_coursemodule()) {
@@ -189,7 +192,7 @@ function tool_lp_coursemodule_standard_elements($formwrapper, $mform) {
     $mform->addElement('course_competencies', 'competencies', get_string('modcompetencies', 'tool_lp'), $options);
     $mform->addHelpButton('competencies', 'modcompetencies', 'tool_lp');
     MoodleQuickForm::registerElementType('course_competency_rule',
-                                         "$CFG->dirroot/admin/tool/lp/classes/course_competency_rule_form_element.php",
+                                         "$CFG->dirroot/$CFG->admin/tool/lp/classes/course_competency_rule_form_element.php",
                                          'tool_lp_course_competency_rule_form_element');
     // Reuse the same options.
     $mform->addElement('course_competency_rule', 'competency_rule', get_string('uponcoursemodulecompletion', 'tool_lp'), $options);
@@ -217,7 +220,7 @@ function tool_lp_coursemodule_edit_post_actions($data, $course) {
 
     $existingids = array();
     foreach ($existing as $cmc) {
-        array_push($existingids, $cmc->get_competencyid());
+        array_push($existingids, $cmc->get('competencyid'));
     }
 
     $newids = isset($data->competencies) ? $data->competencies : array();
@@ -241,4 +244,13 @@ function tool_lp_coursemodule_edit_post_actions($data, $course) {
     }
 
     return $data;
+}
+
+/**
+ * Map icons for font-awesome themes.
+ */
+function tool_lp_get_fontawesome_icon_map() {
+    return [
+        'tool_lp:url' => 'fa-external-link'
+    ];
 }

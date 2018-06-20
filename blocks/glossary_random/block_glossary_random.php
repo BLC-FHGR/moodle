@@ -50,7 +50,7 @@ class block_glossary_random extends block_base {
         if (empty($this->config->title)) {
             $this->title = get_string('pluginname','block_glossary_random');
         } else {
-            $this->title = $this->config->title;
+            $this->title = format_string($this->config->title, true, ['context' => $this->context]);
         }
 
         if (empty($this->config->glossary)) {
@@ -86,7 +86,7 @@ class block_glossary_random extends block_base {
             switch ($this->config->type) {
 
                 case BGR_RANDOMLY:
-                    $i = rand(1,$numberofentries);
+                    $i = ($numberofentries > 1) ? rand(1, $numberofentries) : 1;
                     $limitfrom = $i-1;
                     break;
 

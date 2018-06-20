@@ -2,7 +2,7 @@
 # process (which uses our internal CI system) this file is here for the benefit
 # of community developers git clones - see MDL-51458.
 
-sudo: false
+sudo: required
 
 # We currently disable Travis notifications entirely until https://github.com/travis-ci/travis-ci/issues/4976
 # is fixed.
@@ -13,16 +13,25 @@ language: php
 
 php:
     # We only run the highest and lowest supported versions to reduce the load on travis-ci.org.
+    - 7.2
     - 7.0
-    # - 5.6
-    # - 5.5
-    - 5.4
+
+addons:
+  postgresql: "9.6"
+  packages:
+    - mysql-server-5.6
+    - mysql-client-core-5.6
+    - mysql-client-5.6
+
+# Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
+# services:
+#     - redis-server
 
 env:
     # Although we want to run these jobs and see failures as quickly as possible, we also want to get the slowest job to
     # start first so that the total run time is not too high.
     #
-    # We only run MySQL on PHP 5.6, so run that first.
+    # We only run MySQL on PHP 7.2, so run that first.
     # CI Tests should be second-highest in priority as these only take <= 60 seconds to run under normal circumstances.
     # Postgres is significantly is pretty reasonable in its run-time.
 
@@ -37,9 +46,12 @@ env:
 
     # Perform an upgrade test too.
     - DB=pgsql    TASK=UPGRADE
+<<<<<<< HEAD
 
     # Run a check for unbuilt files with Grunt.
     - DB=none     TASK=GRUNT
+=======
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
 
 matrix:
     # Enable fast finish.
@@ -47,8 +59,14 @@ matrix:
     # It will not stop the jobs from running.
     fast_finish: true
 
+    include:
+          # Run grunt/npm install on highest version ('node' is an alias for the latest node.js version.)
+        - php: 7.2
+          env: DB=none     TASK=GRUNT   NVM_VERSION='lts/carbon'
+
     exclude:
         # MySQL - it's just too slow.
+<<<<<<< HEAD
         # Exclude it on all versions except for 7.0
         # - env: DB=mysqli   TASK=PHPUNIT
         #   php: 5.6
@@ -64,6 +82,11 @@ matrix:
 
         # Moodle 2.7 is not compatible with PHP 7 for the upgrade test.
         - env: DB=pgsql    TASK=UPGRADE
+=======
+        # Exclude it on all versions except for 7.2
+
+        - env: DB=mysqli   TASK=PHPUNIT
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
           php: 7.0
 
 cache:
@@ -72,19 +95,63 @@ cache:
       - $HOME/.npm
 
 install:
+<<<<<<< HEAD
     # Disable xdebug. We aren't generating code coverage, and it has a huge impact upon test performance.
     - rm /home/travis/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
 
     # Set the encrypted GITHUB_TOKEN if it's available to raise the API limit.
     - if [ -n "$GITHUB_APITOKEN" ]; then composer config github-oauth.github.com $GITHUB_APITOKEN; fi
     - echo 'auth.json' >> .git/info/exclude
+=======
+    - >
+        if [ "$DB" = 'mysqli' ];
+        then
+            sudo mkdir /mnt/ramdisk
+            sudo mount -t tmpfs -o size=1024m tmpfs /mnt/ramdisk
+            sudo stop mysql
+            sudo mv /var/lib/mysql /mnt/ramdisk
+            sudo ln -s /mnt/ramdisk/mysql /var/lib/mysql
+            sudo start mysql
+        fi
+    - >
+        if [ "$DB" = 'pgsql' ];
+        then
+            sudo mkdir /mnt/ramdisk
+            sudo mount -t tmpfs -o size=1024m tmpfs /mnt/ramdisk
+            sudo service postgresql stop
+            sudo mv /var/lib/postgresql /mnt/ramdisk
+            sudo ln -s /mnt/ramdisk/postgresql /var/lib/postgresql
+            sudo service postgresql start 9.6
+        fi
+    - >
+        if [ "$TASK" = 'PHPUNIT' ];
+        then
+            if [ -n "$GITHUB_APITOKEN" ]; then
+                composer config github-oauth.github.com $GITHUB_APITOKEN;
+                echo 'auth.json' >> .git/info/exclude
+            fi
 
-    # Install composer dependencies.
-    # We need --no-interaction in case we hit API limits for composer. This causes it to fall back to a standard clone.
-    # Typically it should be able to use the Composer cache if any other job has already completed before we started here.
-    - travis_retry composer install --prefer-dist --no-interaction
+            # Enable Redis.
+            # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
+            # echo 'extension="redis.so"' > /tmp/redis.ini
+            # phpenv config-add /tmp/redis.ini
+
+            # Install composer dependencies.
+            # We need --no-interaction in case we hit API limits for composer. This causes it to fall back to a standard clone.
+            # Typically it should be able to use the Composer cache if any other job has already completed before we started here.
+            travis_retry composer install --prefer-dist --no-interaction;
+        fi
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
+
+    - >
+        if [ "$TASK" = 'GRUNT' ];
+        then
+            nvm install $NVM_VERSION ;
+            nvm use $NVM_VERSION ;
+        fi
 
 before_script:
+    - phpenv config-rm xdebug.ini
     - >
       if [ "$TASK" = 'PHPUNIT' -o "$TASK" = 'UPGRADE' ];
       then
@@ -102,7 +169,7 @@ before_script:
 
         # The wwwroot and dataroot.
         sed -i \
-          -e "s%http://example.com/moodle%http://localhost%" \
+          -e "s%http://example.com/moodle%https://localhost%" \
           -e "s%/home/example/moodledata%/home/travis/roots/base%" \
           config.php ;
 
@@ -122,11 +189,13 @@ before_script:
           sed -i \
             -e "s%= 'pgsql'%= 'mysqli'%" \
             -e "s%= 'username'%= 'travis'%" \
+            -e "s%=> 'utf8mb4_unicode_ci'%=> 'utf8mb4_bin'%" \
             config.php;
 
           mysql -u root -e 'SET GLOBAL innodb_file_format=barracuda;' ;
           mysql -u root -e 'SET GLOBAL innodb_file_per_table=ON;' ;
-          mysql -e 'CREATE DATABASE travis_ci_test DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_bin;' ;
+          mysql -u root -e 'SET GLOBAL innodb_large_prefix=ON;' ;
+          mysql -e 'CREATE DATABASE travis_ci_test DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_bin;' ;
         fi
       fi
 
@@ -137,6 +206,11 @@ before_script:
         mkdir -p "$HOME"/roots/phpunit
 
         # The phpunit dataroot and prefix..
+<<<<<<< HEAD
+=======
+        # Redis tests are currently failing on php 7.2 due to https://bugs.php.net/bug.php?id=75628
+        # -e "/require_once/i \\define('TEST_SESSION_REDIS_HOST', '127.0.0.1');" \
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         sed -i \
           -e "/require_once/i \\\$CFG->phpunit_dataroot = '\/home\/travis\/roots\/phpunit';" \
           -e "/require_once/i \\\$CFG->phpunit_prefix = 'p_';" \
@@ -149,9 +223,14 @@ before_script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
+<<<<<<< HEAD
         npm install ;
         npm install -g grunt ;
         grunt ;
+=======
+        npm install --no-spin;
+        npm install --no-spin -g grunt ;
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
       fi
 
     ########################################################################
@@ -190,9 +269,9 @@ before_script:
         # We need the official upstream.
         git remote add upstream https://github.com/moodle/moodle.git;
 
-        # Checkout 27 STABLE branch.
-        git fetch upstream MOODLE_27_STABLE;
-        git checkout MOODLE_27_STABLE;
+        # Checkout 30 STABLE branch (the first version compatible with PHP 7.x)
+        git fetch upstream MOODLE_30_STABLE;
+        git checkout MOODLE_30_STABLE;
 
         # Perform the upgrade
         php admin/cli/install_database.php --agree-license --adminpass=Password --adminemail=admin@example.com --fullname="Upgrade test" --shortname=Upgrade;
@@ -206,6 +285,7 @@ before_script:
         # The local_ci repository can be used to check upgrade savepoints.
         git clone https://github.com/moodlehq/moodle-local_ci.git local/ci ;
       fi
+<<<<<<< HEAD
 
 script:
     - >
@@ -214,6 +294,16 @@ script:
         vendor/bin/phpunit;
       fi
 
+=======
+
+script:
+    - >
+      if [ "$TASK" = 'PHPUNIT' ];
+      then
+        vendor/bin/phpunit --fail-on-risky --disallow-test-output --verbose;
+      fi
+
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     - >
       if [ "$TASK" = 'CITEST' ];
       then
@@ -223,6 +313,10 @@ script:
     - >
       if [ "$TASK" = 'GRUNT' ];
       then
+<<<<<<< HEAD
+=======
+        grunt ;
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         # Add all files to the git index and then run diff --cached to see all changes.
         # This ensures that we get the status of all files, including new files.
         git add . ;

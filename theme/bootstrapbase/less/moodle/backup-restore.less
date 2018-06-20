@@ -36,8 +36,7 @@
     font-weight: bold;
     color: inherit;
 }
-.path-backup .backup_progress .backup_stage.backup_stage_next {
-}
+
 .path-backup .backup_progress span.backup_stage.backup_stage_complete {
     color: inherit;
 }
@@ -236,15 +235,14 @@
     overflow-y: scroll;
 }
 
-.dir-rtl {
-    &.path-backup .mform .fgroup {
-        .proceedbutton {
-            float: left;
-            margin-left: 5%;
-            margin-right: 0;
-        }
-        .oneclickbackup {
-            float: left;
-        }
+@media (max-width: 768px) {
+    .backup-restore .backup-section.settings-section .detail-pair {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .backup-restore .backup-section.settings-section .detail-pair-label {
+        width: 50%;
     }
 }

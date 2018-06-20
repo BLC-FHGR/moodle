@@ -287,6 +287,8 @@ class assign_feedback_status implements renderable {
     public $returnaction = '';
     /** @var array returnparams */
     public $returnparams = array();
+    /** @var bool canviewfullnames */
+    public $canviewfullnames = false;
 
     /**
      * Constructor
@@ -298,6 +300,7 @@ class assign_feedback_status implements renderable {
      * @param int $coursemoduleid
      * @param string $returnaction The action required to return to this page
      * @param array $returnparams The list of params required to return to this page
+     * @param bool $canviewfullnames
      */
     public function __construct($gradefordisplay,
                                 $gradeddate,
@@ -306,7 +309,8 @@ class assign_feedback_status implements renderable {
                                 $grade,
                                 $coursemoduleid,
                                 $returnaction,
-                                $returnparams) {
+                                $returnparams,
+                                $canviewfullnames) {
         $this->gradefordisplay = $gradefordisplay;
         $this->gradeddate = $gradeddate;
         $this->grader = $grader;
@@ -315,6 +319,7 @@ class assign_feedback_status implements renderable {
         $this->coursemoduleid = $coursemoduleid;
         $this->returnaction = $returnaction;
         $this->returnparams = $returnparams;
+        $this->canviewfullnames = $canviewfullnames;
     }
 }
 
@@ -743,6 +748,8 @@ class assign_grading_summary implements renderable {
     public $teamsubmission = false;
     /** @var boolean warnofungroupedusers - Do we need to warn people that there are users without groups */
     public $warnofungroupedusers = false;
+    /** @var boolean cangrade - Can the current user grade students? */
+    public $cangrade = false;
 
     /**
      * constructor
@@ -757,6 +764,7 @@ class assign_grading_summary implements renderable {
      * @param int $coursemoduleid
      * @param int $submissionsneedgradingcount
      * @param bool $teamsubmission
+     * @param bool $cangrade
      */
     public function __construct($participantcount,
                                 $submissiondraftsenabled,
@@ -768,7 +776,8 @@ class assign_grading_summary implements renderable {
                                 $coursemoduleid,
                                 $submissionsneedgradingcount,
                                 $teamsubmission,
-                                $warnofungroupedusers) {
+                                $warnofungroupedusers,
+                                $cangrade = true) {
         $this->participantcount = $participantcount;
         $this->submissiondraftsenabled = $submissiondraftsenabled;
         $this->submissiondraftscount = $submissiondraftscount;
@@ -780,6 +789,7 @@ class assign_grading_summary implements renderable {
         $this->submissionsneedgradingcount = $submissionsneedgradingcount;
         $this->teamsubmission = $teamsubmission;
         $this->warnofungroupedusers = $warnofungroupedusers;
+        $this->cangrade = $cangrade;
     }
 }
 
@@ -906,11 +916,18 @@ class assign_files implements renderable {
      */
     public function preprocess($dir, $filearea, $component) {
         global $CFG;
+
         foreach ($dir['subdirs'] as $subdir) {
             $this->preprocess($subdir, $filearea, $component);
         }
         foreach ($dir['files'] as $file) {
             $file->portfoliobutton = '';
+
+            $file->timemodified = userdate(
+                $file->get_timemodified(),
+                get_string('strftimedatetime', 'langconfig')
+            );
+
             if (!empty($CFG->enableportfolios)) {
                 require_once($CFG->libdir . '/portfoliolib.php');
                 $button = new portfolio_add_button();
@@ -935,7 +952,9 @@ class assign_files implements renderable {
                     $file->get_filename();
             $url = file_encode_url("$CFG->wwwroot/pluginfile.php", $path, true);
             $filename = $file->get_filename();
-            $file->fileurl = html_writer::link($url, $filename);
+            $file->fileurl = html_writer::link($url, $filename, [
+                    'target' => '_blank',
+                ]);
         }
     }
 }

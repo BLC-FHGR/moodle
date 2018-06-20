@@ -17,7 +17,11 @@ defined('MOODLE_INTERNAL') || exit();
 
 /**
  * Unit tests for the tool_monitor clean events task.
+<<<<<<< HEAD
  * @since 3.1.1
+=======
+ * @since 3.2.0
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
  *
  * @package    tool_monitor
  * @category   test

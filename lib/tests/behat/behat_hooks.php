@@ -97,6 +97,16 @@ class behat_hooks extends behat_base {
     protected static $timings = array();
 
     /**
+<<<<<<< HEAD
+=======
+     * Keeps track of current running suite name.
+     *
+     * @var string current running suite name
+     */
+    protected static $runningsuite = '';
+
+    /**
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
      * Hook to capture BeforeSuite event so as to give access to moodle codebase.
      * This will try and catch any exception and exists if anything fails.
      *
@@ -104,6 +114,14 @@ class behat_hooks extends behat_base {
      * @BeforeSuite
      */
     public static function before_suite_hook(BeforeSuiteScope $scope) {
+<<<<<<< HEAD
+=======
+        // If behat has been initialised then no need to do this again.
+        if (self::$initprocessesfinished) {
+            return;
+        }
+
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         try {
             self::before_suite($scope);
         } catch (behat_stop_exception $e) {
@@ -128,9 +146,14 @@ class behat_hooks extends behat_base {
         // Defined only when the behat CLI command is running, the moodle init setup process will
         // read this value and switch to $CFG->behat_dataroot and $CFG->behat_prefix instead of
         // the normal site.
-        define('BEHAT_TEST', 1);
+        if (!defined('BEHAT_TEST')) {
+            define('BEHAT_TEST', 1);
+        }
 
-        define('CLI_SCRIPT', 1);
+        if (!defined('CLI_SCRIPT')) {
+            define('CLI_SCRIPT', 1);
+        }
+
         // With BEHAT_TEST we will be using $CFG->behat_* instead of $CFG->dataroot, $CFG->prefix and $CFG->wwwroot.
         require_once(__DIR__ . '/../../../config.php');
 
@@ -153,6 +176,7 @@ class behat_hooks extends behat_base {
 
         // Reset all data, before checking for check_server_status.
         // If not done, then it can return apache error, while running tests.
+        behat_util::clean_tables_updated_by_scenario_list();
         behat_util::reset_all_data();
 
         // Check if server is running and using same version for cli and apache.
@@ -263,7 +287,7 @@ class behat_hooks extends behat_base {
      * @throws behat_stop_exception If here we are not using the test database it should be because of a coding error
      */
     public function before_scenario(BeforeScenarioScope $scope) {
-        global $DB, $SESSION, $CFG;
+        global $DB, $CFG;
 
         // As many checks as we can.
         if (!defined('BEHAT_TEST') ||
@@ -289,10 +313,30 @@ class behat_hooks extends behat_base {
             throw new behat_stop_exception($e->getMessage());
         }
 
-        // We need the Mink session to do it and we do it only before the first scenario.
-        if (self::is_first_scenario()) {
-            behat_selectors::register_moodle_selectors($session);
-            behat_context_helper::set_session($scope->getEnvironment());
+        $suitename = $scope->getSuite()->getName();
+
+        // Register behat selectors for theme, if suite is changed. We do it for every suite change.
+        if ($suitename !== self::$runningsuite) {
+            behat_context_helper::set_environment($scope->getEnvironment());
+
+            // We need the Mink session to do it and we do it only before the first scenario.
+            $namedpartialclass = 'behat_partial_named_selector';
+            $namedexactclass = 'behat_exact_named_selector';
+
+            // If override selector exist, then set it as default behat selectors class.
+            $overrideclass = behat_config_util::get_behat_theme_selector_override_classname($suitename, 'named_partial', true);
+            if (class_exists($overrideclass)) {
+                $namedpartialclass = $overrideclass;
+            }
+
+            // If override selector exist, then set it as default behat selectors class.
+            $overrideclass = behat_config_util::get_behat_theme_selector_override_classname($suitename, 'named_exact', true);
+            if (class_exists($overrideclass)) {
+                $namedexactclass = $overrideclass;
+            }
+
+            $this->getSession()->getSelectorsHandler()->registerSelector('named_partial', new $namedpartialclass());
+            $this->getSession()->getSelectorsHandler()->registerSelector('named_exact', new $namedexactclass());
         }
 
         // Reset mink session between the scenarios.
@@ -301,7 +345,12 @@ class behat_hooks extends behat_base {
         // Reset $SESSION.
         \core\session\manager::init_empty_session();
 
+        // Ignore E_NOTICE and E_WARNING during reset, as this might be caused because of some existing process
+        // running ajax. This will be investigated in another issue.
+        $errorlevel = error_reporting();
+        error_reporting($errorlevel & ~E_NOTICE & ~E_WARNING);
         behat_util::reset_all_data();
+        error_reporting($errorlevel);
 
         // Assign valid data to admin user (some generator-related code needs a valid user).
         $user = $DB->get_record('user', array('username' => 'admin'));
@@ -316,6 +365,12 @@ class behat_hooks extends behat_base {
             }
         }
 
+        // Set the theme if not default.
+        if ($suitename !== "default") {
+            set_config('theme', $suitename);
+            self::$runningsuite = $suitename;
+        }
+
         // Start always in the the homepage.
         try {
             // Let's be conservative as we never know when new upstream issues will affect us.
@@ -323,7 +378,6 @@ class behat_hooks extends behat_base {
         } catch (UnknownError $e) {
             throw new behat_stop_exception($e->getMessage());
         }
-
 
         // Checking that the root path is a Moodle test site.
         if (self::is_first_scenario()) {
@@ -333,6 +387,7 @@ class behat_hooks extends behat_base {
 
             self::$initprocessesfinished = true;
         }
+
         // Run all test with medium (1024x768) screen size, to avoid responsive problems.
         $this->resize_window('medium');
     }
@@ -379,6 +434,11 @@ class behat_hooks extends behat_base {
      */
     public function after_step_javascript(AfterStepScope $scope) {
         global $CFG, $DB;
+
+        // If step is undefined then throw exception, to get failed exit code.
+        if ($scope->getTestResult()->getResultCode() === Behat\Behat\Tester\Result\StepResult::UNDEFINED) {
+            throw new coding_exception("Step '" . $scope->getStep()->getText() . "'' is undefined.");
+        }
 
         // Save the page content if the step failed.
         if (!empty($CFG->behat_faildump_path) &&
@@ -532,11 +592,23 @@ class behat_hooks extends behat_base {
         // The scenario title + the failed step text.
         // We want a i-am-the-scenario-title_i-am-the-failed-step.$filetype format.
         $filename = $scope->getFeature()->getTitle() . '_' . $scope->getStep()->getText();
-        $filename = preg_replace('/([^a-zA-Z0-9\_]+)/', '-', $filename);
 
-        // File name limited to 255 characters. Leaving 5 chars for line number and 4 chars for the file.
+        // As file name is limited to 255 characters. Leaving 5 chars for line number and 4 chars for the file.
         // extension as we allow .png for images and .html for DOM contents.
-        $filename = substr($filename, 0, 245) . '_' . $scope->getStep()->getLine() . '.' . $filetype;
+        $filenamelen = 245;
+
+        // Suffix suite name to faildump file, if it's not default suite.
+        $suitename = $scope->getSuite()->getName();
+        if ($suitename != 'default') {
+            $suitename = '_' . $suitename;
+            $filenamelen = $filenamelen - strlen($suitename);
+        } else {
+            // No need to append suite name for default.
+            $suitename = '';
+        }
+
+        $filename = preg_replace('/([^a-zA-Z0-9\_]+)/', '-', $filename);
+        $filename = substr($filename, 0, $filenamelen) . $suitename . '_' . $scope->getStep()->getLine() . '.' . $filetype;
 
         return array($dir, $filename);
     }
@@ -549,7 +621,7 @@ class behat_hooks extends behat_base {
      *
      * @Given /^I look for exceptions$/
      * @throw Exception Unknown type, depending on what we caught in the hook or basic \Exception.
-     * @see Moodle\BehatExtension\Tester\MoodleStepTester
+     * @see Moodle\BehatExtension\EventDispatcher\Tester\ChainedStepTester
      */
     public function i_look_for_exceptions() {
         // If the step already failed in a hook throw the exception.
@@ -579,4 +651,9 @@ class behat_hooks extends behat_base {
  * @copyright  2016 Rajesh Taneja <rajesh@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+<<<<<<< HEAD
 class behat_stop_exception extends \Exception{}
+=======
+class behat_stop_exception extends \Exception {
+}
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6

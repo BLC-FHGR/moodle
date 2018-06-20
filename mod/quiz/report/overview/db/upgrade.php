@@ -29,15 +29,33 @@ defined('MOODLE_INTERNAL') || die();
  * @param number $oldversion
  */
 function xmldb_quiz_overview_upgrade($oldversion) {
-    global $CFG;
+    global $DB;
 
-    // Moodle v2.8.0 release upgrade line.
+    $dbman = $DB->get_manager();
+
+    // Automatically generated Moodle v3.2.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Moodle v2.9.0 release upgrade line.
+    // Automatically generated Moodle v3.3.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Moodle v3.0.0 release upgrade line.
+    // Automatically generated Moodle v3.4.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2018021800) {
+
+        // Define key questionusageid-slot (foreign-unique) to be added to quiz_overview_regrades.
+        $table = new xmldb_table('quiz_overview_regrades');
+        $key = new xmldb_key('questionusageid-slot', XMLDB_KEY_FOREIGN_UNIQUE, array('questionusageid', 'slot'), 'question_attempts', array('questionusageid', 'slot'));
+
+        // Launch add key questionusageid-slot.
+        $dbman->add_key($table, $key);
+
+        // Overview savepoint reached.
+        upgrade_plugin_savepoint(true, 2018021800, 'quiz', 'overview');
+    }
+
+    // Automatically generated Moodle v3.5.0 release upgrade line.
     // Put any upgrade step following this.
 
     // Moodle v3.1.0 release upgrade line.

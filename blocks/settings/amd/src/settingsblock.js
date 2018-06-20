@@ -40,9 +40,12 @@ define(['jquery', 'core/tree'], function($, Tree) {
             };
             adminTree.collapseGroup = function(item) {
                 Tree.prototype.collapseGroup.call(this, item);
+<<<<<<< HEAD
                 Y.Global.fire(M.core.globalEvents.BLOCK_CONTENT_UPDATED, {
                     instanceid: instanceid
                 });
+=======
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
                 Y.use('moodle-core-event', function() {
                     Y.Global.fire(M.core.globalEvents.BLOCK_CONTENT_UPDATED, {
                         instanceid: instanceid

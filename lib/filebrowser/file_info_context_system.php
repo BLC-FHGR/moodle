@@ -25,6 +25,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->libdir.'/filebrowser/file_info_context_coursecat.php');
+
 /**
  * Represents the system context in the tree navigated by {@link file_browser}.
  *
@@ -32,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2008 Petr Skoda (http://skodak.org)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class file_info_context_system extends file_info {
+class file_info_context_system extends file_info_context_coursecat {
 
     /**
      * Constructor
@@ -41,7 +43,7 @@ class file_info_context_system extends file_info {
      * @param stdClass $context context object
      */
     public function __construct($browser, $context) {
-        parent::__construct($browser, $context);
+        parent::__construct($browser, $context, (object)['id' => 0, 'parent' => 0, 'visible' => 1]);
     }
 
     /**
@@ -140,6 +142,7 @@ class file_info_context_system extends file_info {
     }
 
     /**
+<<<<<<< HEAD
      * Returns list of children.
      *
      * @return array of file_info instances
@@ -205,6 +208,8 @@ class file_info_context_system extends file_info {
     }
 
     /**
+=======
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
      * Returns parent file_info instance
      *
      * @return file_info|null file_info instance or null for root

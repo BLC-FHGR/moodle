@@ -125,9 +125,15 @@ class flexible_table {
      */
     private $prefs = array();
 
+    /** @var $sheettitle */
+    protected $sheettitle;
+
+    /** @var $filename */
+    protected $filename;
+
     /**
      * Constructor
-     * @param int $uniqueid all tables have to have a unique id, this is used
+     * @param string $uniqueid all tables have to have a unique id, this is used
      *      as a key when storing table properties like sort order in the session.
      */
     function __construct($uniqueid) {
@@ -180,7 +186,7 @@ class flexible_table {
         } else if (is_null($this->exportclass) && !empty($this->download)) {
             $this->exportclass = new table_dataformat_export_format($this, $this->download);
             if (!$this->exportclass->document_started()) {
-                $this->exportclass->start_document($this->filename);
+                $this->exportclass->start_document($this->filename, $this->sheettitle);
             }
         }
         return $this->exportclass;
@@ -449,8 +455,10 @@ class flexible_table {
         // Load any existing user preferences.
         if ($this->persistent) {
             $this->prefs = json_decode(get_user_preferences('flextable_' . $this->uniqueid), true);
+            $oldprefs = $this->prefs;
         } else if (isset($SESSION->flextable[$this->uniqueid])) {
             $this->prefs = $SESSION->flextable[$this->uniqueid];
+            $oldprefs = $this->prefs;
         }
 
         // Set up default preferences if needed.
@@ -463,7 +471,10 @@ class flexible_table {
                 'textsort' => $this->column_textsort,
             );
         }
-        $oldprefs = $this->prefs;
+
+        if (!isset($oldprefs)) {
+            $oldprefs = $this->prefs;
+        }
 
         if (($showcol = optional_param($this->request[TABLE_VAR_SHOW], '', PARAM_ALPHANUMEXT)) &&
                 isset($this->columns[$showcol])) {
@@ -930,10 +941,16 @@ class flexible_table {
      * @param string $class class name to add to this initial bar.
      * @param string $title the name to put in front of this initial bar.
      * @param string $urlvar URL parameter name for this initial.
+     *
+     * @deprecated since Moodle 3.3
      */
     protected function print_one_initials_bar($alpha, $current, $class, $title, $urlvar) {
+
+        debugging('Method print_one_initials_bar() is no longer used and has been deprecated, ' .
+            'to print initials bar call print_initials_bar()', DEBUG_DEVELOPER);
+
         echo html_writer::start_tag('div', array('class' => 'initialbar ' . $class)) .
-                $title . ' : ';
+            $title . ' : ';
         if ($current) {
             echo html_writer::link($this->baseurl->out(false, array($urlvar => '')), get_string('all'));
         } else {
@@ -955,29 +972,25 @@ class flexible_table {
      * This function is not part of the public api.
      */
     function print_initials_bar() {
-        if ((!empty($this->prefs['i_last']) || !empty($this->prefs['i_first']) ||$this->use_initials)
-                    && isset($this->columns['fullname'])) {
+        global $OUTPUT;
 
-            $alpha  = explode(',', get_string('alphabet', 'langconfig'));
-
-            // Bar of first initials
-            if (!empty($this->prefs['i_first'])) {
-                $ifirst = $this->prefs['i_first'];
-            } else {
-                $ifirst = '';
-            }
-            $this->print_one_initials_bar($alpha, $ifirst, 'firstinitial',
-                    get_string('firstname'), $this->request[TABLE_VAR_IFIRST]);
-
-            // Bar of last initials
-            if (!empty($this->prefs['i_last'])) {
-                $ilast = $this->prefs['i_last'];
-            } else {
-                $ilast = '';
-            }
-            $this->print_one_initials_bar($alpha, $ilast, 'lastinitial',
-                    get_string('lastname'), $this->request[TABLE_VAR_ILAST]);
+        $ifirst = $this->get_initial_first();
+        $ilast = $this->get_initial_last();
+        if (is_null($ifirst)) {
+            $ifirst = '';
         }
+        if (is_null($ilast)) {
+            $ilast = '';
+        }
+
+        if ((!empty($ifirst) || !empty($ilast) ||$this->use_initials)
+                && isset($this->columns['fullname'])) {
+            $prefixfirst = $this->request[TABLE_VAR_IFIRST];
+            $prefixlast = $this->request[TABLE_VAR_ILAST];
+            echo $OUTPUT->initials_bar($ifirst, 'firstinitial', get_string('firstname'), $prefixfirst, $this->baseurl);
+            echo $OUTPUT->initials_bar($ilast, 'lastinitial', get_string('lastname'), $prefixlast, $this->baseurl);
+        }
+
     }
 
     /**
@@ -1172,16 +1185,14 @@ class flexible_table {
                                     'aria-expanded' => 'false',
                                     'aria-controls' => $ariacontrols);
             return html_writer::link($this->baseurl->out(false, array($this->request[TABLE_VAR_SHOW] => $column)),
-                    html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/switch_plus'), 'alt' => get_string('show'))),
-                    $linkattributes);
+                    $OUTPUT->pix_icon('t/switch_plus', get_string('show')), $linkattributes);
 
         } else if ($this->headers[$index] !== NULL) {
             $linkattributes = array('title' => get_string('hide') . ' ' . strip_tags($this->headers[$index]),
                                     'aria-expanded' => 'true',
                                     'aria-controls' => $ariacontrols);
             return html_writer::link($this->baseurl->out(false, array($this->request[TABLE_VAR_HIDE] => $column)),
-                    html_writer::empty_tag('img', array('src' => $OUTPUT->pix_url('t/switch_minus'), 'alt' => get_string('hide'))),
-                    $linkattributes);
+                    $OUTPUT->pix_icon('t/switch_minus', get_string('hide')), $linkattributes);
         }
     }
 
@@ -1290,11 +1301,9 @@ class flexible_table {
         }
 
         if ($order == SORT_ASC) {
-            return html_writer::empty_tag('img',
-                    array('src' => $OUTPUT->pix_url('t/sort_asc'), 'alt' => get_string('asc'), 'class' => 'iconsort'));
+            return $OUTPUT->pix_icon('t/sort_asc', get_string('asc'));
         } else {
-            return html_writer::empty_tag('img',
-                    array('src' => $OUTPUT->pix_url('t/sort_desc'), 'alt' => get_string('desc'), 'class' => 'iconsort'));
+            return $OUTPUT->pix_icon('t/sort_desc', get_string('desc'));
         }
     }
 
@@ -1478,9 +1487,9 @@ class table_sql extends flexible_table {
      * method or if other_cols returns NULL then put the data straight into the
      * table.
      *
-     * @return void
+     * After calling this function, don't forget to call close_recordset.
      */
-    function build_table() {
+    public function build_table() {
 
         if ($this->rawdata instanceof \Traversable && !$this->rawdata->valid()) {
             return;
@@ -1494,10 +1503,16 @@ class table_sql extends flexible_table {
             $this->add_data_keyed($formattedrow,
                 $this->get_row_class($row));
         }
+    }
 
-        if ($this->rawdata instanceof \core\dml\recordset_walk ||
-                $this->rawdata instanceof moodle_recordset) {
+    /**
+     * Closes recordset (for use after building the table).
+     */
+    public function close_recordset() {
+        if ($this->rawdata && ($this->rawdata instanceof \core\dml\recordset_walk ||
+                $this->rawdata instanceof moodle_recordset)) {
             $this->rawdata->close();
+            $this->rawdata = null;
         }
     }
 
@@ -1530,7 +1545,7 @@ class table_sql extends flexible_table {
      * Of course you can use sub-queries, JOINS etc. by putting them in the
      * appropriate clause of the query.
      */
-    function set_sql($fields, $from, $where, array $params = NULL) {
+    function set_sql($fields, $from, $where, array $params = array()) {
         $this->sql = new stdClass();
         $this->sql->fields = $fields;
         $this->sql->from = $from;
@@ -1598,7 +1613,8 @@ class table_sql extends flexible_table {
     function out($pagesize, $useinitialsbar, $downloadhelpbutton='') {
         global $DB;
         if (!$this->columns) {
-            $onerow = $DB->get_record_sql("SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}", $this->sql->params);
+            $onerow = $DB->get_record_sql("SELECT {$this->sql->fields} FROM {$this->sql->from} WHERE {$this->sql->where}",
+                $this->sql->params, IGNORE_MULTIPLE);
             //if columns is not set then define columns as the keys of the rows returned
             //from the db.
             $this->define_columns(array_keys((array)$onerow));
@@ -1607,6 +1623,7 @@ class table_sql extends flexible_table {
         $this->setup();
         $this->query_db($pagesize, $useinitialsbar);
         $this->build_table();
+        $this->close_recordset();
         $this->finish_output();
     }
 }
@@ -1725,11 +1742,14 @@ class table_dataformat_export_format extends table_default_export_format_parent 
      * Start document
      *
      * @param string $filename
+     * @param string $sheettitle
      */
-    public function start_document($filename) {
-        $this->filename = $filename;
+    public function start_document($filename, $sheettitle) {
         $this->documentstarted = true;
         $this->dataformat->set_filename($filename);
+        $this->dataformat->send_http_headers();
+        $this->dataformat->set_sheettitle($sheettitle);
+        $this->dataformat->start_output();
     }
 
     /**
@@ -1739,7 +1759,6 @@ class table_dataformat_export_format extends table_default_export_format_parent 
      */
     public function start_table($sheettitle) {
         $this->dataformat->set_sheettitle($sheettitle);
-        $this->dataformat->send_http_headers();
     }
 
     /**
@@ -1749,7 +1768,13 @@ class table_dataformat_export_format extends table_default_export_format_parent 
      */
     public function output_headers($headers) {
         $this->columns = $headers;
-        $this->dataformat->write_header($headers);
+        if (method_exists($this->dataformat, 'write_header')) {
+            error_log('The function write_header() does not support multiple sheets. In order to support multiple sheets you ' .
+                'must implement start_output() and start_sheet() and remove write_header() in your dataformat.');
+            $this->dataformat->write_header($headers);
+        } else {
+            $this->dataformat->start_sheet($headers);
+        }
     }
 
     /**
@@ -1766,15 +1791,21 @@ class table_dataformat_export_format extends table_default_export_format_parent 
      * Finish export
      */
     public function finish_table() {
-        $this->dataformat->write_footer($this->columns);
+        if (method_exists($this->dataformat, 'write_footer')) {
+            error_log('The function write_footer() does not support multiple sheets. In order to support multiple sheets you ' .
+                'must implement close_sheet() and close_output() and remove write_footer() in your dataformat.');
+            $this->dataformat->write_footer($this->columns);
+        } else {
+            $this->dataformat->close_sheet($this->columns);
+        }
     }
 
     /**
      * Finish download
      */
     public function finish_document() {
-        exit;
+        $this->dataformat->close_output();
+        exit();
     }
-
 }
 

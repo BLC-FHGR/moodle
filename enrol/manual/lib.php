@@ -194,7 +194,7 @@ class enrol_manual_plugin extends enrol_plugin {
      * @return enrol_user_button
      */
     public function get_manual_enrol_button(course_enrolment_manager $manager) {
-        global $CFG;
+        global $CFG, $PAGE;
         require_once($CFG->dirroot.'/cohort/lib.php');
 
         $instance = null;
@@ -211,13 +211,15 @@ class enrol_manual_plugin extends enrol_plugin {
             return false;
         }
 
-        if (!$manuallink = $this->get_manual_enrol_link($instance)) {
+        $link = $this->get_manual_enrol_link($instance);
+        if (!$link) {
             return false;
         }
 
-        $button = new enrol_user_button($manuallink, get_string('enrolusers', 'enrol_manual'), 'get');
+        $button = new enrol_user_button($link, get_string('enrolusers', 'enrol_manual'), 'get');
         $button->class .= ' enrol_manual_plugin';
 
+<<<<<<< HEAD
         $startdate = $manager->get_course()->startdate;
         if (!$defaultstart = get_config('enrol_manual', 'enrolstart')) {
             // Default to now if there is no system setting.
@@ -252,43 +254,14 @@ class enrol_manual_plugin extends enrol_plugin {
         if ($CFG->recovergradesdefault) {
             $arguments['recoverGradesDefault'] = ' checked="checked"';
         }
+=======
+        $context = context_course::instance($instance->courseid);
+        $arguments = array('contextid' => $context->id);
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
 
-        $function = 'M.enrol_manual.quickenrolment.init';
-        $button->require_yui_module($modules, $function, array($arguments));
-        $button->strings_for_js(array(
-            'ajaxoneuserfound',
-            'ajaxxusersfound',
-            'ajaxnext25',
-            'enrol',
-            'enrolmentoptions',
-            'enrolusers',
-            'enrolxusers',
-            'errajaxfailedenrol',
-            'errajaxsearch',
-            'foundxcohorts',
-            'none',
-            'usersearch',
-            'unlimitedduration',
-            'startdatetoday',
-            'durationdays',
-            'enrolperiod',
-            'finishenrollingusers',
-            'recovergrades'), 'enrol');
-        $button->strings_for_js(array('browseusers', 'browsecohorts'), 'enrol_manual');
-        $button->strings_for_js('assignroles', 'role');
-        $button->strings_for_js('startingfrom', 'moodle');
+        $PAGE->requires->js_call_amd('enrol_manual/quickenrolment', 'init', array($arguments));
 
         return $button;
-    }
-
-    /**
-     * Enrol cron support.
-     * @return void
-     */
-    public function cron() {
-        $trace = new text_progress_trace();
-        $this->sync($trace, null);
-        $this->send_expiry_notifications($trace);
     }
 
     /**
@@ -413,30 +386,6 @@ class enrol_manual_plugin extends enrol_plugin {
         $this->lasternollerinstanceid = $instanceid;
 
         return $this->lasternoller;
-    }
-
-    /**
-     * Gets an array of the user enrolment actions.
-     *
-     * @param course_enrolment_manager $manager
-     * @param stdClass $ue A user enrolment object
-     * @return array An array of user_enrolment_actions
-     */
-    public function get_user_enrolment_actions(course_enrolment_manager $manager, $ue) {
-        $actions = array();
-        $context = $manager->get_context();
-        $instance = $ue->enrolmentinstance;
-        $params = $manager->get_moodlepage()->url->params();
-        $params['ue'] = $ue->id;
-        if ($this->allow_unenrol_user($instance, $ue) && has_capability("enrol/manual:unenrol", $context)) {
-            $url = new moodle_url('/enrol/unenroluser.php', $params);
-            $actions[] = new user_enrolment_action(new pix_icon('t/delete', ''), get_string('unenrol', 'enrol'), $url, array('class'=>'unenrollink', 'rel'=>$ue->id));
-        }
-        if ($this->allow_manage($instance) && has_capability("enrol/manual:manage", $context)) {
-            $url = new moodle_url('/enrol/editenrolment.php', $params);
-            $actions[] = new user_enrolment_action(new pix_icon('t/edit', ''), get_string('edit'), $url, array('class'=>'editenrollink', 'rel'=>$ue->id));
-        }
-        return $actions;
     }
 
     /**
@@ -729,4 +678,26 @@ class enrol_manual_plugin extends enrol_plugin {
         return $errors;
     }
 
+}
+
+/**
+ * Serve the manual enrol users form as a fragment.
+ *
+ * @param array $args List of named arguments for the fragment loader.
+ * @return string
+ */
+function enrol_manual_output_fragment_enrol_users_form($args) {
+    $args = (object) $args;
+    $context = $args->context;
+    $o = '';
+
+    require_capability('enrol/manual:enrol', $context);
+    $mform = new enrol_manual_enrol_users_form(null, $args);
+
+    ob_start();
+    $mform->display();
+    $o .= ob_get_contents();
+    ob_end_clean();
+
+    return $o;
 }

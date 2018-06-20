@@ -34,38 +34,36 @@ function xmldb_assignfeedback_editpdf_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    // Moodle v2.8.0 release upgrade line.
+    // Automatically generated Moodle v3.2.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Moodle v2.9.0 release upgrade line.
-    // Put any upgrade step following this.
+    if ($oldversion < 2017022700) {
 
-    // Moodle v3.0.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2016021600) {
-
-        // Define table assignfeedback_editpdf_queue to be created.
-        $table = new xmldb_table('assignfeedback_editpdf_queue');
-
-        // Adding fields to table assignfeedback_editpdf_queue.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('submissionattempt', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table assignfeedback_editpdf_queue.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
-
-        // Conditionally launch create table for assignfeedback_editpdf_queue.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
+        // Get orphaned, duplicate files and delete them.
+        $fs = get_file_storage();
+        $sqllike = $DB->sql_like("filename", "?");
+        $where = "component='assignfeedback_editpdf' AND filearea = 'importhtml' AND " . $sqllike;
+        $filerecords = $DB->get_records_select("files", $where, ["onlinetext-%"]);
+        foreach ($filerecords as $filerecord) {
+            $file = $fs->get_file_instance($filerecord);
+            $file->delete();
         }
 
         // Editpdf savepoint reached.
-        upgrade_plugin_savepoint(true, 2016021600, 'assignfeedback', 'editpdf');
+        upgrade_plugin_savepoint(true, 2017022700, 'assignfeedback', 'editpdf');
     }
 
+<<<<<<< HEAD
     // Moodle v3.1.0 release upgrade line.
+=======
+    // Automatically generated Moodle v3.3.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v3.4.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v3.5.0 release upgrade line.
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     // Put any upgrade step following this.
 
     return true;

@@ -24,7 +24,7 @@
  */
 
 
-require_once(dirname(__FILE__) . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir.'/gradelib.php');
 require_once($CFG->dirroot.'/mod/quiz/locallib.php');
 require_once($CFG->libdir . '/completionlib.php');
@@ -78,7 +78,7 @@ $PAGE->set_url('/mod/quiz/view.php', array('id' => $cm->id));
 // Create view object which collects all the information the renderer will need.
 $viewobj = new mod_quiz_view_object();
 $viewobj->accessmanager = $accessmanager;
-$viewobj->canreviewmine = $canreviewmine;
+$viewobj->canreviewmine = $canreviewmine || $canpreview;
 
 // Get this user's attempts.
 $attempts = quiz_get_user_attempts($quiz->id, $USER->id, 'finished', true);

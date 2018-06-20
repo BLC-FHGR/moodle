@@ -125,9 +125,7 @@ class manager {
 
         } catch (\Horde_Imap_Client_Exception $e) {
             $message = $e->getMessage();
-            mtrace("Unable to connect to IMAP server. Failed with '{$message}'");
-
-            return false;
+            throw new \moodle_exception('imapconnectfailure', 'tool_messageinbound', '', null, $message);
         }
     }
 
@@ -310,6 +308,16 @@ class manager {
         $this->close_connection();
 
         return true;
+    }
+
+    /**
+     * Remove older verification failures.
+     *
+     * @return void
+     */
+    public function tidy_old_verification_failures() {
+        global $DB;
+        $DB->delete_records_select('messageinbound_messagelist', 'timecreated < :time', ['time' => time() - DAYSECS]);
     }
 
     /**
@@ -586,10 +594,10 @@ class manager {
                 'usestream' => true,
             ));
 
-            if ($part === $plainpartid) {
+            if ($part == $plainpartid) {
                 $contentplain = $this->process_message_part_body($messagedata, $partdata, $part);
 
-            } else if ($part === $htmlpartid) {
+            } else if ($part == $htmlpartid) {
                 $contenthtml = $this->process_message_part_body($messagedata, $partdata, $part);
 
             } else if ($filename = $partdata->getName($part)) {
@@ -668,25 +676,9 @@ class manager {
 
         if (!empty($CFG->antiviruses)) {
             mtrace("--> Attempting virus scan of '{$attachment->filename}'");
-
-            // Store the file on disk - it will need to be virus scanned first.
-            $itemid = rand(1, 999999999);;
-            $directory = make_temp_directory("/messageinbound/{$itemid}", false);
-            $filepath = $directory . "/" . $attachment->filename;
-            if (!$fp = fopen($filepath, "w")) {
-                // Unable to open the temporary file to write this to disk.
-                mtrace("--> Unable to save the file to disk for virus scanning. Check file permissions.");
-
-                throw new \core\message\inbound\processing_failed_exception('attachmentfilepermissionsfailed',
-                        'tool_messageinbound');
-            }
-
-            fwrite($fp, $attachment->content);
-            fclose($fp);
-
             // Perform a virus scan now.
             try {
-                \core\antivirus\manager::scan_file($filepath, $attachment->filename, true);
+                \core\antivirus\manager::scan_data($attachment->content);
             } catch (\core\antivirus\scanner_exception $e) {
                 mtrace("--> A virus was found in the attachment '{$attachment->filename}'.");
                 $this->inform_attachment_virus();
@@ -920,7 +912,7 @@ class manager {
         $addressmanager->set_handler('\tool_messageinbound\message\inbound\invalid_recipient_handler');
         $addressmanager->set_data($record->id);
 
-        $eventdata = new \stdClass();
+        $eventdata = new \core\message\message();
         $eventdata->component           = 'tool_messageinbound';
         $eventdata->name                = 'invalidrecipienthandler';
 
@@ -930,7 +922,8 @@ class manager {
         $userfrom->customheaders[] = 'In-Reply-To: ' . $messageid;
 
         // The message will be sent from the intended user.
-        $eventdata->userfrom            = \core_user::get_support_user();
+        $eventdata->courseid            = SITEID;
+        $eventdata->userfrom            = \core_user::get_noreply_user();
         $eventdata->userto              = $USER;
         $eventdata->subject             = $this->get_reply_subject($this->currentmessagedata->envelope->subject);
         $eventdata->fullmessage         = get_string('invalidrecipientdescription', 'tool_messageinbound', $this->currentmessagedata);
@@ -970,7 +963,8 @@ class manager {
         $messagedata->subject = $this->currentmessagedata->envelope->subject;
         $messagedata->error = $error;
 
-        $eventdata = new \stdClass();
+        $eventdata = new \core\message\message();
+        $eventdata->courseid            = SITEID;
         $eventdata->component           = 'tool_messageinbound';
         $eventdata->name                = 'messageprocessingerror';
         $eventdata->userfrom            = $userfrom;
@@ -1012,7 +1006,7 @@ class manager {
         $messageparams = new \stdClass();
         $messageparams->html    = $message->html;
         $messageparams->plain   = $message->plain;
-        $messagepreferencesurl = new \moodle_url("/message/edit.php", array('id' => $USER->id));
+        $messagepreferencesurl = new \moodle_url("/message/notificationpreferences.php", array('id' => $USER->id));
         $messageparams->messagepreferencesurl = $messagepreferencesurl->out();
         $htmlmessage = get_string('messageprocessingsuccesshtml', 'tool_messageinbound', $messageparams);
         $plainmessage = get_string('messageprocessingsuccess', 'tool_messageinbound', $messageparams);
@@ -1029,7 +1023,8 @@ class manager {
         $messagedata = new \stdClass();
         $messagedata->subject = $this->currentmessagedata->envelope->subject;
 
-        $eventdata = new \stdClass();
+        $eventdata = new \core\message\message();
+        $eventdata->courseid            = SITEID;
         $eventdata->component           = 'tool_messageinbound';
         $eventdata->name                = 'messageprocessingsuccess';
         $eventdata->userfrom            = $userfrom;

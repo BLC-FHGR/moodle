@@ -218,6 +218,9 @@ class mysql_sql_generator extends sql_generator {
             }
         }
 
+        $utf8mb4rowformat = $this->mdb->get_row_format_sql($engine, $collation);
+        $rowformat = ($utf8mb4rowformat == '') ? $rowformat : $utf8mb4rowformat;
+
         $sqlarr = parent::getCreateTableSQL($xmldb_table);
 
         // This is a very nasty hack that tries to use just one query per created table
@@ -238,7 +241,7 @@ class mysql_sql_generator extends sql_generator {
                     if (strpos($collation, 'utf8_') === 0) {
                         $sql .= "\n DEFAULT CHARACTER SET utf8";
                     }
-                    $sql .= "\n DEFAULT COLLATE = $collation";
+                    $sql .= "\n DEFAULT COLLATE = $collation ";
                 }
                 if ($rowformat) {
                     $sql .= $rowformat;
@@ -318,6 +321,27 @@ class mysql_sql_generator extends sql_generator {
         return $sqls;
     }
 
+    public function getAlterFieldSQL($xmldb_table, $xmldb_field, $skip_type_clause = NULL, $skip_default_clause = NULL, $skip_notnull_clause = NULL)
+    {
+        $tablename = $xmldb_table->getName();
+        $dbcolumnsinfo = $this->mdb->get_columns($tablename);
+
+        if (($this->mdb->has_breaking_change_sqlmode()) &&
+            ($dbcolumnsinfo[$xmldb_field->getName()]->meta_type == 'X') &&
+            ($xmldb_field->getType() == XMLDB_TYPE_INTEGER)) {
+            // Ignore 1292 ER_TRUNCATED_WRONG_VALUE Truncated incorrect INTEGER value: '%s'.
+            $altercolumnsqlorig = $this->alter_column_sql;
+            $this->alter_column_sql = str_replace('ALTER TABLE', 'ALTER IGNORE TABLE', $this->alter_column_sql);
+            $result = parent::getAlterFieldSQL($xmldb_table, $xmldb_field, $skip_type_clause, $skip_default_clause, $skip_notnull_clause);
+            // Restore the original ALTER SQL statement pattern.
+            $this->alter_column_sql = $altercolumnsqlorig;
+
+            return $result;
+        }
+
+        return parent::getAlterFieldSQL($xmldb_table, $xmldb_field, $skip_type_clause, $skip_default_clause, $skip_notnull_clause);
+    }
+
     /**
      * Given one correct xmldb_table, returns the SQL statements
      * to create temporary table (inside one array).
@@ -341,7 +365,7 @@ class mysql_sql_generator extends sql_generator {
                     if (strpos($collation, 'utf8_') === 0) {
                         $sqlarr[$i] .= " DEFAULT CHARACTER SET utf8";
                     }
-                    $sqlarr[$i] .= " DEFAULT COLLATE $collation";
+                    $sqlarr[$i] .= " DEFAULT COLLATE $collation ROW_FORMAT=DYNAMIC";
                 }
             }
         }
@@ -565,9 +589,9 @@ class mysql_sql_generator extends sql_generator {
      * @return array An array of database specific reserved words
      */
     public static function getReservedWords() {
-        // This file contains the reserved words for MySQL databases
-        // from http://dev.mysql.com/doc/refman/6.0/en/reserved-words.html
+        // This file contains the reserved words for MySQL databases.
         $reserved_words = array (
+            // From http://dev.mysql.com/doc/refman/6.0/en/reserved-words.html.
             'accessible', 'add', 'all', 'alter', 'analyze', 'and', 'as', 'asc',
             'asensitive', 'before', 'between', 'bigint', 'binary',
             'blob', 'both', 'by', 'call', 'cascade', 'case', 'change',
@@ -607,7 +631,13 @@ class mysql_sql_generator extends sql_generator {
             'upgrade', 'usage', 'use', 'using', 'utc_date', 'utc_time',
             'utc_timestamp', 'values', 'varbinary', 'varchar', 'varcharacter',
             'varying', 'when', 'where', 'while', 'with', 'write', 'x509',
-            'xor', 'year_month', 'zerofill'
+            'xor', 'year_month', 'zerofill',
+            // Added in MySQL 8.0, compared to MySQL 5.7:
+            // https://dev.mysql.com/doc/refman/8.0/en/keywords.html#keywords-new-in-current-series.
+            '_filename', 'admin', 'cume_dist', 'dense_rank', 'empty', 'except', 'first_value', 'grouping', 'groups',
+            'json_table', 'lag', 'last_value', 'lead', 'nth_value', 'ntile',
+            'of', 'over', 'percent_rank', 'persist', 'persist_only', 'rank', 'recursive', 'row_number',
+            'system', 'window'
         );
         return $reserved_words;
     }

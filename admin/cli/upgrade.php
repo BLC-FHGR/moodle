@@ -38,7 +38,7 @@ if (function_exists('opcache_reset') and !isset($_SERVER['REMOTE_ADDR'])) {
 define('CLI_SCRIPT', true);
 define('CACHE_DISABLE_ALL', true);
 
-require(dirname(dirname(dirname(__FILE__))).'/config.php');
+require(__DIR__.'/../../config.php');
 require_once($CFG->libdir.'/adminlib.php');       // various admin-only functions
 require_once($CFG->libdir.'/upgradelib.php');     // general upgrade/install related functions
 require_once($CFG->libdir.'/clilib.php');         // cli only functions
@@ -131,10 +131,11 @@ if (!core_plugin_manager::instance()->all_plugins_ok($version, $failed)) {
     cli_error(get_string('pluginschecktodo', 'admin'));
 }
 
+$a = new stdClass();
+$a->oldversion = $oldversion;
+$a->newversion = $newversion;
+
 if ($interactive) {
-    $a = new stdClass();
-    $a->oldversion = $oldversion;
-    $a->newversion = $newversion;
     echo cli_heading(get_string('databasechecking', '', $a)) . PHP_EOL;
 }
 
@@ -187,5 +188,11 @@ upgrade_noncore(true);
 admin_apply_default_settings(NULL, false);
 admin_apply_default_settings(NULL, false);
 
-echo get_string('cliupgradefinished', 'admin')."\n";
+// This needs to happen at the end to ensure it occurs after all caches
+// have been purged for the last time.
+// This will build a cached version of the current theme for the user
+// to immediately start browsing the site.
+upgrade_themes();
+
+echo get_string('cliupgradefinished', 'admin', $a)."\n";
 exit(0); // 0 means success

@@ -30,6 +30,49 @@ require_once($CFG->libdir . '/externallib.php');
 
 
 class core_externallib_testcase extends advanced_testcase {
+    protected $DB;
+
+    public function setUp() {
+        $this->DB = null;
+    }
+
+    public function tearDown() {
+        global $DB;
+        if ($this->DB !== null) {
+            $DB = $this->DB;
+        }
+    }
+
+    /**
+     * Tests for external_settings class.
+     */
+    public function test_external_settings() {
+
+        $settings = \external_settings::get_instance();
+        $currentraw = $settings->get_raw();
+        $currentfilter = $settings->get_filter();
+        $currentfile = $settings->get_file();
+        $currentfileurl = $settings->get_fileurl();
+
+        $this->assertInstanceOf('external_settings', $settings);
+
+        // Check apis.
+        $settings->set_file('plugin.php');
+        $this->assertEquals('plugin.php', $settings->get_file());
+        $settings->set_filter(false);
+        $this->assertFalse($settings->get_filter());
+        $settings->set_fileurl(false);
+        $this->assertFalse($settings->get_fileurl());
+        $settings->set_raw(true);
+        $this->assertTrue($settings->get_raw());
+
+        // Restore original values.
+        $settings->set_file($currentfile);
+        $settings->set_filter($currentfilter);
+        $settings->set_fileurl($currentfileurl);
+        $settings->set_raw($currentraw);
+    }
+
     public function test_validate_params() {
         $params = array('text'=>'aaa', 'someid'=>'6');
         $description = new external_function_parameters(array('someid' => new external_value(PARAM_INT, 'Some int value'),
@@ -85,7 +128,9 @@ class core_externallib_testcase extends advanced_testcase {
         $test = '$$ \pi $$';
         $testformat = FORMAT_MARKDOWN;
         $correct = array($test, $testformat);
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0), $correct);
 
         $settings->set_raw(false);
         $settings->set_filter(true);
@@ -94,48 +139,65 @@ class core_externallib_testcase extends advanced_testcase {
         $testformat = FORMAT_MARKDOWN;
         $correct = array('<span class="filter_mathjaxloader_equation"><p><span class="nolink">$$ \pi $$</span></p>
 </span>', FORMAT_HTML);
+<<<<<<< HEAD
+=======
+        // Function external_format_text should work with context id or context instance.
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0), $correct);
 
         // Filters can be opted out from by the developer.
         $test = '$$ \pi $$';
         $testformat = FORMAT_MARKDOWN;
         $correct = array('<p>$$ \pi $$</p>
 ', FORMAT_HTML);
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, ['filter' => false]), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, ['filter' => false]), $correct);
 
         $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
         $testformat = FORMAT_HTML;
         $correct = array($test, FORMAT_HTML);
         $options = array('allowid' => true);
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, $options), $correct);
 
         $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
         $testformat = FORMAT_HTML;
         $correct = array('<p><a></a><a href="#test">Text</a></p>', FORMAT_HTML);
         $options = new StdClass();
         $options->allowid = false;
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, $options), $correct);
 
         $test = '<p><a id="test"></a><a href="#test">Text</a></p>'."\n".'Newline';
         $testformat = FORMAT_MOODLE;
         $correct = array('<p><a id="test"></a><a href="#test">Text</a></p> Newline', FORMAT_HTML);
         $options = new StdClass();
         $options->newlines = false;
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, $options), $correct);
 
         $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
         $testformat = FORMAT_MOODLE;
         $correct = array('<div class="text_to_html">'.$test.'</div>', FORMAT_HTML);
         $options = new StdClass();
         $options->para = true;
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, $options), $correct);
 
         $test = '<p><a id="test"></a><a href="#test">Text</a></p>';
         $testformat = FORMAT_MOODLE;
         $correct = array($test, FORMAT_HTML);
         $options = new StdClass();
         $options->context = $context;
+        // Function external_format_text should work with context id or context instance.
         $this->assertSame(external_format_text($test, $testformat, $context->id, 'core', '', 0, $options), $correct);
+        $this->assertSame(external_format_text($test, $testformat, $context, 'core', '', 0, $options), $correct);
 
         $settings->set_raw($currentraw);
         $settings->set_filter($currentfilter);
@@ -160,7 +222,9 @@ class core_externallib_testcase extends advanced_testcase {
         $test = '<span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> ' .
             '<script>hi</script> <h3>there</h3>!';
         $correct = $test;
+        // Function external_format_string should work with context id or context instance.
         $this->assertSame($correct, external_format_string($test, $context->id));
+        $this->assertSame($correct, external_format_string($test, $context));
 
         $settings->set_raw(false);
         $settings->set_filter(false);
@@ -168,20 +232,26 @@ class core_externallib_testcase extends advanced_testcase {
         $test = '<span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> ' .
             '<script>hi</script> <h3>there</h3>?';
         $correct = 'ENFR hi there?';
+        // Function external_format_string should work with context id or context instance.
         $this->assertSame($correct, external_format_string($test, $context->id));
+        $this->assertSame($correct, external_format_string($test, $context));
 
         $settings->set_filter(true);
 
         $test = '<span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> ' .
             '<script>hi</script> <h3>there</h3>@';
         $correct = 'EN hi there@';
+        // Function external_format_string should work with context id or context instance.
         $this->assertSame($correct, external_format_string($test, $context->id));
+        $this->assertSame($correct, external_format_string($test, $context));
 
         // Filters can be opted out.
         $test = '<span lang="en" class="multilang">EN</span><span lang="fr" class="multilang">FR</span> ' .
             '<script>hi</script> <h3>there</h3>%';
         $correct = 'ENFR hi there%';
+        // Function external_format_string should work with context id or context instance.
         $this->assertSame($correct, external_format_string($test, $context->id, false, ['filter' => false]));
+        $this->assertSame($correct, external_format_string($test, $context, false, ['filter' => false]));
 
         $this->assertSame("& < > \" '", format_string("& < > \" '", true, ['escape' => false]));
 
@@ -245,7 +315,7 @@ class core_externallib_testcase extends advanced_testcase {
         $singlestructure['object'] = $object;
         $singlestructure['value2'] = 'Some text';
         $testdata = array($singlestructure);
-        $this->setExpectedException('invalid_response_exception');
+        $this->expectException('invalid_response_exception');
         $cleanedvalue = external_api::clean_returnvalue($returndesc, $testdata);
     }
     /*
@@ -292,7 +362,7 @@ class core_externallib_testcase extends advanced_testcase {
         $this->assertEquals($realcontext, $fetchedcontext);
 
         // Passing wrong level.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         $fetchedcontext = test_exernal_api::get_context_wrapper(array("contextlevel" => "random", "instanceid" => $course->id));
     }
 
@@ -303,7 +373,7 @@ class core_externallib_testcase extends advanced_testcase {
         global $USER;
 
         // Call without correct context details.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         test_exernal_api::get_context_wrapper(array('roleid' => 3, 'userid' => $USER->id));
     }
 
@@ -314,7 +384,7 @@ class core_externallib_testcase extends advanced_testcase {
         global $USER;
 
         // Call without correct context details.
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         test_exernal_api::get_context_wrapper(array('roleid' => 3, 'userid' => $USER->id, 'contextlevel' => "course"));
     }
 
@@ -327,7 +397,7 @@ class core_externallib_testcase extends advanced_testcase {
         // Call without correct context details.
         $this->resetAfterTest(true);
         $course = self::getDataGenerator()->create_course();
-        $this->setExpectedException('invalid_parameter_exception');
+        $this->expectException('invalid_parameter_exception');
         test_exernal_api::get_context_wrapper(array('roleid' => 3, 'userid' => $USER->id, 'instanceid' => $course->id));
     }
 
@@ -460,6 +530,100 @@ class core_externallib_testcase extends advanced_testcase {
         $this->assertSame($beforecourse, $COURSE);
     }
 
+    /**
+     * Text external_util::get_area_files
+     */
+    public function test_external_util_get_area_files() {
+        global $CFG, $DB;
+
+        $this->DB = $DB;
+        $DB = $this->getMockBuilder('moodle_database')->getMock();
+
+        $content = base64_encode("Let us create a nice simple file.");
+        $timemodified = 102030405;
+        $itemid = 42;
+        $filesize = strlen($content);
+
+        $DB->method('get_records_sql')->willReturn([
+            (object) [
+                'filename'      => 'example.txt',
+                'filepath'      => '/',
+                'mimetype'      => 'text/plain',
+                'filesize'      => $filesize,
+                'timemodified'  => $timemodified,
+                'itemid'        => $itemid,
+                'pathnamehash'  => sha1('/example.txt'),
+            ],
+        ]);
+
+        $component = 'mod_foo';
+        $filearea = 'area';
+        $context = 12345;
+
+        $expectedfiles[] = array(
+            'filename' => 'example.txt',
+            'filepath' => '/',
+            'fileurl' => "{$CFG->wwwroot}/webservice/pluginfile.php/{$context}/{$component}/{$filearea}/{$itemid}/example.txt",
+            'timemodified' => $timemodified,
+            'filesize' => $filesize,
+            'mimetype' => 'text/plain',
+            'isexternalfile' => false,
+        );
+        // Get all the files for the area.
+        $files = external_util::get_area_files($context, $component, $filearea, false);
+        $this->assertEquals($expectedfiles, $files);
+
+        // Get just the file indicated by $itemid.
+        $files = external_util::get_area_files($context, $component, $filearea, $itemid);
+        $this->assertEquals($expectedfiles, $files);
+
+    }
+
+    /**
+     * Text external files structure.
+     */
+    public function test_external_files() {
+
+        $description = new external_files();
+
+        // First check that the expected default values and keys are returned.
+        $expectedkeys = array_flip(array('filename', 'filepath', 'filesize', 'fileurl', 'timemodified', 'mimetype',
+            'isexternalfile', 'repositorytype'));
+        $returnedkeys = array_flip(array_keys($description->content->keys));
+        $this->assertEquals($expectedkeys, $returnedkeys);
+        $this->assertEquals('List of files.', $description->desc);
+        $this->assertEquals(VALUE_REQUIRED, $description->required);
+        foreach ($description->content->keys as $key) {
+            $this->assertEquals(VALUE_OPTIONAL, $key->required);
+        }
+
+    }
+
+    /**
+     * Test default time for user created tokens.
+     */
+    public function test_user_created_tokens_duration() {
+        global $CFG, $DB;
+        $this->resetAfterTest(true);
+
+        $CFG->enablewebservices = 1;
+        $CFG->enablemobilewebservice = 1;
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $service = $DB->get_record('external_services', array('shortname' => MOODLE_OFFICIAL_MOBILE_SERVICE, 'enabled' => 1));
+
+        $this->setUser($user1);
+        $timenow = time();
+        $token = external_generate_token_for_current_user($service);
+        $this->assertGreaterThanOrEqual($timenow + $CFG->tokenduration, $token->validuntil);
+
+        // Change token default time.
+        $this->setUser($user2);
+        set_config('tokenduration', DAYSECS);
+        $token = external_generate_token_for_current_user($service);
+        $timenow = time();
+        $this->assertLessThanOrEqual($timenow + DAYSECS, $token->validuntil);
+    }
 }
 
 /*

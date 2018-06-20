@@ -64,6 +64,56 @@ class core_weblib_testcase extends advanced_testcase {
         $CFG->formatstringstriptags = $originalformatstringstriptags;
     }
 
+    /**
+     * The format string static caching should include the filters option to make
+     * sure filters are correctly applied when requested.
+     */
+    public function test_format_string_static_caching_with_filters() {
+        global $CFG;
+
+        $this->resetAfterTest(true);
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course();
+        $user = $generator->create_user();
+        $rawstring = 'Shortname <a href="#">link</a> curseword';
+        $expectednofilter = strip_links($rawstring);
+        $expectedfilter = 'Shortname link \*\**';
+        $striplinks = true;
+        $context = context_course::instance($course->id);
+        $options = [
+            'context' => $context,
+            'escape' => true,
+            'filter' => false
+        ];
+
+        $this->setUser($user);
+
+        // Format the string without filters. It should just strip the
+        // links.
+        $nofilterresult = format_string($rawstring, $striplinks, $options);
+        $this->assertEquals($expectednofilter, $nofilterresult);
+
+        // Add the censor filter. Make sure it's enabled globally.
+        $CFG->filterall = true;
+        $CFG->stringfilters = 'censor';
+        $CFG->filter_censor_badwords = 'curseword';
+        filter_set_global_state('censor', TEXTFILTER_ON);
+        filter_set_local_state('censor', $context->id, TEXTFILTER_ON);
+        // This time we want to apply the filters.
+        $options['filter'] = true;
+        $filterresult = format_string($rawstring, $striplinks, $options);
+        $this->assertRegExp("/$expectedfilter/", $filterresult);
+
+        filter_set_local_state('censor', $context->id, TEXTFILTER_OFF);
+
+        // Confirm that we get back the cached string. The result should be
+        // the same as the filtered text above even though we've disabled the
+        // censor filter in between.
+        $cachedresult = format_string($rawstring, $striplinks, $options);
+        $this->assertRegExp("/$expectedfilter/", $cachedresult);
+    }
+
     public function test_s() {
         // Special cases.
         $this->assertSame('0', s(0));
@@ -86,6 +136,32 @@ class core_weblib_testcase extends advanced_testcase {
         $this->assertSame('An entity: &#1073;.', s('An entity: &#1073;.'));
         $this->assertSame('An entity: &amp;amp;.', s('An entity: &amp;.'));
         $this->assertSame('Not an entity: &amp;amp;#x09ff;.', s('Not an entity: &amp;#x09ff;.'));
+
+        // Test all ASCII characters (0-127).
+        for ($i = 0; $i <= 127; $i++) {
+            $character = chr($i);
+            $result = s($character);
+            switch ($character) {
+                case '"' :
+                    $this->assertSame('&quot;', $result);
+                    break;
+                case '&' :
+                    $this->assertSame('&amp;', $result);
+                    break;
+                case "'" :
+                    $this->assertSame('&#039;', $result);
+                    break;
+                case '<' :
+                    $this->assertSame('&lt;', $result);
+                    break;
+                case '>' :
+                    $this->assertSame('&gt;', $result);
+                    break;
+                default:
+                    $this->assertSame($character, $result);
+                    break;
+            }
+        }
     }
 
     public function test_format_text_email() {
@@ -258,10 +334,11 @@ class core_weblib_testcase extends advanced_testcase {
 
     /**
      * Test set bad scheme on Moodle URL objects.
+     *
+     * @expectedException coding_exception
      */
     public function test_moodle_url_set_bad_scheme() {
         $url = new moodle_url('http://moodle.org/foo/bar');
-        $this->setExpectedException('coding_exception');
         $url->set_scheme('not a valid $ scheme');
     }
 
@@ -638,4 +715,176 @@ EXPECTED;
         );
     }
 
+    /**
+     * Tests for validate_email() function.
+     */
+    public function test_validate_email() {
+
+        $this->assertTrue(validate_email('moodle@example.com'));
+        $this->assertTrue(validate_email('moodle@localhost.local'));
+        $this->assertTrue(validate_email('verp_email+is=mighty@moodle.org'));
+        $this->assertTrue(validate_email("but_potentially'dangerous'too@example.org"));
+        $this->assertTrue(validate_email('posts+AAAAAAAAAAIAAAAAAAAGQQAAAAABFSXz1eM/P/lR2bYyljM+@posts.moodle.org'));
+
+        $this->assertFalse(validate_email('moodle@localhost'));
+        $this->assertFalse(validate_email('"attacker\\" -oQ/tmp/ -X/var/www/vhost/moodle/backdoor.php  some"@email.com'));
+        $this->assertFalse(validate_email("moodle@example.com>\r\nRCPT TO:<victim@example.com"));
+    }
+
+    /**
+     * Data provider for test_get_file_argument.
+     */
+    public static function provider_get_file_argument() {
+        return array(
+            // Serving SCORM content w/o HTTP GET params.
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 0, '/3854/mod_scorm/content/1/swf.html'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 1, '/3854/mod_scorm/content/1/swf.html'),
+            // Serving SCORM content w/ HTTP GET 'file' as first param.
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 0, '/3854/mod_scorm/content/1/swf.html'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 1, '/3854/mod_scorm/content/1/swf.html'),
+            // Serving SCORM content w/ HTTP GET 'file' not as first param.
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html?foo=bar&file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 0, '/3854/mod_scorm/content/1/swf.html'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/mod_scorm/content/1/swf.html?foo=bar&file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/mod_scorm/content/1/swf.html',
+                ), 1, '/3854/mod_scorm/content/1/swf.html'),
+            // Serving content from a generic activity w/ HTTP GET 'file', still forcing slash arguments.
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/whatever/content/1/swf.html?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/whatever/content/1/swf.html',
+                ), 0, '/3854/whatever/content/1/swf.html'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/3854/whatever/content/1/swf.html?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/3854/whatever/content/1/swf.html',
+                ), 1, '/3854/whatever/content/1/swf.html'),
+            // Serving content from a generic activity w/ HTTP GET 'file', still forcing slash arguments (edge case).
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/',
+                ), 0, 'video_.swf'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php/?file=video_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                    'PATH_INFO' => '/',
+                ), 1, 'video_.swf'),
+            // Serving content from a generic activity w/ HTTP GET 'file', w/o forcing slash arguments.
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php?file=%2F3854%2Fwhatever%2Fcontent%2F1%2Fswf.html%3Ffile%3Dvideo_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                ), 0, '/3854/whatever/content/1/swf.html?file=video_.swf'),
+            array(array(
+                    'SERVER_SOFTWARE' => 'Apache',
+                    'SERVER_PORT' => '80',
+                    'REQUEST_METHOD' => 'GET',
+                    'REQUEST_URI' => '/pluginfile.php?file=%2F3854%2Fwhatever%2Fcontent%2F1%2Fswf.html%3Ffile%3Dvideo_.swf',
+                    'SCRIPT_NAME' => '/pluginfile.php',
+                ), 1, '/3854/whatever/content/1/swf.html?file=video_.swf'),
+        );
+    }
+
+    /**
+     * Tests for get_file_argument() function.
+     *
+     * @param array $server mockup for $_SERVER.
+     * @param string $cfgslasharguments slasharguments setting.
+     * @param string|false $expected Expected value.
+     * @dataProvider provider_get_file_argument
+     */
+    public function test_get_file_argument($server, $cfgslasharguments, $expected) {
+        global $CFG;
+
+        // Overwrite the related settings.
+        $currentsetting = $CFG->slasharguments;
+        $CFG->slasharguments = $cfgslasharguments;
+        // Mock global $_SERVER.
+        $currentserver = isset($_SERVER) ? $_SERVER : null;
+        $_SERVER = $server;
+        initialise_fullme();
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            $this->fail('Only HTTP GET mocked request allowed.');
+        }
+        if (empty($_SERVER['REQUEST_URI'])) {
+            $this->fail('Invalid HTTP GET mocked request.');
+        }
+        // Mock global $_GET.
+        $currentget = isset($_GET) ? $_GET : null;
+        $_GET = array();
+        $querystring = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
+        if (!empty($querystring)) {
+            $_SERVER['QUERY_STRING'] = $querystring;
+            parse_str($querystring, $_GET);
+        }
+
+        $this->assertEquals($expected, get_file_argument());
+
+        // Restore the current settings and global values.
+        $CFG->slasharguments = $currentsetting;
+        if (is_null($currentserver)) {
+            unset($_SERVER);
+        } else {
+            $_SERVER = $currentserver;
+        }
+        if (is_null($currentget)) {
+            unset($_GET);
+        } else {
+            $_GET = $currentget;
+        }
+    }
 }

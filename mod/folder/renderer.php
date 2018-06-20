@@ -59,38 +59,41 @@ class mod_folder_renderer extends plugin_renderer_base {
         $foldertree = new folder_tree($folder, $cm);
         if ($folder->display == FOLDER_DISPLAY_INLINE) {
             // Display module name as the name of the root directory.
-            $foldertree->dir['dirname'] = $cm->get_formatted_name();
+            $foldertree->dir['dirname'] = $cm->get_formatted_name(array('escape' => false));
         }
         $output .= $this->output->box($this->render($foldertree),
                 'generalbox foldertree');
 
         // Do not append the edit button on the course page.
-        if ($folder->display != FOLDER_DISPLAY_INLINE) {
-            $containercontents = '';
-            $downloadable = folder_archive_available($folder, $cm);
+        $downloadable = folder_archive_available($folder, $cm);
 
-            if ($downloadable) {
-                $downloadbutton = $this->output->single_button(
-                    new moodle_url('/mod/folder/download_folder.php', array('id' => $cm->id)),
-                    get_string('downloadfolder', 'folder')
-                );
+        $buttons = '';
+        if ($downloadable) {
+            $downloadbutton = $this->output->single_button(
+                new moodle_url('/mod/folder/download_folder.php', array('id' => $cm->id)),
+                get_string('downloadfolder', 'folder')
+            );
 
-                $output .= $this->output->container(
-                    $downloadbutton,
-                    'mdl-align folder-download-button');
-            }
-
-            if (has_capability('mod/folder:managefiles', $context)) {
-                $editbutton = $this->output->single_button(
-                    new moodle_url('/mod/folder/edit.php', array('id' => $cm->id)),
-                    get_string('edit')
-                );
-
-                $output .= $this->output->container(
-                    $editbutton,
-                    'mdl-align folder-edit-button');
-            }
+            $buttons .= $downloadbutton;
         }
+
+        // Display the "Edit" button if current user can edit folder contents.
+        // Do not display it on the course page for the teachers because there
+        // is an "Edit settings" button right next to it with the same functionality.
+        if (has_capability('mod/folder:managefiles', $context) &&
+            ($folder->display != FOLDER_DISPLAY_INLINE || !has_capability('moodle/course:manageactivities', $context))) {
+            $editbutton = $this->output->single_button(
+                new moodle_url('/mod/folder/edit.php', array('id' => $cm->id)),
+                get_string('edit')
+            );
+
+            $buttons .= $editbutton;
+        }
+
+        if ($buttons) {
+            $output .= $this->output->box($buttons, 'generalbox folderbuttons');
+        }
+
         return $output;
     }
 
@@ -131,14 +134,15 @@ class mod_folder_renderer extends plugin_renderer_base {
             $filename = $file->get_filename();
             $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
                     $file->get_filearea(), $file->get_itemid(), $file->get_filepath(), $filename, false);
+            $filenamedisplay = clean_filename($filename);
             if (file_extension_in_typegroup($filename, 'web_image')) {
                 $image = $url->out(false, array('preview' => 'tinyicon', 'oid' => $file->get_timemodified()));
                 $image = html_writer::empty_tag('img', array('src' => $image));
             } else {
-                $image = $this->output->pix_icon(file_file_icon($file, 24), $filename, 'moodle');
+                $image = $this->output->pix_icon(file_file_icon($file, 24), $filenamedisplay, 'moodle');
             }
             $filename = html_writer::tag('span', $image, array('class' => 'fp-icon')).
-                    html_writer::tag('span', $filename, array('class' => 'fp-filename'));
+                    html_writer::tag('span', $filenamedisplay, array('class' => 'fp-filename'));
             $filename = html_writer::tag('span',
                     html_writer::link($url->out(false, array('forcedownload' => 1)), $filename),
                     array('class' => 'fp-filename-icon'));

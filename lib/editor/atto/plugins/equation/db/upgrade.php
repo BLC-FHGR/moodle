@@ -30,16 +30,18 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_atto_equation_upgrade($oldversion) {
-    require_once(__DIR__ . '/upgradelib.php');
+    global $CFG;
 
-    if ($oldversion < 2015083100) {
-        atto_equation_update_librarygroup4_setting();
+    // Automatically generated Moodle v3.2.0 release upgrade line.
+    // Put any upgrade step following this.
 
-        // Atto equation savepoint reached.
-        upgrade_plugin_savepoint(true, 2015083100, 'atto', 'equation');
-    }
+    // Automatically generated Moodle v3.3.0 release upgrade line.
+    // Put any upgrade step following this.
 
-    // Moodle v3.0.0 release upgrade line.
+    // Automatically generated Moodle v3.4.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    // Automatically generated Moodle v3.5.0 release upgrade line.
     // Put any upgrade step following this.
 
     // Moodle v3.1.0 release upgrade line.

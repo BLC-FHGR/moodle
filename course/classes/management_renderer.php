@@ -244,7 +244,7 @@ class core_course_management_renderer extends plugin_renderer_base {
             );
         } else {
             $icon = $this->output->pix_icon(
-                'i/navigationitem',
+                'i/empty',
                 '',
                 'moodle',
                 array('class' => 'tree-icon', 'title' => get_string('showcategory', 'moodle', $text))
@@ -288,7 +288,7 @@ class core_course_management_renderer extends plugin_renderer_base {
         $html .= html_writer::end_div();
         if ($isexpanded) {
             $html .= html_writer::start_tag('ul',
-                array('class' => 'ml', 'role' => 'group', 'id' => 'subcategoryof'.$category->id));
+                array('class' => 'ml-1', 'role' => 'group', 'id' => 'subcategoryof'.$category->id));
             $catatlevel = \core_course\management\helper::get_expanded_categories($category->path);
             $catatlevel[] = array_shift($selectedcategories);
             $catatlevel = array_unique($catatlevel);
@@ -369,6 +369,12 @@ class core_course_management_renderer extends plugin_renderer_base {
         return $this->render($menu);
     }
 
+    public function render_action_menu($menu) {
+        global $OUTPUT;
+
+        return $OUTPUT->render($menu);
+    }
+
     /**
      * Renders bulk actions for categories.
      *
@@ -416,7 +422,7 @@ class core_course_management_renderer extends plugin_renderer_base {
                     'resortcategoriesby',
                     'name',
                     false,
-                    array('aria-label' => get_string('selectcategorysortby'))
+                    array('aria-label' => get_string('selectcategorysortby'), 'class' => 'm-t-1')
                 )
             );
             $form .= html_writer::div(
@@ -435,15 +441,16 @@ class core_course_management_renderer extends plugin_renderer_base {
                     'resortcoursesby',
                     'fullname',
                     false,
-                    array('aria-label' => get_string('selectcoursesortby'))
+                    array('aria-label' => get_string('selectcoursesortby'), 'class' => 'm-t-1')
                 )
             );
-            $form .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'bulksort', 'value' => get_string('sort')));
+            $form .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'bulksort',
+                'value' => get_string('sort'), 'class' => 'btn btn-secondary m-y-1'));
             $form .= html_writer::end_div();
 
-            $html .= html_writer::start_div('detail-pair row yui3-g');
-            $html .= html_writer::div(html_writer::span(get_string('sorting')), 'pair-key span3 yui3-u-1-4');
-            $html .= html_writer::div($form, 'pair-value span9 yui3-u-3-4');
+            $html .= html_writer::start_div('detail-pair row yui3-g m-y-1');
+            $html .= html_writer::div(html_writer::span(get_string('sorting')), 'pair-key span3 col-md-3 yui3-u-1-4');
+            $html .= html_writer::div($form, 'pair-value span9 col-md-9 yui3-u-3-4');
             $html .= html_writer::end_div();
         }
         if (coursecat::can_change_parent_any()) {
@@ -457,9 +464,10 @@ class core_course_management_renderer extends plugin_renderer_base {
                 'movecategoriesto',
                 '',
                 array('' => 'choosedots'),
-                array('aria-labelledby' => 'moveselectedcategoriesto')
+                array('aria-labelledby' => 'moveselectedcategoriesto', 'class' => 'm-r-1')
             );
-            $submit = array('type' => 'submit', 'name' => 'bulkmovecategories', 'value' => get_string('move'));
+            $submit = array('type' => 'submit', 'name' => 'bulkmovecategories', 'value' => get_string('move'),
+                'class' => 'btn btn-secondary');
             $html .= $this->detail_pair(
                 html_writer::span(get_string('moveselectedcategoriesto'), '', array('id' => 'moveselectedcategoriesto')),
                 $select . html_writer::empty_tag('input', $submit)
@@ -476,9 +484,11 @@ class core_course_management_renderer extends plugin_renderer_base {
      * @param course_in_list $course The currently selected course.
      * @param int $page The page being displayed.
      * @param int $perpage The number of courses to display per page.
+     * @param string|null $viewmode The view mode the page is in, one out of 'default', 'combined', 'courses' or 'categories'.
      * @return string
      */
-    public function course_listing(coursecat $category = null, course_in_list $course = null, $page = 0, $perpage = 20) {
+    public function course_listing(coursecat $category = null, course_in_list $course = null, $page = 0, $perpage = 20,
+        $viewmode = 'default') {
 
         if ($category === null) {
             $html = html_writer::start_div('select-a-category');
@@ -519,13 +529,13 @@ class core_course_management_renderer extends plugin_renderer_base {
         $html .= html_writer::tag('h3', $category->get_formatted_name(),
             array('id' => 'course-listing-title', 'tabindex' => '0'));
         $html .= $this->course_listing_actions($category, $course, $perpage);
-        $html .= $this->listing_pagination($category, $page, $perpage);
-        $html .= html_writer::start_tag('ul', array('class' => 'ml', 'role' => 'group'));
+        $html .= $this->listing_pagination($category, $page, $perpage, false, $viewmode);
+        $html .= html_writer::start_tag('ul', array('class' => 'ml course-list', 'role' => 'group'));
         foreach ($category->get_courses($options) as $listitem) {
             $html .= $this->course_listitem($category, $listitem, $courseid);
         }
         $html .= html_writer::end_tag('ul');
-        $html .= $this->listing_pagination($category, $page, $perpage, true);
+        $html .= $this->listing_pagination($category, $page, $perpage, true, $viewmode);
         $html .= $this->course_bulk_actions($category);
         $html .= html_writer::end_div();
         return $html;
@@ -538,9 +548,10 @@ class core_course_management_renderer extends plugin_renderer_base {
      * @param int $page The current page.
      * @param int $perpage The number of courses to display per page.
      * @param bool $showtotals Set to true to show the total number of courses and what is being displayed.
+     * @param string|null $viewmode The view mode the page is in, one out of 'default', 'combined', 'courses' or 'categories'.
      * @return string
      */
-    protected function listing_pagination(coursecat $category, $page, $perpage, $showtotals = false) {
+    protected function listing_pagination(coursecat $category, $page, $perpage, $showtotals = false, $viewmode = 'default') {
         $html = '';
         $totalcourses = $category->get_courses_count();
         $totalpages = ceil($totalcourses / $perpage);
@@ -574,7 +585,12 @@ class core_course_management_renderer extends plugin_renderer_base {
             }
         }
         $items = array();
-        $baseurl = new moodle_url('/course/management.php', array('categoryid' => $category->id));
+        if ($viewmode !== 'default') {
+            $baseurl = new moodle_url('/course/management.php', array('categoryid' => $category->id,
+                'view' => $viewmode));
+        } else {
+            $baseurl = new moodle_url('/course/management.php', array('categoryid' => $category->id));
+        }
         if ($page > 0) {
             $items[] = $this->action_button(new moodle_url($baseurl, array('page' => 0)), get_string('first'));
             $items[] = $this->action_button(new moodle_url($baseurl, array('page' => $page - 1)), get_string('prev'));
@@ -774,9 +790,10 @@ class core_course_management_renderer extends plugin_renderer_base {
                 'movecoursesto',
                 '',
                 array('' => 'choosedots'),
-                array('aria-labelledby' => 'moveselectedcoursesto')
+                array('aria-labelledby' => 'moveselectedcoursesto', 'class' => 'm-r-1')
             );
-            $submit = array('type' => 'submit', 'name' => 'bulkmovecourses', 'value' => get_string('move'));
+            $submit = array('type' => 'submit', 'name' => 'bulkmovecourses', 'value' => get_string('move'),
+                'class' => 'btn btn-secondary');
             $html .= $this->detail_pair(
                 html_writer::span(get_string('moveselectedcoursesto'), '', array('id' => 'moveselectedcoursesto')),
                 $select . html_writer::empty_tag('input', $submit)
@@ -802,7 +819,8 @@ class core_course_management_renderer extends plugin_renderer_base {
             array('' => 'choosedots'),
             array('aria-labelledby' => 'moveselectedcoursesto')
         );
-        $submit = array('type' => 'submit', 'name' => 'bulkmovecourses', 'value' => get_string('move'));
+        $submit = array('type' => 'submit', 'name' => 'bulkmovecourses', 'value' => get_string('move'),
+            'class' => 'btn btn-secondary');
         $html .= $this->detail_pair(
             html_writer::span(get_string('moveselectedcoursesto'), '', array('id' => 'moveselectedcoursesto')),
             $select . html_writer::empty_tag('input', $submit)
@@ -841,8 +859,8 @@ class core_course_management_renderer extends plugin_renderer_base {
      */
     protected function detail_pair($key, $value, $class ='') {
         $html = html_writer::start_div('detail-pair row yui3-g '.preg_replace('#[^a-zA-Z0-9_\-]#', '-', $class));
-        $html .= html_writer::div(html_writer::span($key), 'pair-key span3 yui3-u-1-4');
-        $html .= html_writer::div(html_writer::span($value), 'pair-value span9 yui3-u-3-4');
+        $html .= html_writer::div(html_writer::span($key), 'pair-key span3 col-md-3 yui3-u-1-4');
+        $html .= html_writer::div(html_writer::span($value), 'pair-value span9 col-md-9 m-b-1 yui3-u-3-4');
         $html .= html_writer::end_div();
         return $html;
     }
@@ -940,7 +958,7 @@ class core_course_management_renderer extends plugin_renderer_base {
     public function grid_column_start($size, $id = null, $class = null) {
 
         // Calculate Bootstrap grid sizing.
-        $bootstrapclass = 'span'.$size;
+        $bootstrapclass = 'span'.$size.' col-md-'.$size;
 
         // Calculate YUI grid sizing.
         if ($size === 12) {
@@ -1316,13 +1334,14 @@ class core_course_management_renderer extends plugin_renderer_base {
         $strsearchcourses = get_string("searchcourses");
         $searchurl = new moodle_url('/course/management.php');
 
-        $output = html_writer::start_tag('form', array('id' => $formid, 'action' => $searchurl, 'method' => 'get'));
-        $output .= html_writer::start_tag('fieldset', array('class' => 'coursesearchbox invisiblefieldset'));
-        $output .= html_writer::tag('label', $strsearchcourses.': ', array('for' => $inputid));
-        $output .= html_writer::empty_tag('input', array('type' => 'text', 'id' => $inputid,
-            'size' => $inputsize, 'name' => 'search', 'value' => s($value)));
-        $output .= html_writer::empty_tag('input', array('type' => 'submit',
-            'value' => get_string('go')));
+        $output = html_writer::start_tag('form', array('id' => $formid, 'action' => $searchurl, 'method' => 'get',
+            'class' => 'form-inline'));
+        $output .= html_writer::start_tag('fieldset', array('class' => 'coursesearchbox invisiblefieldset m-y-1'));
+        $output .= html_writer::tag('label', $strsearchcourses, array('for' => $inputid));
+        $output .= html_writer::empty_tag('input', array('type' => 'text', 'id' => $inputid, 'size' => $inputsize,
+            'name' => 'search', 'value' => s($value), 'class' => 'form-control m-x-1'));
+        $output .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('go'),
+            'class' => 'btn btn-secondary'));
         $output .= html_writer::end_tag('fieldset');
         $output .= html_writer::end_tag('form');
 

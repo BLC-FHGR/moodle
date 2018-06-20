@@ -207,6 +207,12 @@ class zip_archive extends file_archive {
             $this->mode = null;
             $this->namelookup = null;
             $this->modified = false;
+            // If the existing archive is already empty, we didn't change it.  Don't bother completing a save.
+            // This is important when we are inspecting archives that we might not have write permission to.
+            if (@filesize($this->archivepathname) == 22 &&
+                    @file_get_contents($this->archivepathname) === base64_decode(self::$emptyzipcontent)) {
+                return true;
+            }
             @unlink($this->archivepathname);
             $data = base64_decode(self::$emptyzipcontent);
             if (!file_put_contents($this->archivepathname, $data)) {
@@ -656,6 +662,7 @@ class zip_archive extends file_archive {
                             case 'ISO-8859-6': $encoding = 'CP720'; break;
                             case 'ISO-8859-7': $encoding = 'CP737'; break;
                             case 'ISO-8859-8': $encoding = 'CP862'; break;
+                            case 'WINDOWS-1251': $encoding = 'CP866'; break;
                             case 'EUC-JP':
                             case 'UTF-8':
                                 if ($winchar = get_string('localewincharset', 'langconfig')) {

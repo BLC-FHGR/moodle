@@ -17,7 +17,11 @@ defined('MOODLE_INTERNAL') || exit();
 
 /**
  * Unit tests for the subscription class.
+<<<<<<< HEAD
  * @since 3.1.1
+=======
+ * @since 3.2.0
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
  *
  * @package    tool_monitor
  * @category   test
@@ -42,7 +46,14 @@ class tool_monitor_subscription_testcase extends advanced_testcase {
         $sub->id = 100;
         $sub->name = 'My test rule';
         $sub->courseid = 20;
+<<<<<<< HEAD
         $this->subscription = $this->getMock('\tool_monitor\subscription',null, array($sub));
+=======
+        $mockbuilder = $this->getMockBuilder('\tool_monitor\subscription');
+        $mockbuilder->setMethods(null);
+        $mockbuilder->setConstructorArgs(array($sub));
+        $this->subscription = $mockbuilder->getMock();
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     }
 
     /**
@@ -56,10 +67,18 @@ class tool_monitor_subscription_testcase extends advanced_testcase {
 
     /**
      * Test for the magic __get method.
+<<<<<<< HEAD
      */
     public function test_magic_get() {
         $this->assertEquals(20, $this->subscription->courseid);
         $this->setExpectedException('coding_exception');
+=======
+     *
+     * @expectedException coding_exception
+     */
+    public function test_magic_get() {
+        $this->assertEquals(20, $this->subscription->courseid);
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         $this->subscription->ruleid;
     }
 }

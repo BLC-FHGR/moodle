@@ -118,7 +118,7 @@ class core_search_generator extends component_generator_base {
         }
 
         if (!isset($options->contextid)) {
-            $info->contextid = \context_system::instance()->id;
+            $info->contextid = \context_course::instance(SITEID)->id;
         } else {
             $info->contextid = $options->contextid;
         }
@@ -192,6 +192,10 @@ class core_search_generator extends component_generator_base {
             $content = $options->content;
         } else {
             $content = 'File contents';
+        }
+
+        if (isset($options->timemodified)) {
+            $filerecord['timemodified'] = $options->timemodified;
         }
 
         $fs = get_file_storage();

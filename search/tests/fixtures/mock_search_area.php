@@ -27,7 +27,16 @@ namespace core_mocksearch\search;
 
 defined('MOODLE_INTERNAL') || die;
 
-class mock_search_area extends \core_search\area\base {
+class mock_search_area extends \core_search\base {
+
+    /** @var float If set, waits when doing the indexing query (seconds) */
+    protected $indexingdelay = 0;
+
+    /**
+     * Multiple context level so we can test get_areas_user_accesses.
+     * @var int[]
+     */
+    protected static $levels = [CONTEXT_COURSE, CONTEXT_USER];
 
     /**
      * Multiple context level so we can test get_areas_user_accesses.
@@ -47,6 +56,14 @@ class mock_search_area extends \core_search\area\base {
     public function get_recordset_by_timestamp($modifiedfrom = 0) {
         global $DB;
 
+<<<<<<< HEAD
+=======
+        if ($this->indexingdelay) {
+            \testable_core_search::fake_current_time(
+                    \core_search\manager::get_current_time() + $this->indexingdelay);
+        }
+
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         $sql = "SELECT * FROM {temp_mock_search_area} WHERE timemodified >= ? ORDER BY timemodified ASC";
         return $DB->get_recordset_sql($sql, array($modifiedfrom));
     }
@@ -74,7 +91,11 @@ class mock_search_area extends \core_search\area\base {
         $doc->set('title', $info->title);
         $doc->set('content', $info->content);
         $doc->set('description1', $info->description1);
+<<<<<<< HEAD
         $doc->set('description1', $info->description2);
+=======
+        $doc->set('description2', $info->description2);
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
         $doc->set('contextid', $info->contextid);
         $doc->set('courseid', $info->courseid);
         $doc->set('userid', $info->userid);
@@ -122,4 +143,18 @@ class mock_search_area extends \core_search\area\base {
     public function get_context_url(\core_search\document $doc) {
         return new \moodle_url('/index.php');
     }
+
+    public function get_visible_name($lazyload = false) {
+        return 'Mock search area';
+    }
+
+    /**
+     * Sets a fake delay to simulate time taken doing the indexing query.
+     *
+     * @param float $seconds Delay in seconds for each time indexing query is called
+     */
+    public function set_indexing_delay($seconds) {
+        $this->indexingdelay = $seconds;
+    }
+
 }

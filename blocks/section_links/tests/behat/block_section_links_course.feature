@@ -6,8 +6,13 @@ Feature: The section links block allows users to quickly navigate around a moodl
 
   Background:
     Given the following "courses" exist:
+<<<<<<< HEAD
       | fullname | shortname | category |
       | Course 1 | C1        | 0        |
+=======
+      | fullname | shortname | category | numsections | coursedisplay |
+      | Course 1 | C1        | 0        | 20          | 1             |
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And the following "users" exist:
       | username | firstname | lastname | email |
       | teacher1 | Teacher   | 1        | teacher1@example.com |
@@ -15,18 +20,25 @@ Feature: The section links block allows users to quickly navigate around a moodl
       | user     | course | role |
       | teacher1 | C1     | editingteacher |
     And I log in as "teacher1"
+<<<<<<< HEAD
     And I follow "Course 1"
     And I turn editing mode on
+=======
+    And I am on "Course 1" course homepage with editing mode on
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I add a "Assignment" to section "5" and I fill the form with:
       | Assignment name | Test assignment 1 |
       | Description | Offline text |
       | assignsubmission_file_enabled | 0 |
+<<<<<<< HEAD
     And I navigate to "Edit settings" node in "Course administration"
     And I set the following fields to these values:
       | id_numsections   | 20 |
       | id_coursedisplay | Show one section per page |
     And I press "Save and display"
 
+=======
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
 
   Scenario: Add the section links block to a course.
     Given I add the "Section links" block

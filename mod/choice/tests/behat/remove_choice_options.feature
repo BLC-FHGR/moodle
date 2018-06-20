@@ -19,8 +19,12 @@ Feature: Update a choice activity removing options
       | student1 | C1 | student |
       | student2 | C1 | student |
     And I log in as "teacher1"
+<<<<<<< HEAD
     And I follow "Course 1"
     And I turn editing mode on
+=======
+    And I am on "Course 1" course homepage with editing mode on
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I add a "Choice" to section "1" and I fill the form with:
       | Choice name | Choice name |
       | Description | Choice Description |
@@ -29,22 +33,37 @@ Feature: Update a choice activity removing options
       | option[2] | Option 3 |
     And I log out
     And I log in as "student1"
+<<<<<<< HEAD
     And I follow "Course 1"
+=======
+    And I am on "Course 1" course homepage
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I choose "Option 3" from "Choice name" choice activity
     And I should see "Your selection: Option 3"
     And I should see "Your choice has been saved"
     And I log out
     And I log in as "student2"
+<<<<<<< HEAD
     And I follow "Course 1"
+=======
+    And I am on "Course 1" course homepage
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I choose "Option 2" from "Choice name" choice activity
     And I should see "Your selection: Option 2"
     And I should see "Your choice has been saved"
     And I log out
     When I log in as "teacher1"
+<<<<<<< HEAD
     And I follow "Course 1"
     And I follow "Choice name"
     And I should see "View 2 responses"
     And I navigate to "Edit settings" node in "Choice administration"
+=======
+    And I am on "Course 1" course homepage
+    And I follow "Choice name"
+    And I should see "View 2 responses"
+    And I navigate to "Edit settings" in current page administration
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I set the field "option[2]" to ""
     And I press "Save and display"
     Then I should see "View 1 responses"

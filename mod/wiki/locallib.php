@@ -32,6 +32,8 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->dirroot . '/mod/wiki/lib.php');
 require_once($CFG->dirroot . '/mod/wiki/parser/parser.php');
 require_once($CFG->libdir . '/filelib.php');
@@ -1030,7 +1032,8 @@ function wiki_set_lock($pageid, $userid, $section = null, $insert = false) {
     if (!empty($lock)) {
         $DB->update_record('wiki_locks', array('id' => $lock->id, 'lockedat' => time() + LOCK_TIMEOUT));
     } else if ($insert) {
-        $DB->insert_record('wiki_locks', array('pageid' => $pageid, 'sectionname' => $section, 'userid' => $userid, 'lockedat' => time() + 30));
+        $DB->insert_record('wiki_locks',
+            array('pageid' => $pageid, 'sectionname' => $section, 'userid' => $userid, 'lockedat' => time() + LOCK_TIMEOUT));
     }
 
     return true;
@@ -1237,7 +1240,7 @@ function wiki_delete_page_versions($deleteversions, $context = null) {
             list($insql, $param) = $DB->get_in_or_equal($versions);
             $insql .= ' AND pageid = ?';
             array_push($param, $params['pageid']);
-            $oldversions = $DB->get_recordset_select('wiki_versions', 'version ' . $insql, $param);
+            $oldversions = $DB->get_records_select('wiki_versions', 'version ' . $insql, $param);
             $DB->delete_records_select('wiki_versions', 'version ' . $insql, $param);
         }
         foreach ($oldversions as $version) {
@@ -1379,7 +1382,7 @@ function wiki_print_page_content($page, $context, $subwikiid) {
         }
     }
     $html = file_rewrite_pluginfile_urls($page->cachedcontent, 'pluginfile.php', $context->id, 'mod_wiki', 'attachments', $subwikiid);
-    $html = format_text($html, FORMAT_MOODLE, array('overflowdiv'=>true, 'allowid'=>true));
+    $html = format_text($html, FORMAT_HTML, array('overflowdiv' => true, 'allowid' => true));
     echo $OUTPUT->box($html);
 
     echo $OUTPUT->tag_list(core_tag_tag::get_item_tags('mod_wiki', 'wiki_pages', $page->id),
@@ -1435,14 +1438,14 @@ function wiki_print_edit_form_default_fields($format, $pageid, $version = -1, $u
 
     echo "<fieldset class=\"wiki-upload-section clearfix\"><legend class=\"ftoggler\">" . get_string("uploadtitle", 'wiki') . "</legend>";
 
-    echo $OUTPUT->container_start('mdl-align wiki-form-center aaaaa');
+    echo $OUTPUT->container_start('container');
     print $filemanager->toHtml();
     echo $OUTPUT->container_end();
 
     $cm = $PAGE->cm;
     $context = context_module::instance($cm->id);
 
-    echo $OUTPUT->container_start('mdl-align wiki-form-center wiki-upload-table');
+    echo $OUTPUT->container_start('container wiki-upload-table');
     wiki_print_upload_table($context, 'wiki_upload', $pageid, $deleteuploads);
     echo $OUTPUT->container_end();
 
@@ -1768,6 +1771,7 @@ function mod_wiki_get_tagged_pages($tag, $exclusivemode = false, $fromctx = 0, $
                 JOIN {course} c ON cm.course = c.id
                 JOIN {context} ctx ON ctx.instanceid = cm.id AND ctx.contextlevel = :coursemodulecontextlevel
                WHERE tt.itemtype = :itemtype AND tt.tagid = :tagid AND tt.component = :component
+                 AND cm.deletioninprogress = 0
                  AND wp.id %ITEMFILTER% AND c.id %COURSEFILTER%";
 
     $params = array('itemtype' => 'wiki_pages', 'tagid' => $tag->id, 'component' => 'mod_wiki',

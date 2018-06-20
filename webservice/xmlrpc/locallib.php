@@ -58,18 +58,11 @@ class webservice_xmlrpc_server extends webservice_base_server {
         // Retrieve and clean the POST/GET parameters from the parameters specific to the server.
         parent::set_web_service_call_settings();
 
-        // Get GET and POST parameters.
-        $methodvariables = array_merge($_GET, $_POST);
-
         if ($this->authmethod == WEBSERVICE_AUTHMETHOD_USERNAME) {
-            $this->username = isset($methodvariables['wsusername']) ? $methodvariables['wsusername'] : null;
-            unset($methodvariables['wsusername']);
-
-            $this->password = isset($methodvariables['wspassword']) ? $methodvariables['wspassword'] : null;
-            unset($methodvariables['wspassword']);
+            $this->username = isset($_GET['wsusername']) ? $_GET['wsusername'] : null;
+            $this->password = isset($_GET['wspassword']) ? $_GET['wspassword'] : null;
         } else {
-            $this->token = isset($methodvariables['wstoken']) ? $methodvariables['wstoken'] : null;
-            unset($methodvariables['wstoken']);
+            $this->token = isset($_GET['wstoken']) ? $_GET['wstoken'] : null;
         }
 
         // Get the XML-RPC request data.
@@ -80,6 +73,7 @@ class webservice_xmlrpc_server extends webservice_base_server {
         $decodedparams = xmlrpc_decode_request($rawpostdata, $methodname, 'UTF-8');
         $methodinfo = external_api::external_function_info($methodname);
         $methodparams = array_keys($methodinfo->parameters_desc->keys);
+        $methodvariables = [];
 
         // Add the decoded parameters to the methodvariables array.
         if (is_array($decodedparams)) {
@@ -139,8 +133,9 @@ class webservice_xmlrpc_server extends webservice_base_server {
      * @param Exception $ex
      */
     protected function send_error($ex = null) {
+        $this->response = $this->generate_error($ex);
         $this->send_headers();
-        echo $this->generate_error($ex);
+        echo $this->response;
     }
 
     /**
@@ -167,11 +162,11 @@ class webservice_xmlrpc_server extends webservice_base_server {
     /**
      * Generate the XML-RPC fault response.
      *
-     * @param Exception $ex The exception.
+     * @param Exception|Throwable $ex The exception.
      * @param int $faultcode The faultCode to be included in the fault response
      * @return string The XML-RPC fault response xml containing the faultCode and faultString.
      */
-    protected function generate_error(Exception $ex, $faultcode = 404) {
+    protected function generate_error($ex, $faultcode = 404) {
         $error = $ex->getMessage();
 
         if (!empty($ex->errorcode)) {

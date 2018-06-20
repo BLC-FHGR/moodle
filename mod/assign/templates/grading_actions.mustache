@@ -28,7 +28,6 @@
     Context variables required for this template:
     * see mod/assign/classes/output/grading_app.php
 
-    Example context (json):
     This template is initially hidden, and is only displayed after the current user info has been loaded.
 }}
 <form data-region="grading-actions-form" class="hide">
@@ -37,6 +36,7 @@
                   {{#defaultsendnotifications}}checked="checked"{{/defaultsendnotifications}} />
     </label>
     <button type="submit" class="btn btn-primary" name="savechanges">{{#str}}savechanges{{/str}}</button>
+    <button type="submit" class="btn btn-primary" name="saveandshownext">{{#str}}saveandnext{{/str}}</button>
     <button type="submit" class="btn" name="resetbutton">{{#str}}reset{{/str}}</button>
 </form>
 {{#showreview}}

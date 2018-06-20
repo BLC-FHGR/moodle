@@ -69,7 +69,31 @@ class manager {
     public static function scan_file($file, $filename, $deleteinfected) {
         $antiviruses = self::get_enabled();
         foreach ($antiviruses as $antivirus) {
-            $antivirus->scan_file($file, $filename, $deleteinfected);
+            $result = $antivirus->scan_file($file, $filename);
+            if ($result === $antivirus::SCAN_RESULT_FOUND) {
+                // Infection found.
+                if ($deleteinfected) {
+                    unlink($file);
+                }
+                throw new \core\antivirus\scanner_exception('virusfound', '', array('item' => $filename));
+            }
+        }
+    }
+
+    /**
+     * Scan data steam using all enabled antiviruses, throws exception in case of infected data.
+     *
+     * @param string $data The varaible containing the data to scan.
+     * @throws \core\antivirus\scanner_exception If data is infected.
+     * @return void
+     */
+    public static function scan_data($data) {
+        $antiviruses = self::get_enabled();
+        foreach ($antiviruses as $antivirus) {
+            $result = $antivirus->scan_data($data);
+            if ($result === $antivirus::SCAN_RESULT_FOUND) {
+                throw new \core\antivirus\scanner_exception('virusfound', '', array('item' => get_string('datastream', 'antivirus')));
+            }
         }
     }
 

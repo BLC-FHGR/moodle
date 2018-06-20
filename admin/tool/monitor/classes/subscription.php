@@ -111,7 +111,7 @@ class subscription {
     public function get_event_name() {
         $eventclass = $this->eventname;
         if (class_exists($eventclass)) {
-            return $eventclass::get_name();
+            return $eventclass::get_name_with_info();
         }
         return get_string('eventnotfound', 'tool_monitor');
     }
@@ -176,8 +176,12 @@ class subscription {
         if (empty($courseid)) {
             return get_string('site');
         } else {
-            $course = get_course($courseid);
-            return format_string($course->fullname, true, array('context' => $context));
+            try {
+                $course = get_course($courseid);
+                return format_string($course->fullname, true, array('context' => $context));
+            } catch (\dml_exception $e) {
+                return '-';
+            }
         }
     }
 

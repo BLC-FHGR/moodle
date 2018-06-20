@@ -28,16 +28,44 @@
     Context variables required for this template:
     * see mod/assign/classes/output/grading_app.php
 
-    Example context (json):
     This template includes ajax functionality, so it cannot be shown in the template library.
 }}
+
 <div data-region="grading-navigation" class="row-fluid">
+
+{{!
+    There are three chunks, which appear side-by-side at large screen sizes.
+    A) Assignment info, which has 3 rows:
+}}
+
 <div data-region="assignment-info" class="span4">
+<<<<<<< HEAD
 <a href="{{config.wwwroot}}/course/view.php?id={{courseid}}">{{{coursename}}}</a><br/>
 <a href="{{config.wwwroot}}/mod/assign/view.php?id={{cmid}}">{{name}}</a>
+=======
+
+{{!
+    Row 1) course name & link.
+}}
+<a href="{{config.wwwroot}}/course/view.php?id={{courseid}}" title="{{{coursename}}}">{{{coursename}}}</a><br/>
+
+{{!
+    Row 2) Assignment name & link, & edit settings.
+}}
+<a href="{{config.wwwroot}}/mod/assign/view.php?id={{cmid}}" title="{{name}}">{{name}}</a>
+
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
 {{#caneditsettings}}
 <a href="{{config.wwwroot}}/course/modedit.php?update={{cmid}}&return=1">{{#pix}}t/edit, core,{{#str}}editsettings{{/str}}{{/pix}}</a>
 {{/caneditsettings}}
+
+<br/>
+
+{{!
+    Row 3) Assignment grading & link, due date, with tool-tip thing.
+}}
+<a href="{{config.wwwroot}}/mod/assign/view.php?id={{cmid}}&action={{actiongrading}}" title="{{viewgrading}}">{{viewgrading}}</a>
+
 <div role="tooltip" id="tooltip-{{uniqid}}" class="accesshide">
 {{#duedate}}
 {{#str}}duedatecolon, mod_assign, {{duedatestr}}{{/str}}
@@ -51,14 +79,20 @@
 <br>{{timeremainingstr}}
 {{/duedate}}
 </div>
-{{#duedate}}
-<br/><small data-region="assignment-tooltip" aria-describedby="tooltip-{{uniqid}}">{{#str}}duedatecolon, mod_assign, {{duedatestr}}{{/str}}</small>
-{{/duedate}}
+
 </span>
 </div>
+
+{{!
+    B) Current user name and info.
+}}
 <div data-region="user-info" class="span4" data-assignmentid="{{assignmentid}}" data-groupid="{{groupid}}">
     {{> mod_assign/grading_navigation_user_info }}
 </div>
+
+{{!
+    C) User selector widget.
+}}
 <div data-region="user-selector" class="span4">
     <div class="alignment">
         {{> mod_assign/grading_navigation_user_selector }}

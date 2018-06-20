@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once($CFG->dirroot . '/mod/assign/upgradelib.php');
+require_once(__DIR__ . '/fixtures/testable_assign.php');
 
 /**
  * Unit tests for (some of) mod/assign/locallib.php.
@@ -205,11 +206,13 @@ class mod_assign_base_testcase extends advanced_testcase {
      */
     protected function create_instance($params=array()) {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
-        $params['course'] = $this->course->id;
+        if (!isset($params['course'])) {
+            $params['course'] = $this->course->id;
+        }
         $instance = $generator->create_instance($params);
         $cm = get_coursemodule_from_instance('assign', $instance->id);
         $context = context_module::instance($cm->id);
-        return new testable_assign($context, $cm, $this->course);
+        return new mod_assign_testable_assign($context, $cm, $this->course);
     }
 
     public function test_create_instance() {
@@ -218,6 +221,7 @@ class mod_assign_base_testcase extends advanced_testcase {
 
 }
 
+<<<<<<< HEAD
 /**
  * Test subclass that makes all the protected methods we want to test public.
  */
@@ -365,3 +369,6 @@ class testable_assign extends assign {
                                                           $completion);
     }
 }
+=======
+class_alias('mod_assign_testable_assign', 'testable_assign');
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6

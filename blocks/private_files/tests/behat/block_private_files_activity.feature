@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 @block @block_private_files @file_upload @javascript
 Feature: The private files block allows users to store files privately in moodle
+=======
+@block @block_private_files @_file_upload @javascript
+Feature: The private files block allows users to store files privately in moodle on activity page
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
   In order to store a private file in moodle
   As a teacher
   I can upload the file to my private files area using the private files block in an activity
@@ -18,8 +23,12 @@ Feature: The private files block allows users to store files privately in moodle
       | activity | course | idnumber | name           | intro                 |
       | page    | C1      | page1    | Test page name | Test page description |
     And I log in as "teacher1"
+<<<<<<< HEAD
     And I follow "Course 1"
     And I turn editing mode on
+=======
+    And I am on "Course 1" course homepage with editing mode on
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
     And I follow "Test page name"
     And I add the "Private files" block
     And I should see "No files available" in the "Private files" "block"

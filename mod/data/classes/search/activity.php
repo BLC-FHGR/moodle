@@ -33,5 +33,19 @@ defined('MOODLE_INTERNAL') || die();
  * @copyright  2016 David Monllao {@link http://www.davidmonllao.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+<<<<<<< HEAD
 class activity extends \core_search\area\base_activity {
+=======
+class activity extends \core_search\base_activity {
+
+    /**
+     * Returns true if this area uses file indexing.
+     *
+     * @return bool
+     */
+    public function uses_file_indexing() {
+        return true;
+    }
+
+>>>>>>> 9e7c3978895c7cab585c2f5234ca536151d3bef6
 }

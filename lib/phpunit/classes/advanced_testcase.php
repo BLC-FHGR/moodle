@@ -82,10 +82,10 @@ abstract class advanced_testcase extends base_testcase {
             $DB = phpunit_util::get_global_backup('DB');
 
             // Deal with any debugging messages.
-            $debugerror = phpunit_util::display_debugging_messages();
+            $debugerror = phpunit_util::display_debugging_messages(true);
             $this->resetDebugging();
-            if ($debugerror) {
-                trigger_error('Unexpected debugging() call detected.', E_USER_NOTICE);
+            if (!empty($debugerror)) {
+                trigger_error('Unexpected debugging() call detected.'."\n".$debugerror, E_USER_NOTICE);
             }
 
         } catch (Exception $ex) {
@@ -135,9 +135,9 @@ abstract class advanced_testcase extends base_testcase {
         // make sure test did not forget to close transaction
         if ($DB->is_transaction_started()) {
             self::resetAllData();
-            if ($this->getStatus() == PHPUnit_Runner_BaseTestRunner::STATUS_PASSED
-                or $this->getStatus() == PHPUnit_Runner_BaseTestRunner::STATUS_SKIPPED
-                or $this->getStatus() == PHPUnit_Runner_BaseTestRunner::STATUS_INCOMPLETE) {
+            if ($this->getStatus() == PHPUnit\Runner\BaseTestRunner::STATUS_PASSED
+                or $this->getStatus() == PHPUnit\Runner\BaseTestRunner::STATUS_SKIPPED
+                or $this->getStatus() == PHPUnit\Runner\BaseTestRunner::STATUS_INCOMPLETE) {
                 throw new coding_exception('Test '.$this->getName().' did not close database transaction');
             }
         }
@@ -147,20 +147,20 @@ abstract class advanced_testcase extends base_testcase {
      * Creates a new FlatXmlDataSet with the given $xmlFile. (absolute path.)
      *
      * @param string $xmlFile
-     * @return PHPUnit_Extensions_Database_DataSet_FlatXmlDataSet
+     * @return PHPUnit\DbUnit\DataSet\FlatXmlDataSet
      */
     protected function createFlatXMLDataSet($xmlFile) {
-        return new PHPUnit_Extensions_Database_DataSet_FlatXmlDataSet($xmlFile);
+        return new PHPUnit\DbUnit\DataSet\FlatXmlDataSet($xmlFile);
     }
 
     /**
      * Creates a new XMLDataSet with the given $xmlFile. (absolute path.)
      *
      * @param string $xmlFile
-     * @return PHPUnit_Extensions_Database_DataSet_XmlDataSet
+     * @return PHPUnit\DbUnit\DataSet\XmlDataSet
      */
     protected function createXMLDataSet($xmlFile) {
-        return new PHPUnit_Extensions_Database_DataSet_XmlDataSet($xmlFile);
+        return new PHPUnit\DbUnit\DataSet\XmlDataSet($xmlFile);
     }
 
     /**
@@ -170,10 +170,10 @@ abstract class advanced_testcase extends base_testcase {
      * @param string $delimiter
      * @param string $enclosure
      * @param string $escape
-     * @return PHPUnit_Extensions_Database_DataSet_CsvDataSet
+     * @return PHPUnit\DbUnit\DataSet\CsvDataSet
      */
     protected function createCsvDataSet($files, $delimiter = ',', $enclosure = '"', $escape = '"') {
-        $dataSet = new PHPUnit_Extensions_Database_DataSet_CsvDataSet($delimiter, $enclosure, $escape);
+        $dataSet = new PHPUnit\DbUnit\DataSet\CsvDataSet($delimiter, $enclosure, $escape);
         foreach($files as $table=>$file) {
             $dataSet->addTable($table, $file);
         }
@@ -195,10 +195,10 @@ abstract class advanced_testcase extends base_testcase {
      *
      * Note: it is usually better to use data generators
      *
-     * @param PHPUnit_Extensions_Database_DataSet_IDataSet $dataset
+     * @param PHPUnit\DbUnit\DataSet\IDataSet $dataset
      * @return void
      */
-    protected function loadDataSet(PHPUnit_Extensions_Database_DataSet_IDataSet $dataset) {
+    protected function loadDataSet(PHPUnit\DbUnit\DataSet\IDataSet $dataset) {
         global $DB;
 
         $structure = phpunit_util::get_tablestructure();
@@ -280,6 +280,9 @@ abstract class advanced_testcase extends base_testcase {
      */
     public function assertDebuggingCalled($debugmessage = null, $debuglevel = null, $message = '') {
         $debugging = $this->getDebuggingMessages();
+        $debugdisplaymessage = "\n".phpunit_util::display_debugging_messages(true);
+        $this->resetDebugging();
+
         $count = count($debugging);
 
         if ($count == 0) {
@@ -290,12 +293,13 @@ abstract class advanced_testcase extends base_testcase {
         }
         if ($count > 1) {
             if ($message === '') {
-                $message = 'Expectation failed, debugging() triggered '.$count.' times.';
+                $message = 'Expectation failed, debugging() triggered '.$count.' times.'.$debugdisplaymessage;
             }
             $this->fail($message);
         }
         $this->assertEquals(1, $count);
 
+        $message .= $debugdisplaymessage;
         $debug = reset($debugging);
         if ($debugmessage !== null) {
             $this->assertSame($debugmessage, $debug->message, $message);
@@ -303,8 +307,6 @@ abstract class advanced_testcase extends base_testcase {
         if ($debuglevel !== null) {
             $this->assertSame($debuglevel, $debug->level, $message);
         }
-
-        $this->resetDebugging();
     }
 
     /**
@@ -322,6 +324,9 @@ abstract class advanced_testcase extends base_testcase {
         }
 
         $debugging = $this->getDebuggingMessages();
+        $message .= "\n".phpunit_util::display_debugging_messages(true);
+        $this->resetDebugging();
+
         $this->assertEquals($expectedcount, count($debugging), $message);
 
         if ($debugmessages) {
@@ -341,8 +346,6 @@ abstract class advanced_testcase extends base_testcase {
                 $this->assertSame($debuglevel, $debugging[$key]->level, $message);
             }
         }
-
-        $this->resetDebugging();
     }
 
     /**
@@ -356,6 +359,8 @@ abstract class advanced_testcase extends base_testcase {
         if ($message === '') {
             $message = 'Expectation failed, debugging() was triggered.';
         }
+        $message .= "\n".phpunit_util::display_debugging_messages(true);
+        $this->resetDebugging();
         $this->assertEquals(0, $count, $message);
     }
 
@@ -643,6 +648,19 @@ abstract class advanced_testcase extends base_testcase {
             } else if ($exclude xor preg_match($fileregexp, $filepath)) {
                 $this->$callback($filepath);
             }
+        }
+    }
+
+    /**
+     * Wait for a second to roll over, ensures future calls to time() return a different result.
+     *
+     * This is implemented instead of sleep() as we do not need to wait a full second. In some cases
+     * due to calls we may wait more than sleep() would have, on average it will be less.
+     */
+    public function waitForSecond() {
+        $starttime = time();
+        while (time() == $starttime) {
+            usleep(50000);
         }
     }
 }

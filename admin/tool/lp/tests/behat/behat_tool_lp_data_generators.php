@@ -26,7 +26,7 @@
 require_once(__DIR__ . '/../../../../../lib/behat/behat_base.php');
 
 use Behat\Gherkin\Node\TableNode as TableNode;
-use Behat\Behat\Exception\PendingException as PendingException;
+use Behat\Behat\Tester\Exception\PendingException as PendingException;
 use core_competency\competency;
 use core_competency\competency_framework;
 use core_competency\plan;
@@ -175,11 +175,11 @@ class behat_tool_lp_data_generators extends behat_base {
         if (isset($data['framework'])) {
             $framework = competency_framework::get_record(array('idnumber' => $data['framework']));
             if ($framework) {
-                $data['competencyframeworkid'] = $framework->get_id();
+                $data['competencyframeworkid'] = $framework->get('id');
             } else {
                 $framework = competency_framework::get_record(array('id' => $data['framework']));
                 if ($framework) {
-                    $data['competencyframeworkid'] = $framework->get_id();
+                    $data['competencyframeworkid'] = $framework->get('id');
                 } else {
                     throw new Exception('Could not resolve framework with idnumber or id : "' . $data['category'] . '"');
                 }

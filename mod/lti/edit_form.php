@@ -49,10 +49,24 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+global $CFG;
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->dirroot.'/mod/lti/locallib.php');
 
-class mod_lti_edit_types_form extends moodleform{
+/**
+ * LTI Edit Form
+ *
+ * @package    mod_lti
+ * @copyright  2009 Marc Alier, Jordi Piguillem, Nikolas Galanis
+ *  marc.alier@upc.edu
+ * @copyright  2009 Universitat Politecnica de Catalunya http://www.upc.edu
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class mod_lti_edit_types_form extends moodleform {
+
+    /**
+     * Define this form.
+     */
     public function definition() {
         global $CFG;
 
@@ -85,6 +99,7 @@ class mod_lti_edit_types_form extends moodleform{
             $mform->addElement('text', 'lti_resourcekey', get_string('resourcekey_admin', 'lti'));
             $mform->setType('lti_resourcekey', PARAM_TEXT);
             $mform->addHelpButton('lti_resourcekey', 'resourcekey_admin', 'lti');
+            $mform->setForceLtr('lti_resourcekey');
 
             $mform->addElement('passwordunmask', 'lti_password', get_string('password_admin', 'lti'));
             $mform->setType('lti_password', PARAM_TEXT);
@@ -96,11 +111,13 @@ class mod_lti_edit_types_form extends moodleform{
             $mform->setType('lti_parameters', PARAM_TEXT);
             $mform->addHelpButton('lti_parameters', 'parameter', 'lti');
             $mform->disabledIf('lti_parameters', null);
+            $mform->setForceLtr('lti_parameters');
         }
 
         $mform->addElement('textarea', 'lti_customparameters', get_string('custom', 'lti'), array('rows' => 4, 'cols' => 60));
         $mform->setType('lti_customparameters', PARAM_TEXT);
         $mform->addHelpButton('lti_customparameters', 'custom', 'lti');
+        $mform->setForceLtr('lti_customparameters');
 
         if (!empty($this->_customdata->isadmin)) {
             $options = array(
@@ -137,6 +154,23 @@ class mod_lti_edit_types_form extends moodleform{
         $mform->addHelpButton('lti_launchcontainer', 'default_launch_container', 'lti');
         $mform->setType('lti_launchcontainer', PARAM_INT);
 
+        $mform->addElement('advcheckbox', 'lti_contentitem', get_string('contentitem', 'lti'));
+        $mform->addHelpButton('lti_contentitem', 'contentitem', 'lti');
+        $mform->setAdvanced('lti_contentitem');
+        if ($istool) {
+            $mform->disabledIf('lti_contentitem', null);
+        }
+
+        $mform->addElement('text', 'lti_toolurl_ContentItemSelectionRequest',
+            get_string('toolurl_contentitemselectionrequest', 'lti'), array('size' => '64'));
+        $mform->setType('lti_toolurl_ContentItemSelectionRequest', PARAM_URL);
+        $mform->setAdvanced('lti_toolurl_ContentItemSelectionRequest');
+        $mform->addHelpButton('lti_toolurl_ContentItemSelectionRequest', 'toolurl_contentitemselectionrequest', 'lti');
+        $mform->disabledIf('lti_toolurl_ContentItemSelectionRequest', 'lti_contentitem', 'notchecked');
+        if ($istool) {
+            $mform->disabledIf('lti_toolurl__ContentItemSelectionRequest', null);
+        }
+
         $mform->addElement('hidden', 'oldicon');
         $mform->setType('oldicon', PARAM_URL);
 
@@ -149,6 +183,11 @@ class mod_lti_edit_types_form extends moodleform{
         $mform->setType('lti_secureicon', PARAM_URL);
         $mform->setAdvanced('lti_secureicon');
         $mform->addHelpButton('lti_secureicon', 'secure_icon_url', 'lti');
+
+        if (!$istool) {
+            // Display the lti advantage services.
+            $this->get_lti_advantage_services($mform);
+        }
 
         if (!$istool) {
             // Add privacy preferences fieldset where users choose whether to send their data.
@@ -228,5 +267,34 @@ class mod_lti_edit_types_form extends moodleform{
         // Add standard buttons, common to all modules.
         $this->add_action_buttons();
 
+    }
+
+    /**
+     * Retrieves the data of the submitted form.
+     *
+     * @return stdClass
+     */
+    public function get_data() {
+        $data = parent::get_data();
+        if ($data && !empty($this->_customdata->istool)) {
+            // Content item checkbox is disabled in tool settings, so this cannot be edited. Just unset it.
+            unset($data->lti_contentitem);
+        }
+        return $data;
+    }
+
+    /**
+     * Generates the lti advantage extra configuration adding it to the mform
+     *
+     * @param MoodleQuickForm $mform
+     */
+    public function get_lti_advantage_services(&$mform) {
+        // For each service add the label and get the array of configuration.
+        $services = lti_get_services();
+        $mform->addElement('header', 'services', get_string('services', 'lti'));
+        foreach ($services as $service) {
+            /** @var \mod_lti\local\ltiservice\service_base $service */
+            $service->get_configuration_options($mform);
+        }
     }
 }

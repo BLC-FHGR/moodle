@@ -121,7 +121,8 @@ abstract class backup_general_helper extends backup_helper {
 
         $info = new stdclass(); // Final information goes here
 
-        $moodlefile = $CFG->tempdir . '/backup/' . $tempdir . '/moodle_backup.xml';
+        $backuptempdir = make_backup_temp_directory('', false);
+        $moodlefile = $backuptempdir . '/' . $tempdir . '/moodle_backup.xml';
         if (!file_exists($moodlefile)) { // Shouldn't happen ever, but...
             throw new backup_helper_exception('missing_moodle_backup_xml_file', $moodlefile);
         }
@@ -152,12 +153,16 @@ abstract class backup_general_helper extends backup_helper {
         $info->mnet_remoteusers         = $infoarr['mnet_remoteusers'];
         $info->original_wwwroot         = $infoarr['original_wwwroot'];
         $info->original_site_identifier_hash = $infoarr['original_site_identifier_hash'];
-        $info->original_course_id       = $infoarr['original_course_id'];
-        $info->original_course_fullname = $infoarr['original_course_fullname'];
-        $info->original_course_shortname= $infoarr['original_course_shortname'];
-        $info->original_course_startdate= $infoarr['original_course_startdate'];
-        $info->original_course_contextid= $infoarr['original_course_contextid'];
-        $info->original_system_contextid= $infoarr['original_system_contextid'];
+        $info->original_course_id        = $infoarr['original_course_id'];
+        $info->original_course_fullname  = $infoarr['original_course_fullname'];
+        $info->original_course_shortname = $infoarr['original_course_shortname'];
+        $info->original_course_startdate = $infoarr['original_course_startdate'];
+        // Old versions may not have this.
+        if (isset($infoarr['original_course_enddate'])) {
+            $info->original_course_enddate  = $infoarr['original_course_enddate'];
+        }
+        $info->original_course_contextid = $infoarr['original_course_contextid'];
+        $info->original_system_contextid = $infoarr['original_system_contextid'];
         // Moodle backup file don't have this option before 2.3
         if (!empty($infoarr['include_file_references_to_external_content'])) {
             $info->include_file_references_to_external_content = 1;
@@ -263,7 +268,7 @@ abstract class backup_general_helper extends backup_helper {
 
         // Extract moodle_backup.xml.
         $tmpname = 'info_from_mbz_' . time() . '_' . random_string(4);
-        $tmpdir = $CFG->tempdir . '/backup/' . $tmpname;
+        $tmpdir = make_backup_temp_directory($tmpname);
         $fp = get_file_packer('application/vnd.moodle.backup');
 
         $extracted = $fp->extract_to_pathname($filepath, $tmpdir, array('moodle_backup.xml'), $progress);
