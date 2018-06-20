@@ -543,10 +543,20 @@ abstract class oauth2_client extends curl {
      */
     public function upgrade_token($code) {
         $callbackurl = self::callback_url();
-        $params = array('code' => $code,
+        if ($code) {
+            $params = array('code' => $code,
             'grant_type' => 'authorization_code',
             'redirect_uri' => $callbackurl->out(false),
-        );
+            );
+        } elseif ($_GET["grant_type"] == "urn:ietf:params:oauth:grant-type:jwt-bearer") {
+            // check if we have an RFC 7521 + 7523 assertion
+            $param = $_GET;
+            $params['redirect_uri'] = $callbackurl->out(false);
+            // get token URL from the assertion parameter
+            $jwt = $_GET["assertion"];
+            // if $jwt is a JWE then the aud is in the header
+            // if $ JWT is a JWS then the aud is in the payload 
+        }
 
         if ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
@@ -554,6 +564,11 @@ abstract class oauth2_client extends curl {
         } else {
             $params['client_id'] = $this->clientid;
             $params['client_secret'] = $this->clientsecret;
+        }
+
+        // Add OIDC scope parameters
+        if ($this->openid){
+            $params["scope"] = "openid " . $this->openid_scope; 
         }
 
         // Requests can either use http GET or POST.
@@ -596,6 +611,11 @@ abstract class oauth2_client extends curl {
         // Also add the scopes.
         self::$upgradedcodes[] = $code;
         $this->store_token($accesstoken);
+
+        // OIDC : Check ID token
+        if (isset($r->id_token)) {
+            //handle ID Token
+        }
 
         return true;
     }
