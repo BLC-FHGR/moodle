@@ -446,7 +446,8 @@ class api {
             'picture' => 'picture',
             'address' => 'address',
             'phone' => 'phone1',
-            'locale' => 'lang'
+            'locale' => 'lang',
+            'username' => 'sub'
         ];
         foreach ($mapping as $external => $internal) {
             $record = (object) [
