@@ -562,8 +562,8 @@ abstract class oauth2_client extends curl {
         } elseif ($code) {
             // Normal code flow.
             $params = array('code' => $code,
-            'grant_type' => 'authorization_code',
-            'redirect_uri' => $callbackurl->out(false),
+                'grant_type' => 'authorization_code',
+                'redirect_uri' => $callbackurl->out(false),
             );
         }
         else {
