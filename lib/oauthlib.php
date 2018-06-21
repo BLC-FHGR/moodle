@@ -476,14 +476,6 @@ abstract class oauth2_client extends curl {
             return true;
         }
 
-        // If we have an authorization assertion that can be validated by the 
-        // authorization server try to upgrade the assertion to an access token
-        $grant_type = optional_param('oauth2grant_type', null, PARAM_RAW);
-
-        if (isset($grant_type) && $this->upgrade_token($grant_type)) {
-            return true;
-        }
-
         return false;
     }
 
@@ -551,15 +543,7 @@ abstract class oauth2_client extends curl {
      */
     public function upgrade_token($code) {
         $callbackurl = self::callback_url();
-        if ($code == 'urn:ietf:params:oauth:grant-type:jwt-bearer') {
-            $assertion = required_param('assertion', PARAM_LOCALURL);
-
-            $params = array('assertion' => $assertion,
-            'grant_type' => $code,
-            );
-
-            // FIXME: PASS ALL OTHER PARAMETERS TO THE AUTHORIZATION SERVER
-        } elseif ($code) {
+        if ($code) {
             // Normal code flow.
             $params = array('code' => $code,
                 'grant_type' => 'authorization_code',
@@ -573,7 +557,7 @@ abstract class oauth2_client extends curl {
         if ($this->assertionauth) {
             // If assertion auth is supported, always prefer it over other 
             // authentication methods.
-            
+
             // RFC7521+7523 client authorization assertion as required by OIDC.
             // TODO: Create a JWT for the authorization service.  
             // TODO: Sign with client secret

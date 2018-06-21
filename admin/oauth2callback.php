@@ -64,24 +64,6 @@ if (isset($state)) {
     } else {
         print_error('invalidsesskey');
     }
-} else if ($type == 'urn:ietf:params:oauth:grant-type:jwt-bearer') {
-    // RFC 7521 assertion authorization flow initiated by other services using
-    // the assertion as "code", that can be upgraded to a token.
-    // For the assertion authorization there is no state attribute.
-    // Therefore, a redeirect URL must be generated.
-
-    $redirecturl = new moodle_url(MY_MOODLE_URL_WITH_LOGIN_PHP); // FIXME: use the correct URL from the configs.
-
-    // The entire request MUST get forwarded unaltered to the authorization server.
-    // This means we have to translate all optional params in a way 
-    // that login.php can handle, gracefully. 
-
-    $redirecturl->param('oauth2grant_type', $type);
-    
-    // TODO: PARAMETER TRANSLATION HERE
-
-    // Finally, redirect. 
-    redirect($redirecturl);
 } else {
     print_error('invalidsesskey'); // FIXME: This should return a 400 error.
 } 
