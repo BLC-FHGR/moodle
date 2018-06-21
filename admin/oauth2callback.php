@@ -58,7 +58,7 @@ if (isset($state)) {
     $redirecturl = new moodle_url($state);
     $params = $redirecturl->params();
 
-    if (isset($code) and isset($params['sesskey']) and confirm_sesskey($params['sesskey'])) {
+    if (isset($params['sesskey']) and confirm_sesskey($params['sesskey'])) {
         $redirecturl->param('oauth2code', $code);
         redirect($redirecturl);
     } else {
