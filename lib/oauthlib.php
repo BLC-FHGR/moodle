@@ -549,7 +549,7 @@ abstract class oauth2_client extends curl {
      * @param string $code the code returned from the oauth authenticaiton
      * @return boolean true if token is upgraded succesfully
      */
-    public function upgrade_token($code) {  
+    public function upgrade_token($code) {
         $callbackurl = self::callback_url();
         if ($code == 'urn:ietf:params:oauth:grant-type:jwt-bearer') {
             $assertion = required_param('assertion', PARAM_LOCALURL);
