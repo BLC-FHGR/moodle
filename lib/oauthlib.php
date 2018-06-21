@@ -638,8 +638,10 @@ abstract class oauth2_client extends curl {
             // 4. Select the key used by the authorization service 
             // 5. Verify the ID Token's signature
             // 6. Keep the sub as userid for later verification
-            // 7. Map the user attributes
-            // 8. Set a marker that no request to the user endpoint is necessary.
+            
+            // Handle OIDC response if present.
+            // 1. Map the user attributes
+            // 2. Set a marker that no request to the user endpoint is necessary.
         }
 
         // Only store the token if all validations succeeded.
