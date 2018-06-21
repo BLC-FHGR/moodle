@@ -570,11 +570,6 @@ abstract class oauth2_client extends curl {
             return false
         }
 
-        // If the client is an oidc client, add the scope to the request
-        if ($this->openid) {
-            $params['scope'] = 'openid email profile'; // FIXME make configurable
-        }
-
         if ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
             $this->setHeader('Authorization: Basic ' . base64_encode($idsecret));
@@ -589,7 +584,7 @@ abstract class oauth2_client extends curl {
 
         // Add OIDC scope parameters
         if ($this->openid) {
-            $params["scope"] = "openid " . $this->openid_scope; 
+            $params["scope"] = "openid " . $this->openid_scope; // FIXME: add scope configuration into admin
         }
 
         // Requests can either use http GET or POST.
