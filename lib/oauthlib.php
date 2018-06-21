@@ -476,6 +476,14 @@ abstract class oauth2_client extends curl {
             return true;
         }
 
+        // If we have an authorization assertion that can be validated by the 
+        // authorization server try to upgrade the assertion to an access token
+        $grant_type = optional_param('oauth2grant_type', null, PARAM_RAW);
+
+        if (isset($grant_type) && $this->upgrade_token($grant_type)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -541,33 +549,46 @@ abstract class oauth2_client extends curl {
      * @param string $code the code returned from the oauth authenticaiton
      * @return boolean true if token is upgraded succesfully
      */
-    public function upgrade_token($code) {
+    public function upgrade_token($code) {  
         $callbackurl = self::callback_url();
-        if ($code) {
+        if ($code == 'urn:ietf:params:oauth:grant-type:jwt-bearer') {
+            $assertion = required_param('assertion', PARAM_LOCALURL);
+
+            $params = array('assertion' => $assertion,
+            'grant_type' => $code,
+            );
+
+            // FIXME: PASS ALL OTHER PARAMETERS TO THE AUTHORIZATION SERVER
+        } elseif ($code) {
+            // Normal code flow.
             $params = array('code' => $code,
             'grant_type' => 'authorization_code',
             'redirect_uri' => $callbackurl->out(false),
             );
-        } elseif ($_GET["grant_type"] == "urn:ietf:params:oauth:grant-type:jwt-bearer") {
-            // check if we have an RFC 7521 + 7523 assertion
-            $param = $_GET;
-            $params['redirect_uri'] = $callbackurl->out(false);
-            // get token URL from the assertion parameter
-            $jwt = $_GET["assertion"];
-            // if $jwt is a JWE then the aud is in the header
-            // if $ JWT is a JWS then the aud is in the payload 
+        }
+        else {
+            return false
+        }
+
+        // If the client is an oidc client, add the scope to the request
+        if ($this->openid) {
+            $params['scope'] = 'openid email profile'; // FIXME make configurable
         }
 
         if ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
             $this->setHeader('Authorization: Basic ' . base64_encode($idsecret));
+        } elseif ($this->assertionauth) {
+            // RFC7521+7523 client authorization assertion as required by OIDC.
+            // TODO: create a JWT for the authorization service  
+            // TODO: Sign with client secret
         } else {
             $params['client_id'] = $this->clientid;
             $params['client_secret'] = $this->clientsecret;
         }
 
         // Add OIDC scope parameters
-        if ($this->openid){
+        if ($this->openid) {
             $params["scope"] = "openid " . $this->openid_scope; 
         }
 
@@ -610,12 +631,24 @@ abstract class oauth2_client extends curl {
         $accesstoken->scope = $this->scope;
         // Also add the scopes.
         self::$upgradedcodes[] = $code;
-        $this->store_token($accesstoken);
 
-        // OIDC : Check ID token
-        if (isset($r->id_token)) {
-            //handle ID Token
+        // OIDC : Check if the ID token is present
+        if ($this->openid && isset($r->id_token)) {
+            // NOTE: this code should be encapsulated, so that it can be used for all JWT validations.
+
+            // Handle the ID Token.
+            // 1. Verify the ID Token is a JWT
+            // 2. Decrypt if necessary (select our private key used for the authorization server)
+            // 3. Verify that iss and aud point to the correct URLs
+            // 4. Select the key used by the authorization service 
+            // 5. Verify the ID Token's signature
+            // 6. Keep the sub as userid for later verification
+            // 7. Map the user attributes
+            // 8. Set a marker that no request to the user endpoint is necessary.
         }
+
+        // Only store the token if all validations succeeded.
+        $this->store_token($accesstoken);
 
         return true;
     }
@@ -624,6 +657,7 @@ abstract class oauth2_client extends curl {
      * Logs out of a oauth request, clearing any stored tokens
      */
     public function log_out() {
+        // FIXME: use OIDC logout.
         $this->store_token(null);
     }
 
