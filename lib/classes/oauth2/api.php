@@ -411,7 +411,8 @@ class api {
         }
 
         foreach ($info as $key => $value) {
-            if (substr_compare($key, '_endpoint', - strlen('_endpoint')) === 0) {
+            // include the key management URI
+            if (substr_compare($key, '_endpoint', - strlen('_endpoint')) === 0 || $key == ' jwks_uri') {
                 $record = new stdClass();
                 $record->issuerid = $issuer->get('id');
                 $record->name = $key;
@@ -431,6 +432,8 @@ class api {
         foreach (user_field_mapping::get_records(['issuerid' => $issuer->get('id')]) as $userfieldmapping) {
             $userfieldmapping->delete();
         }
+
+        // FIXME: Handle claims Supported for the mapping.
 
         // Create the field mappings.
         $mapping = [
@@ -454,6 +457,8 @@ class api {
             $userfieldmapping = new user_field_mapping(0, $record);
             $userfieldmapping->create();
         }
+
+        // TODO: Fetch the jwks_uri and update the key management.
 
         return endpoint::count_records(['issuerid' => $issuer->get('id')]);
     }

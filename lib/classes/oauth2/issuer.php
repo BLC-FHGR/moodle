@@ -108,7 +108,15 @@ class issuer extends persistent {
             'requireconfirmation' => array(
                 'type' => PARAM_BOOL,
                 'default' => true
-            )
+            ),
+            'assertionauth' => array( // Whether to use oauth2 rfc7123 client assertions.
+                'type' => PARAM_BOOL,
+                'default' => false
+            ),
+            'openid' => array( // Whether this is an OIDC issuer.
+                'type' => PARAM_BOOL,
+                'default' => false
+            ),
         );
     }
 
@@ -208,5 +216,37 @@ class issuer extends persistent {
         }
 
         return true;
+    }
+
+    /**
+     * Do we have public keys for the issuer that can be used for issuer validation? 
+     * @return JWKS
+     */
+    public function get_public_keys() {
+        $keystore = keystore::get_record([
+            'issuerid' => $this->get('id'),
+            'name' => 'public'
+        ]);
+
+        if ($keystore) {
+            return $endpokeystoreint->get('jwks');
+        }
+        return false;
+    }
+
+    /**
+     * Do we have private keys for the issuer that can be used for issuer decryption and signing?
+     * @return JWKS
+     */
+    public function get_private_keys() {
+        $keystore = keystore::get_record([
+            'issuerid' => $this->get('id'),
+            'name' => 'private'
+        ]);
+
+        if ($keystore) {
+            return $endpokeystoreint->get('jwks');
+        }
+        return false;
     }
 }

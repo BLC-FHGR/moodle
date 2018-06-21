@@ -567,16 +567,19 @@ abstract class oauth2_client extends curl {
             );
         }
         else {
-            return false
+            return false;
         }
 
-        if ($this->basicauth) {
+        if ($this->assertionauth) {
+            // If assertion auth is supported, always prefer it over other 
+            // authentication methods.
+            
+            // RFC7521+7523 client authorization assertion as required by OIDC.
+            // TODO: Create a JWT for the authorization service.  
+            // TODO: Sign with client secret
+        } elseif ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
             $this->setHeader('Authorization: Basic ' . base64_encode($idsecret));
-        } elseif ($this->assertionauth) {
-            // RFC7521+7523 client authorization assertion as required by OIDC.
-            // TODO: create a JWT for the authorization service  
-            // TODO: Sign with client secret
         } else {
             $params['client_id'] = $this->clientid;
             $params['client_secret'] = $this->clientsecret;
@@ -584,7 +587,7 @@ abstract class oauth2_client extends curl {
 
         // Add OIDC scope parameters
         if ($this->openid) {
-            $params["scope"] = "openid " . $this->openid_scope; // FIXME: add scope configuration into admin
+            $params["scope"] = "openid " . implode(" ", $this->scopessupported); 
         }
 
         // Requests can either use http GET or POST.
@@ -638,7 +641,7 @@ abstract class oauth2_client extends curl {
             // 4. Select the key used by the authorization service 
             // 5. Verify the ID Token's signature
             // 6. Keep the sub as userid for later verification
-            
+
             // Handle OIDC response if present.
             // 1. Map the user attributes
             // 2. Set a marker that no request to the user endpoint is necessary.
