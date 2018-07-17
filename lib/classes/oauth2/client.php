@@ -300,4 +300,10 @@ class client extends \oauth2_client {
 
         return (array)$user;
     }
+
+    //OIDC patch, issuer id required to get the key that belongs to the specific issuer. This key will be used for the signature verification
+    public function upgrade_token($code, $issuerid = null){
+        $issuerid = $this->get_issuer()->get('id');
+        return parent::upgrade_token($code, $issuerid);
+    }
 }

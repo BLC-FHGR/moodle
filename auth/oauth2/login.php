@@ -23,9 +23,14 @@
  */
 
 require_once('../../config.php');
+require_once(__DIR__. '/classes/oidc_idp_key.php'); //OIDC :: issuer - jwk data model
+require_once('../../lib/filelib.php'); //curl wrapper class
+
+use auth_oauth2\oidc_idp_key;
 
 $issuerid = required_param('id', PARAM_INT);
 $wantsurl = new moodle_url(optional_param('wantsurl', '', PARAM_URL));
+$oauth2code = optional_param('oauth2code', null , PARAM_TEXT);
 
 require_sesskey();
 
@@ -34,6 +39,56 @@ if (!\auth_oauth2\api::is_enabled()) {
 }
 
 $issuer = new \core\oauth2\issuer($issuerid);
+
+//OIDC Service
+if(strpos($issuer->get('name'), 'Google' ) !== false  ){
+    if( !isset($oauth2code)) {
+        //first entry, after login button pressed
+
+        //checking the endpoint
+        $endpoint = new \core\oauth2\endpoint();
+        $discovery_ep = $endpoint::get_record(['issuerid' => $issuerid, 'name' => 'discovery_endpoint']); 
+        $discovery_url = $discovery_ep->get('url');
+        //error_log("OIDC Dev :: discovery edpoint = " . $discovery_url);
+
+        //send request to the discovery endpoint
+        $curl_client = new curl();
+        $json_response = $curl_client->get($discovery_url);
+        $response = json_decode($json_response);
+
+        //send the request to the jwku to get the jwks from the IdP
+        $json_response = $curl_client->get($response->jwks_uri);
+        $response = json_decode($json_response);
+        $keys = $response->keys;
+
+        //checking every key if it's existed in the database already or not
+        foreach ($keys as $key){
+            if($key->use === "sig"){
+                //first check if the key with same kid already exists
+                $persistent = new oidc_idp_key();
+                $count = $persistent::count_records(['keyid' => $key->kid, 'ap_id' => $issuerid]);
+
+                if($count > 0){
+                    //key is existed already
+                    continue;
+                }
+
+                //this is for the new key, needs to be saved in the database
+                $data = new stdClass();
+                $data->keyid = $key->kid;
+                $data->ap_id = $issuerid;
+                $data->jwk = json_encode($key);
+
+                $persistent = new oidc_idp_key(0, $data);
+                $created = $persistent->create();
+            }
+        }
+
+
+    }
+
+}
+//back to the normal flow
 
 $returnparams = ['wantsurl' => $wantsurl, 'sesskey' => sesskey(), 'id' => $issuerid];
 $returnurl = new moodle_url('/auth/oauth2/login.php', $returnparams);
