@@ -41,7 +41,7 @@ if (!\auth_oauth2\api::is_enabled()) {
 $issuer = new \core\oauth2\issuer($issuerid);
 
 //OIDC Service
-if(strpos($issuer->get('name'), 'Google' ) !== false  ){
+if(strpos($issuer->get('scopessupported'), 'openid' ) !== false  ){
     if( !isset($oauth2code)) {
         //first entry, after login button pressed
 

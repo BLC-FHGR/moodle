@@ -663,7 +663,10 @@ abstract class oauth2_client extends curl {
                 $issuer_obj = new \core\auth2\issuer($issuerid);
                 $issuer_obj->read();
 
-                if ($payload->iss !== $issuer_obj->get('baseurl')) {
+                if ($payload->aud !== $issuer_obj->get('clientid')) {
+                    error_log("OIDC Dev :: validate unsuccessful = invalid audience");
+                    throw new moodle_exception("Error on OIDC validation process");
+                } elseif ($payload->iss !== $issuer_obj->get('baseurl')) {
                     error_log("OIDC Dev :: validate unsuccessful = invalid issuer");
                     throw new moodle_exception("Error on OIDC validation process");
                 } elseif ( isset($payload->iat) && $payload->iat >= time() + 10) {
@@ -679,7 +682,6 @@ abstract class oauth2_client extends curl {
                     error_log("OIDC Dev :: validate unsuccessful = no sub found");
                     throw new moodle_exception("Error on OIDC validation process");
                 } else {
-
                     //verify the signature with the keys using jose framework
                     foreach($keys as $key) {
                         if( $header->kid === $key->get('kid')){
