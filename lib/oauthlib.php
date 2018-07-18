@@ -288,6 +288,7 @@ class oauth_helper {
         if (empty($secret)) {
             $secret = $this->access_token_secret;
         }
+
         // to access protected resource, sign_secret will alwasy be consumer_secret+token_secret
         $this->sign_secret = $this->consumer_secret.'&'.$secret;
         if (strtolower($method) === 'post' && !empty($params)) {
@@ -446,6 +447,7 @@ abstract class oauth2_client extends curl {
         // Has the token expired?
         if (isset($this->accesstoken->expires) && time() >= $this->accesstoken->expires) {
             $this->log_out();
+            error_log("OIDC Dev:: is logged in first if");
             return false;
         }
 
@@ -463,6 +465,7 @@ abstract class oauth2_client extends curl {
                 }
             }
             if (!$scopemissing) {
+                error_log("OIDC Dev:: is logged in second if before return true");
                 return true;
             }
         }
@@ -473,6 +476,7 @@ abstract class oauth2_client extends curl {
         // Note - sometimes we may call is_logged_in twice in the same request - we don't want to attempt
         // to upgrade the same token twice.
         if ($code && !in_array($code, self::$upgradedcodes) && $this->upgrade_token($code)) {
+            error_log("OIDC Dev:: is logged in third if returning true");
             return true;
         }
 
@@ -517,7 +521,7 @@ abstract class oauth2_client extends curl {
             ],
             $this->get_additional_login_parameters()
         );
-
+        error_log("OIDC Dev :: get_login_url() = " . $this->auth_url() );
         return new moodle_url($this->auth_url(), $params);
     }
 
@@ -539,14 +543,12 @@ abstract class oauth2_client extends curl {
      * Upgrade a authorization token from oauth 2.0 to an access token
      *
      * @param string $code the code returned from the oauth authenticaiton
+     * @param int $issuerid id from the issuer which is required for oidc process
      * @return boolean true if token is upgraded succesfully
      */
-    public function upgrade_token($code) {
+    public function upgrade_token($code, $issuerid = null) {
+
         $callbackurl = self::callback_url();
-        $params = array('code' => $code,
-            'grant_type' => 'authorization_code',
-            'redirect_uri' => $callbackurl->out(false),
-        );
 
         if ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
@@ -568,6 +570,8 @@ abstract class oauth2_client extends curl {
         }
 
         $r = json_decode($response);
+        //extra log for OIDC
+        error_log('OIDC Dev :: upgrade_token():: response = ' .  var_export($r, true) );
 
         if (is_null($r)) {
             throw new moodle_exception("Could not decode JSON token response");
@@ -595,7 +599,22 @@ abstract class oauth2_client extends curl {
         $accesstoken->scope = $this->scope;
         // Also add the scopes.
         self::$upgradedcodes[] = $code;
-        $this->store_token($accesstoken);
+        //$this->store_token($accesstoken); old store_token
+
+        // OIDC :: check ID token
+        if ( isset($r->id_token)) {
+            //verify the incoming id_token(JWT)
+            if(! \auth_oauth2\api::verifyAssertion($r->id_token, $issuerid )) {
+                //verification failed
+                throw new moodle_exception("Error on validation process");
+            } else {
+                //store token before return true
+                $this->store_token($accesstoken);
+            }
+
+        } else {
+            $this->store_token($accesstoken); //normal oauth2 flow
+        }
 
         return true;
     }

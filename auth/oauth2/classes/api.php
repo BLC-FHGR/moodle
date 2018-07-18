@@ -15,13 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Class for loading/storing oauth2 linked logins from the DB.
- *
- * @package    auth_oauth2
- * @copyright  2017 Damyon Wiese
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+* Class for loading/storing oauth2 linked logins from the DB.
+*
+* @package    auth_oauth2
+* @copyright  2017 Damyon Wiese
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 namespace auth_oauth2;
+
+require_once($CFG->dirroot . '/auth/oauth2/vendor/autoload.php');
+use Jose\Object\JWK;
+use Jose\Loader;
 
 use context_user;
 use stdClass;
@@ -31,32 +35,32 @@ use moodle_url;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Static list of api methods for auth oauth2 configuration.
- *
- * @package    auth_oauth2
- * @copyright  2017 Damyon Wiese
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+* Static list of api methods for auth oauth2 configuration.
+*
+* @package    auth_oauth2
+* @copyright  2017 Damyon Wiese
+* @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+*/
 class api {
 
     /**
-     * Remove all linked logins that are using issuers that have been deleted.
-     *
-     * @param int $issuerid The issuer id of the issuer to check, or false to check all (defaults to all)
-     * @return boolean
-     */
+    * Remove all linked logins that are using issuers that have been deleted.
+    *
+    * @param int $issuerid The issuer id of the issuer to check, or false to check all (defaults to all)
+    * @return boolean
+    */
     public static function clean_orphaned_linked_logins($issuerid = false) {
         return linked_login::delete_orphaned($issuerid);
     }
 
     /**
-     * List linked logins
-     *
-     * Requires auth/oauth2:managelinkedlogins capability at the user context.
-     *
-     * @param int $userid (defaults to $USER->id)
-     * @return boolean
-     */
+    * List linked logins
+    *
+    * Requires auth/oauth2:managelinkedlogins capability at the user context.
+    *
+    * @param int $userid (defaults to $USER->id)
+    * @return boolean
+    */
     public static function get_linked_logins($userid = false) {
         global $USER;
 
@@ -75,12 +79,12 @@ class api {
     }
 
     /**
-     * See if there is a match for this username and issuer in the linked_login table.
-     *
-     * @param string $username as returned from an oauth client.
-     * @param \core\oauth2\issuer $issuer
-     * @return stdClass User record if found.
-     */
+    * See if there is a match for this username and issuer in the linked_login table.
+    *
+    * @param string $username as returned from an oauth client.
+    * @param \core\oauth2\issuer $issuer
+    * @return stdClass User record if found.
+    */
     public static function match_username_to_user($username, $issuer) {
         $params = [
             'issuerid' => $issuer->get('id'),
@@ -98,16 +102,16 @@ class api {
     }
 
     /**
-     * Link a login to this account.
-     *
-     * Requires auth/oauth2:managelinkedlogins capability at the user context.
-     *
-     * @param array $userinfo as returned from an oauth client.
-     * @param \core\oauth2\issuer $issuer
-     * @param int $userid (defaults to $USER->id)
-     * @param bool $skippermissions During signup we need to set this before the user is setup for capability checks.
-     * @return bool
-     */
+    * Link a login to this account.
+    *
+    * Requires auth/oauth2:managelinkedlogins capability at the user context.
+    *
+    * @param array $userinfo as returned from an oauth client.
+    * @param \core\oauth2\issuer $issuer
+    * @param int $userid (defaults to $USER->id)
+    * @param bool $skippermissions During signup we need to set this before the user is setup for capability checks.
+    * @return bool
+    */
     public static function link_login($userinfo, $issuer, $userid = false, $skippermissions = false) {
         global $USER;
 
@@ -146,13 +150,13 @@ class api {
     }
 
     /**
-     * Send an email with a link to confirm linking this account.
-     *
-     * @param array $userinfo as returned from an oauth client.
-     * @param \core\oauth2\issuer $issuer
-     * @param int $userid (defaults to $USER->id)
-     * @return bool
-     */
+    * Send an email with a link to confirm linking this account.
+    *
+    * @param array $userinfo as returned from an oauth client.
+    * @param \core\oauth2\issuer $issuer
+    * @param int $userid (defaults to $USER->id)
+    * @return bool
+    */
     public static function send_confirm_link_login_email($userinfo, $issuer, $userid) {
         $record = new stdClass();
         $record->issuerid = $issuer->get('id');
@@ -205,14 +209,14 @@ class api {
     }
 
     /**
-     * Look for a waiting confirmation token, and if we find a match - confirm it.
-     *
-     * @param int $userid
-     * @param string $username
-     * @param int $issuerid
-     * @param string $token
-     * @return boolean True if we linked.
-     */
+    * Look for a waiting confirmation token, and if we find a match - confirm it.
+    *
+    * @param int $userid
+    * @param string $username
+    * @param int $issuerid
+    * @param string $token
+    * @return boolean True if we linked.
+    */
     public static function confirm_link_login($userid, $username, $issuerid, $token) {
         if (empty($token) || empty($userid) || empty($issuerid) || empty($username)) {
             return false;
@@ -240,12 +244,12 @@ class api {
     }
 
     /**
-     * Create an account with a linked login that is already confirmed.
-     *
-     * @param array $userinfo as returned from an oauth client.
-     * @param \core\oauth2\issuer $issuer
-     * @return bool
-     */
+    * Create an account with a linked login that is already confirmed.
+    *
+    * @param array $userinfo as returned from an oauth client.
+    * @param \core\oauth2\issuer $issuer
+    * @return bool
+    */
     public static function create_new_confirmed_account($userinfo, $issuer) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -284,13 +288,13 @@ class api {
     }
 
     /**
-     * Send an email with a link to confirm creating this account.
-     *
-     * @param array $userinfo as returned from an oauth client.
-     * @param \core\oauth2\issuer $issuer
-     * @param int $userid (defaults to $USER->id)
-     * @return bool
-     */
+    * Send an email with a link to confirm creating this account.
+    *
+    * @param array $userinfo as returned from an oauth client.
+    * @param \core\oauth2\issuer $issuer
+    * @param int $userid (defaults to $USER->id)
+    * @return bool
+    */
     public static function send_confirm_account_email($userinfo, $issuer) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -361,13 +365,13 @@ class api {
     }
 
     /**
-     * Delete linked login
-     *
-     * Requires auth/oauth2:managelinkedlogins capability at the user context.
-     *
-     * @param int $linkedloginid
-     * @return boolean
-     */
+    * Delete linked login
+    *
+    * Requires auth/oauth2:managelinkedlogins capability at the user context.
+    *
+    * @param int $linkedloginid
+    * @return boolean
+    */
     public static function delete_linked_login($linkedloginid) {
         $login = new linked_login($linkedloginid);
         $userid = $login->get('userid');
@@ -383,11 +387,11 @@ class api {
     }
 
     /**
-     * Delete linked logins for a user.
-     *
-     * @param \core\event\user_deleted $event
-     * @return boolean
-     */
+    * Delete linked logins for a user.
+    *
+    * @param \core\event\user_deleted $event
+    * @return boolean
+    */
     public static function user_deleted(\core\event\user_deleted $event) {
         global $DB;
 
@@ -397,12 +401,104 @@ class api {
     }
 
     /**
-     * Is the plugin enabled.
-     *
-     * @return bool
-     */
+    * Is the plugin enabled.
+    *
+    * @return bool
+    */
     public static function is_enabled() {
         $plugininfo = \core_plugin_manager::instance()->get_plugin_info('auth_oauth2');
         return $plugininfo->is_enabled();
     }
+
+    /**
+    * OIDC function to verify the incoming JWT assertion from the OIDC Provider
+    * return true when successful and false when verification failed
+    *
+    * @param string $JWT (Json Web Token String)
+    * @param int $issuerid
+    * @return bool
+    */
+    public static function verifyAssertion($JWT, $issuerid) {
+        if (!isset($issuerid)) {
+            return false;
+        }
+
+        //validate ID Token
+        //first get the jwks stored in the database to check
+        $oidc_key = new oidc_idp_key();
+        $keys = oidc_idp_key::get_records(['ap_id' => $issuerid]);
+        error_log("OIDC Dev :: validating ... keys for issuer : " . count($keys) );
+
+        //split the id token by '.'
+        $jwt = explode('.' , $JWT);
+        error_log("OIDC Dev :: validating ... jwt parts : " . count($jwt) );
+
+        if (count($jwt) == 3) {
+            //token in JWS format
+            error_log("OIDC Dev:: jws header = " . base64_decode( $jwt[0]) );
+            error_log("OIDC Dev:: jws payload = " . base64_decode( $jwt[1]) );
+            $header = json_decode(base64_decode( $jwt[0]) );
+            $payload = json_decode(base64_decode( $jwt[1]) );
+
+            //check aud
+            // $payload->
+            error_log("OIDC Dev:: jws aud = " . $payload->aud);
+
+            //check iss if the same as the registered one
+            $issuer_obj = new \core\oauth2\issuer($issuerid);
+            $issuer_obj->read();
+            //error_log("OIDC Dev:: payload iss =" . $payload->iss );
+            //error_log("OIDC Dev:: registered iss =" . $issuer_obj->get('baseurl') ); pay attention with the slash
+
+            if( $payload->aud !== $issuer_obj->get('clientid') ){
+                error_log("OIDC Dev:: validate unsuccessful = invalid aud");
+                return false;
+            } elseif ($payload->iss !== $issuer_obj->get('baseurl') ) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid issuer") ;
+                return false;
+            } elseif ( isset($payload->iat) && $payload->iat >= time() + 10 ) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid iat :: iat =  " . $payload->iat . " :: time = " . time() );
+                return false;
+            } elseif ( isset($payload->exp) && $payload->exp <= time() ) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid exp ") ;
+                return false;
+            } elseif ( isset($payload->nbf) && $payload->nbf > time() ){
+                error_log("OIDC Dev:: validate unsuccessful = invalid nbf ") ;
+                return false;
+            } elseif (! isset($payload->sub)) {
+                error_log("OIDC Dev:: validate unsuccessful = no sub found ") ;
+                return false;
+            } else {
+                //verify the signature with the keys using jose framework
+                foreach($keys as $key){
+                    if($header->kid === $key->get('keyid')){
+                        //convert the saved json format of jwk into a JWK object
+                        $jwk_json = json_decode($key->get('jwk'), true );
+                        $jwk = new JWK($jwk_json);
+
+                        $loader = new Loader();
+                        $input = $JWT;
+                        try{
+                            $jws = $loader->loadAndVerifySignatureUsingKey(
+                                $input,
+                                $jwk,
+                                ['RS256'],
+                                $signature_index
+                            );
+                            error_log("OIDC Dev:: Validate SUCCESSFUL : " . ($jws->getSignature($signature_index))->getSignature() ) ;
+                            return true;
+                        } catch (Throwable $e) {
+                            error_log("OIDC Dev :: Validate unsuccessful - Verification failed");
+                            return false;
+                        }
+                    }
+                }
+                error_log("OIDC Dev:: validate unsuccessful = key is not found inside the database!");
+                return false;
+            }
+        }
+
+    }
+
+
 }
