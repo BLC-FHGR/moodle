@@ -18,9 +18,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/filelib.php');
-require_once($CFG->dirroot . '/auth/oauth2/vendor/autoload.php');
-use Jose\Object\JWK;
-use Jose\Loader;
 
 /**
  * OAuth helper class
@@ -561,11 +558,11 @@ abstract class oauth2_client extends curl {
         }
 
         if ($this->assertionauth) {
-            // If assertion auth is supported, always prefer it over other 
+            // If assertion auth is supported, always prefer it over other
             // authentication methods.
 
             // RFC7521+7523 client authorization assertion as required by OIDC.
-            // TODO: Create a JWT for the authorization service.  
+            // TODO: Create a JWT for the authorization service.
             // TODO: Sign with client secret
         } elseif ($this->basicauth) {
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
@@ -578,7 +575,7 @@ abstract class oauth2_client extends curl {
         // Add OIDC scope parameters
         /*
         if ($this->openid) {
-            $params["scope"] = "openid " . implode(" ", $this->scopessupported); 
+            $params["scope"] = "openid " . implode(" ", $this->scopessupported);
         }
         */
         // Requests can either use http GET or POST.
@@ -629,7 +626,7 @@ abstract class oauth2_client extends curl {
             // 1. Verify the ID Token is a JWT
             // 2. Decrypt if necessary (select our private key used for the authorization server)
             // 3. Verify that iss and aud point to the correct URLs
-            // 4. Select the key used by the authorization service 
+            // 4. Select the key used by the authorization service
             // 5. Verify the ID Token's signature
             // 6. Keep the sub as userid for later verification
 
@@ -639,81 +636,17 @@ abstract class oauth2_client extends curl {
         //}
         if (isset($r->id_token)) {
             //validate ID Token
+            if(! \auth_oauth2\api::verifyAssertion($r->id_token, $issuerid )) {
+                //verification failed
+                throw new moodle_exception("Error on validation process");
+            } else {
+                //store token before return true
+                $this->store_token($accesstoken);
+                return true;
+            }
 
-            //first get the jwks stored in the database to check
-            $oidc_key = new \auth_oauth2\oidc_idp_key();
-            $keys = \auth_oauth2\oidc_idp_key::get_records(['ap_id' => $issuerid]);
-            error_log("OIDC Dev :: validating.... keys for issuer : " . count($keys) );
-
-            //split the id token by '.'
-            $jwt = explode('.', $r->id_token);
-            error_log("OIDC Dev :: jwt parts = " . count($jwt));
-
-            if (count($jwt) == 3) {
-                //token is in JWS format
-                error_log("OIDC Dev :: jws header = " . base64_decode($jwt[0]) );
-                error_log("OIDC Dev :: jws payload = " . base64_decode($jwt[1]) );
-                $header = json_decode( base64_decode( $jwt[0]) );
-                $payload = json_decode( base64_decode( $jwt[1]) );
-
-                //check aud
-                error_log("OIDC Dev:: jws aud = " . $payload->aud);
-
-                //check iss if the same as the registered one
-                $issuer_obj = new \core\auth2\issuer($issuerid);
-                $issuer_obj->read();
-
-                if ($payload->aud !== $issuer_obj->get('clientid')) {
-                    error_log("OIDC Dev :: validate unsuccessful = invalid audience");
-                    throw new moodle_exception("Error on OIDC validation process");
-                } elseif ($payload->iss !== $issuer_obj->get('baseurl')) {
-                    error_log("OIDC Dev :: validate unsuccessful = invalid issuer");
-                    throw new moodle_exception("Error on OIDC validation process");
-                } elseif ( isset($payload->iat) && $payload->iat >= time() + 10) {
-                    error_log("OIDC Dev :: validate unsuccessful = invalid iat :: iat = " . $payload->iat . " :: time = " . time() );
-                    throw new moodle_exception("Error on OIDC validation process");
-                } elseif ( isset($payload->exp) && $payload->exp <= time() ) {
-                    error_log("OIDC Dev :: validate unsuccessful = invalid exp");
-                    throw new moodle_exception("Error on OIDC validation process");
-                } elseif ( isset($payload->nbf) && $payload->nbf > time() ) {
-                    error_log("OIDC Dev :: validate unsuccessful = invalid nbf");
-                    throw new moodle_exception("Error on OIDC validation process");
-                } elseif ( !isset($payload->sub)){
-                    error_log("OIDC Dev :: validate unsuccessful = no sub found");
-                    throw new moodle_exception("Error on OIDC validation process");
-                } else {
-                    //verify the signature with the keys using jose framework
-                    foreach($keys as $key) {
-                        if( $header->kid === $key->get('kid')){
-                            //convert the saved json format of jwk into a specific JWK Object
-                            $jwk_json = json_decode($key->get('jwk'), true); //with true return an associative array instead of an Object
-                            $jwk = new JWK($jwk_json);
-
-                            $loader = new Loader();
-                            $input = $r->id_token;
-
-                            $jws = $loader->loadAndVerifySignatureUsingKey(
-                                $input,
-                                $jwk,
-                                ['RS256'],
-                                $signature_index
-                            ); //throw an Exception if the verification fails
-
-                            //error_log("OIDC Dev :: Validate Successful : " . ($jws->getSignature($signature_index))->getSignature() );
-                            
-                            //store token before return true
-                            $this->store_token($accesstoken);
-                            return true;
-                        }
-                    }
-                    error_log("OIDC Dev :: Validate unsuccessful = key for verifying is not found inside the database");
-                    throw new moodle_exception("Error on OIDC validation process");
-
-                } 
-            } //end ofJWS Block
-
-        } else { //normal oauth flow
-            $this->store_token($accesstoken);
+        } else {
+            $this->store_token($accesstoken); //normal oauth2 flow
         }
 
         return true;

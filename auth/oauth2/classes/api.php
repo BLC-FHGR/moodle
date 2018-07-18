@@ -23,6 +23,10 @@
  */
 namespace auth_oauth2;
 
+require_once($CFG->dirroot . '/auth/oauth2/vendor/autoload.php'); //OIDC Encryption Framework
+use Jose\Object\JWK;
+use Jose\Loader;
+
 use context_user;
 use stdClass;
 use moodle_exception;
@@ -405,4 +409,98 @@ class api {
         $plugininfo = \core_plugin_manager::instance()->get_plugin_info('auth_oauth2');
         return $plugininfo->is_enabled();
     }
+
+    /**
+    * OIDC function to verify the incoming JWT assertion from the OIDC Provider
+    * return true when successful and false when verification failed
+    *
+    * @param string $JWT (Json Web Token String)
+    * @param int $issuerid
+    * @return bool
+    */
+   public static function verifyAssertion($JWT, $issuerid) {
+       if (!isset($issuerid)) {
+           return false;
+       }
+
+       //validate ID Token
+
+           //first get the jwks stored in the database to check
+           $oidc_key = new oidc_idp_key();
+           $keys = oidc_idp_key::get_records(['ap_id' => $issuerid]);
+           error_log("OIDC Dev :: validating ... keys for issuer : " . count($keys) );
+
+           //split the id token by '.'
+           $jwt = explode('.' , $JWT);
+           error_log("OIDC Dev :: validating ... jwt parts : " . count($jwt) );
+
+           if (count($jwt) == 3) {
+               //token in JWS format
+               error_log("OIDC Dev:: jws header = " . base64_decode( $jwt[0]) );
+               error_log("OIDC Dev:: jws payload = " . base64_decode( $jwt[1]) );
+               $header = json_decode(base64_decode( $jwt[0]) );
+               $payload = json_decode(base64_decode( $jwt[1]) );
+
+               //check aud
+               // $payload->
+               error_log("OIDC Dev:: jws aud = " . $payload->aud);
+
+               //check iss if the same as the registered one
+               $issuer_obj = new \core\oauth2\issuer($issuerid);
+               $issuer_obj->read();
+               //error_log("OIDC Dev:: payload iss =" . $payload->iss );
+               //error_log("OIDC Dev:: registered iss =" . $issuer_obj->get('baseurl') ); pay attention with the slash
+
+               if( $payload->aud !== $issuer_obj->get('clientid') ){
+                   error_log("OIDC Dev:: validate unsuccessful = invalid aud");
+                   return false;
+               } elseif ($payload->iss !== $issuer_obj->get('baseurl') ) {
+                   error_log("OIDC Dev:: validate unsuccessful = invalid issuer") ;
+                   return false;
+               } elseif ( isset($payload->iat) && $payload->iat >= time() + 10 ) {
+                   error_log("OIDC Dev:: validate unsuccessful = invalid iat :: iat =  " . $payload->iat . " :: time = " . time() );
+                   return false;
+               } elseif ( isset($payload->exp) && $payload->exp <= time() ) {
+                   error_log("OIDC Dev:: validate unsuccessful = invalid exp ") ;
+                   return false;
+               } elseif ( isset($payload->nbf) && $payload->nbf > time() ){
+                   error_log("OIDC Dev:: validate unsuccessful = invalid nbf ") ;
+                   return false;
+               } elseif (! isset($payload->sub)) {
+                   error_log("OIDC Dev:: validate unsuccessful = no sub found ") ;
+                   return false;
+               } else {
+                   //verify the signature with the keys using jose framework
+                   foreach($keys as $key){
+                       if($header->kid === $key->get('keyid')){
+
+
+                           //convert the saved json format of jwk into a JWK object
+                           $jwk_json = json_decode($key->get('jwk'), true );
+                           $jwk = new JWK($jwk_json);
+
+                           $loader = new Loader();
+                           $input = $JWT;
+                           try{
+                               $jws = $loader->loadAndVerifySignatureUsingKey(
+                                   $input,
+                                   $jwk,
+                                   ['RS256'],
+                                   $signature_index
+                               );
+                               error_log("OIDC Dev:: Validate SUCCESSFUL : " . ($jws->getSignature($signature_index))->getSignature() ) ;
+                               return true;
+                           } catch (Throwable $e) {
+                               error_log("OIDC Dev :: Validate unsuccessful - Verification failed");
+                               return false;
+                           }
+
+                       }
+                   }
+                   error_log("OIDC Dev:: validate unsuccessful = key is not found inside the database!");
+                   return false;
+               }
+           }
+   } //end of verify function
+
 }
