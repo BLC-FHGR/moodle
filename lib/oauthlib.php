@@ -288,7 +288,7 @@ class oauth_helper {
         if (empty($secret)) {
             $secret = $this->access_token_secret;
         }
-
+        
         // to access protected resource, sign_secret will alwasy be consumer_secret+token_secret
         $this->sign_secret = $this->consumer_secret.'&'.$secret;
         if (strtolower($method) === 'post' && !empty($params)) {
@@ -406,6 +406,8 @@ abstract class oauth2_client extends curl {
     private static $upgradedcodes = [];
     /** @var bool basicauth */
     protected $basicauth = false;
+    /** @var bool assertionauth */
+    protected $assertionauth = false;
 
     /**
      * Returns the auth url for OAuth 2.0 request
@@ -451,6 +453,15 @@ abstract class oauth2_client extends curl {
             return false;
         }
 
+        //if we have an authorization assertion that can be validated by the
+        // authorization server, try to upgrade the assertion to an access token
+        //**put it on the second case or there will be bug since the next if condition will be called first
+        $grant_type = optional_param('oauth2grant_type', null, PARAM_RAW);
+
+        if (isset($grant_type) && $this->upgrade_token($grant_type) ) {
+            return true;
+        }
+
         // We have a token so we are logged in.
         if (isset($this->accesstoken->token)) {
             // Check that the access token has all the requested scopes.
@@ -465,7 +476,7 @@ abstract class oauth2_client extends curl {
                 }
             }
             if (!$scopemissing) {
-                error_log("OIDC Dev:: is logged in second if before return true");
+                error_log("OIDC Dev:: is logged in third if before return true");
                 return true;
             }
         }
@@ -543,36 +554,110 @@ abstract class oauth2_client extends curl {
      * Upgrade a authorization token from oauth 2.0 to an access token
      *
      * @param string $code the code returned from the oauth authenticaiton
-     * @param int $issuerid id from the issuer which is required for oidc process
      * @return boolean true if token is upgraded succesfully
      */
     public function upgrade_token($code, $issuerid = null) {
-
+        error_log("OIDC Dev :: upgrade_token() code = " . $code);
         $callbackurl = self::callback_url();
 
-        if ($this->basicauth) {
+        if ($code == 'urn:ietf:params:oauth:grant-type:jwt-bearer') {
+            //OIDC Assertion Handling RFC7521+23
+            $assertion = required_param('assertion', PARAM_RAW);
+            $params = array('grant_type' => $code,
+                        'assertion' => $assertion);
+
+            $this->assertionauth = true;
+
+            //TODO: RFC 7521+23 SEND and pass all the data to the authorization server
+            error_log("OIDC Dev :: upgrade_token() proving the assertion...");
+            //CheckAssertion
+            if(! \auth_oauth2\api::proveAssertion($assertion)){
+                return false;
+            }
+
+        } elseif ($code) {
+            //Normal Oauth flow with authorization code
+            $params = array('code' => $code,
+                'grant_type' => 'authorization_code',
+                'redirect_uri' => $callbackurl->out(false),
+            );
+        } else {
+            return false;
+        }
+
+        
+        if ($this->assertionauth) {
+            //Setup for forwarding assertion to the OIDC Provider (RFC7521 +23)
+            error_log('OIDC Dev :: upgrade_token() assertionauth');
+            $issuerObj = new \core\oauth2\issuer($issuerid);
+
+            $params['scope'] = "openid profile email";
+            $params['client_secret'] = $issuerObj->get('clientsecret');
+            $params['client_id'] = $issuerObj->get('clientid');
+            $this->assertionauth = false; //return it like normal after it finishes
+        } 
+        elseif ($this->basicauth) {
+            error_log('OIDC Dev :: upgrade_token() basicauth');
             $idsecret = urlencode($this->clientid) . ':' . urlencode($this->clientsecret);
             $this->setHeader('Authorization: Basic ' . base64_encode($idsecret));
         } else {
+            error_log('OIDC Dev :: upgrade_token() normal auth');
             $params['client_id'] = $this->clientid;
             $params['client_secret'] = $this->clientsecret;
         }
+       
+        error_log("OIDC Dev :: token endpoint = " . $this->token_url());
 
-        // Requests can either use http GET or POST.
-        if ($this->use_http_get()) {
-            $response = $this->get($this->token_url(), $params);
+        if (array_key_exists('grant_type', $params)) {
+            // Send request with assertion as parameter to the OIDC Provider
+            $curl = new curl();
+            if(!isset($params['client_secret']) && !isset(params['client_id'])){
+                throw new moodle_exception('Missing Parameter for assertion handling');
+            }
+            $auth_header = $params['client_id'] . ':' . $params['client_secret'];
+            unset($params['client_id']);
+            unset($params['client_secret']);
+
+            // Need to set up the header for the OIDC Provider
+            $header = array(rtrim('Authorization:Basic ' . base64_encode($auth_header)),  
+                            rtrim('Content-Type:application/x-www-form-urlencoded'));
+            error_log('OIDC Dev :: header = ' . json_encode($header));
+            error_log('OIDC Dev :: upgrade_token Assertion params for server = ' . $params['grant_type']);
+            $convertedParam = '';
+            foreach($params as $key => $value){
+                if(strlen($convertedParam) <= 0) {
+                    $convertedParam .= ($key . '=' . $value);
+                } else {
+                    $convertedParam .= '&' . ($key . '=' . $value);
+                }
+                
+            }
+            $options = array('CURLOPT_POST' => 1,
+                            'CURLOPT_CUSTOMREQUEST' => 'POST',
+                            'CURLOPT_POSTFIELDS' => $convertedParam,
+                            'CURLOPT_HTTPHEADER' => $header
+                            );
+            // Send the request
+            $response = $curl->request($this->token_url(), $options);
+            //error_log("OIDC Dev :: assertion handling response = ". $response);
         } else {
-            $response = $this->post($this->token_url(), $this->build_post_data($params));
-        }
-
-        if ($this->info['http_code'] !== 200) {
-            throw new moodle_exception('Could not upgrade oauth token');
+            // Normal OAuth request for the issuer
+            // Requests can either use http GET or POST.
+            if ($this->use_http_get()) {
+                $response = $this->get($this->token_url(), $params);
+             } else {
+                $response = $this->post($this->token_url(), $this->build_post_data($params));
+            }
+            error_log('OIDC Dev :: info response = ' . $this->info['http_code']);
+            if ($this->info['http_code'] !== 200) {
+                throw new moodle_exception('Could not upgrade oauth token');
+            }
         }
 
         $r = json_decode($response);
         //extra log for OIDC
         error_log('OIDC Dev :: upgrade_token():: response = ' .  var_export($r, true) );
-
+        
         if (is_null($r)) {
             throw new moodle_exception("Could not decode JSON token response");
         }
@@ -603,15 +688,19 @@ abstract class oauth2_client extends curl {
 
         // OIDC :: check ID token
         if ( isset($r->id_token)) {
-            //verify the incoming id_token(JWT)
+            
             if(! \auth_oauth2\api::verifyAssertion($r->id_token, $issuerid )) {
                 //verification failed
                 throw new moodle_exception("Error on validation process");
             } else {
-                //store token before return true
-                $this->store_token($accesstoken);
+                //handle token :: RFC-7521+23
+                if( \auth_oauth2\api::handleToken($r)){ 
+                    //store token before return true
+                    error_log('OIDC Dev :: after handleToken');
+                    $this->store_token($accesstoken);
+                }
             }
-
+        
         } else {
             $this->store_token($accesstoken); //normal oauth2 flow
         }
@@ -636,7 +725,7 @@ abstract class oauth2_client extends curl {
      */
     protected function request($url, $options = array(), $acceptheader = 'application/json') {
         $murl = new moodle_url($url);
-
+        
         if ($this->accesstoken) {
             if ($this->use_http_get()) {
                 // If using HTTP GET add as a parameter.

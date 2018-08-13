@@ -25,64 +25,76 @@
 require_once('../../config.php');
 require_once(__DIR__ . '/classes/oidc_idp_key.php'); //OIDC :: issuer - jwk data model
 require_once('../../lib/filelib.php'); //OIDC :: curl wrapper class
-//require_once( __DIR__ . "/vendor/autoload.php"); //OIDC jose classes
 
 use auth_oauth2\oidc_idp_key; //data
-
-//global $DB; //oidc test
 
 $issuerid = required_param('id', PARAM_INT);
 $wantsurl = new moodle_url(optional_param('wantsurl', NULL, PARAM_URL));
 $oauth2code = optional_param('oauth2code', NULL, PARAM_TEXT);
 //$passthru = optional_param()
-require_sesskey();
+if (isset($issuerid)) {
+    require_sesskey();
+}
 
 if (!\auth_oauth2\api::is_enabled()) {
     throw new \moodle_exception('notenabled', 'auth_oauth2');
 }
 
-error_log('OIDC Dev:: inserting db : count records = ' . ($jwk[0])->get('id') ) ;
-*/
+if(!isset($issuerid)){
+    //assertion handling search issuer in database
+    //get issuer from assertion claim(aud), assertion for now just JWS
+    $assertion = required_param('assertion', PARAM_RAW);
+    $assertion = explode('.', $assertion);
+    $payload = json_decode(base64_decode($assertion[1]));
+
+    error_log('OIDC Dev :: payload assertion = ' . $payload->aud);
+
+    //get issuer id from database
+    $baseurlIssuer = $payload->aud;
+    $issuerRecord = $DB->get_record_sql('SELECT id FROM {oauth2_issuer} WHERE ' . $DB->sql_compare_text('baseurl') . ' = "'. $baseurlIssuer .'";');
+    
+    $issuerid = $issuerRecord->id;
+
+}
 
 $issuer = new \core\oauth2\issuer($issuerid);
-error_log('OIDC Dev:: LOGIN PHP : issuer name : ' . $issuer->get('name') . ' || wantsurl =  '.$wantsurl);
-foreach($_GET as $key => $value){
-    //error_log("OIDC Dev :: param =" . $key . " : " . $value . "<br />\r\n");
-  }
-//error_log('OIDC Dev:: param : ' . print_r($_POST));
-//OIDC Service
-if( strpos($issuer->get('scopessupported'), 'openid') !== false ) {
-    if(!isset($oauth2code)){
-        //First ertry, after login button pressed
+error_log('OIDC Dev:: LOGIN PHP : issuer name : ' . $issuer->get('name') . ' || wantsurl =  ' . $wantsurl);
 
-        //Check if there any key existed in DB(oidc_manager) for this Identity Provider (IdP)
+//OIDC Service
+if (strpos($issuer->get('scopessupported'), 'openid') !== false) {
+    if (!isset($oauth2code)) {
+        // First ertry, after login button pressed or after received the assertion from app
+
+        // Fetching the JWKS from issuer's discovery endpoint
         $endpoint = new \core\oauth2\endpoint();
-        $discovery_ep = $endpoint::get_record(['issuerid' => $issuerid, 'name' => 'discovery_endpoint' ]);
+        $discovery_ep = $endpoint::get_record(['issuerid' => $issuerid, 'name' => 'discovery_endpoint']);
         $discovery_url = $discovery_ep->get('url');
         error_log("OIDC Dev :: dicovery points = " . $discovery_url);
 
         //send request to the discovery endpoint
+
         $curl_client = new curl();
         $json_response = $curl_client->get($discovery_url);
         $response = json_decode($json_response);
 
-        error_log("OIDC Dev :: dicovery response = " . $json_response );
+        error_log("OIDC Dev :: dicovery response = " . $json_response);
 
         //send request to get the jwk from jwk endpoint
         $json_response = $curl_client->get($response->jwks_uri);
         $response = json_decode($json_response);
+        error_log("OIDC Dev :: jwks uri response = " . $json_response);
         $keys = $response->keys;
-        //error_log("OIDC Dev :: keys = " . count($keys));
+        
 
         //checking every key if it's existed in the database already or not yet
         foreach ($keys as $key) {
-            if($key->use === "sig"){
+            if (!isset($key->use) || $key->use === "sig") {
                 //first check if the key with same kid already exists
                 $persistent = new oidc_idp_key();
-                $count = $persistent::count_records(['keyid' => $key->kid , 'ap_id' => $issuerid]);
+                $count = $persistent::count_records(['keyid' => $key->kid, 'ap_id' => $issuerid]);
 
                 //error_log("OIDC Dev:: count_records = " . $count);
-                if ($count > 0){
+                if ($count > 0) {
                     //error_log("OIDC Dev :: key is already existed, id = " . $key->kid );
                     continue; //skip if the key already in the database
                 }
@@ -98,22 +110,29 @@ if( strpos($issuer->get('scopessupported'), 'openid') !== false ) {
                 //error_log("OIDC Dev :: record id = " . $created->get('id') );
             }
         }
+
     }
 }
 
-$returnparams = ['wantsurl' => $wantsurl, 'sesskey' => sesskey(), 'id' => $issuerid];
-$returnurl = new moodle_url('/auth/oauth2/login.php', $returnparams);
+    $returnparams = ['wantsurl' => $wantsurl, 'sesskey' => sesskey(), 'id' => $issuerid];
+    $returnurl = new moodle_url('/auth/oauth2/login.php', $returnparams);
 
-$client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl);
-error_log('OIDC Dev:: login.php : client = ' . isset($client));
-if ($client) {
-    if (!$client->is_logged_in()) {
-        error_log('OIDC Dev:: login.php : before redirect to login url');
-        redirect($client->get_login_url());
+    $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl);
+    error_log('OIDC Dev:: login.php : client = ' . isset($client));
+    if ($client) {
+        if (!$client->is_logged_in()) {
+            error_log('OIDC Dev :: login.php : before redirect to login url');
+            redirect($client->get_login_url());
+        } 
+        
+        if (!isset($oauth2code)) {
+            error_log('OIDC Dev :: return after handling assertion from mobile App');
+            return;
+        }
+        error_log("OIDC Dev :: after is_logged_in()");
+        $auth = new \auth_oauth2\auth();
+        $auth->complete_login($client, $wantsurl);
+    } else {
+        throw new moodle_exception('Could not get an OAuth client.');
     }
-    error_log("OIDC Dev :: after is_logged_in()");
-    $auth = new \auth_oauth2\auth();
-    $auth->complete_login($client, $wantsurl);
-} else {
-    throw new moodle_exception('Could not get an OAuth client.');
-}
+    
