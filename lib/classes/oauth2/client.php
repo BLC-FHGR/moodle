@@ -300,4 +300,9 @@ class client extends \oauth2_client {
 
         return (array)$user;
     }
+
+    public function upgrade_token($code, $issuerid = null){
+        $issuerid = $this->get_issuer()->get('id');
+        return parent::upgrade_token($code, $issuerid); 
+    }
 }

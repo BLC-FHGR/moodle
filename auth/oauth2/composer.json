@@ -1,0 +1,15 @@
+{
+    "name": "oauth2/oidc",
+    "description": "OIDC components for moodle",
+    "type": "library",
+    "require": {
+        "spomky-labs/jose": "^6.1"
+    },
+    "license": "AGPL-3.0",
+    "authors": [
+        {
+            "name": "Julius Saputra",
+            "email": "julius.saputra@htwchur.ch"
+        }
+    ]
+}
