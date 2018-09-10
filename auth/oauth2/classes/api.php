@@ -410,81 +410,77 @@ class api {
         return $plugininfo->is_enabled();
     }
 
-        /**
-    * OIDC function to verify the incoming JWT assertion from the OIDC Provider
-    * return true when successful and false when verification failed
-    *
-    * @param string $JWT (Json Web Token String)
-    * @param int $issuerid
-    * @return bool
-    */
+    /**
+     * OIDC function to verify the incoming JWT assertion from the OIDC Provider.
+     *
+     * @param string $JWT (Json Web Token String)
+     * @param int $issuerid id from OIDC Provider
+     * @return bool true when verification successful otherwise false
+     */
     public static function verifyAssertion($JWT, $issuerid) {
         if (!isset($issuerid)) {
             return false;
         }
 
-        //validate ID Token
-        //first get the jwks stored in the database to check
-        $oidc_key = new oidc_idp_key();
+        // Validation of ID Token.
+        // First step is to get the jwks stored in the database, this will be used to verify the signature.
         $keys = oidc_idp_key::get_records(['ap_id' => $issuerid]);
-        error_log("OIDC Dev :: validating ... keys for issuer : " . count($keys) );
+        error_log("OIDC Dev :: validating ... keys for issuer : " . count($keys));
 
-        //split the id token by '.'
+        // Split the id token by '.'.
         $jwt = explode('.' , $JWT);
 
         if (count($jwt) == 3) {
-            //token in JWS format
+            // The token in JWS format.
             $header = json_decode(base64_decode( $jwt[0]) );
             $payload = json_decode(base64_decode( $jwt[1]) );
 
-            //check aud
-            // $payload->
+            // Checking the aud claim.
             error_log("OIDC Dev:: jws aud = " . $payload->aud);
 
-            //check iss if the same as the registered one
-            $issuer_obj = new \core\oauth2\issuer($issuerid);
-            $issuer_obj->read();
+            // Checking iss claim, if it holds the same issuer as the registered one.
+            $issuerobj = new \core\oauth2\issuer($issuerid);
+            $issuerobj->read();
             
-
-            if( $payload->aud !== $issuer_obj->get('clientid') ){
-                error_log("OIDC Dev:: validate unsuccessful = invalid aud");
+            if ( $payload->aud !== $issuerobj->get('clientid')) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid aud.");
                 return false;
-            } elseif ($payload->iss !== $issuer_obj->get('baseurl') ) {
-                error_log("OIDC Dev:: validate unsuccessful = invalid issuer") ;
+            } else if ($payload->iss !== $issuerobj->get('baseurl')) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid issuer.") ;
                 return false;
-            } elseif ( isset($payload->iat) && $payload->iat >= time() + 10 ) {
+            } else if (isset($payload->iat) && $payload->iat >= time() + 10) {
                 error_log("OIDC Dev:: validate unsuccessful = invalid iat :: iat =  " . $payload->iat . " :: time = " . time() );
                 return false;
-            } elseif ( isset($payload->exp) && $payload->exp <= time() ) {
-                error_log("OIDC Dev:: validate unsuccessful = invalid exp ") ;
+            } else if (isset($payload->exp) && $payload->exp <= time()) {
+                error_log("OIDC Dev:: validate unsuccessful = invalid exp.") ;
                 return false;
-            } elseif ( isset($payload->nbf) && $payload->nbf > time() ){
-                error_log("OIDC Dev:: validate unsuccessful = invalid nbf ") ;
+            } else if (isset($payload->nbf) && $payload->nbf > time() ){
+                error_log("OIDC Dev:: validate unsuccessful = invalid nbf.") ;
                 return false;
-            } elseif (! isset($payload->sub)) {
-                error_log("OIDC Dev:: validate unsuccessful = no sub found ") ;
+            } else if (!isset($payload->sub)) {
+                error_log("OIDC Dev:: validate unsuccessful = no sub found.") ;
                 return false;
             } else {
-                //verify the signature with the keys using jose framework
-                foreach($keys as $key){
-                    if($header->kid === $key->get('keyid')){
-                        //convert the saved json format of jwk into a JWK object
-                        $jwk_json = json_decode($key->get('jwk'), true );
-                        $jwk = new JWK($jwk_json);
+                // Verifying the signature with the keys using jose framework.
+                foreach ($keys as $key) {
+                    if ($header->kid === $key->get('keyid')) {
+                        // Convert the saved json format of jwk into a JWK object.
+                        $jwkjson = json_decode($key->get('jwk'), true );
+                        $jwk = new JWK($jwkjson);
 
                         $loader = new Loader();
                         $input = $JWT;
-                        try{
+                        try {
                             $jws = $loader->loadAndVerifySignatureUsingKey(
                                 $input,
                                 $jwk,
                                 ['RS256'],
-                                $signature_index
+                                $signatureindex
                             );
-                            error_log("OIDC Dev:: Validate SUCCESSFUL : " . ($jws->getSignature($signature_index))->getSignature() ) ;
+                            error_log("OIDC Dev:: Validate SUCCESSFUL : " . ($jws->getSignature($signatureindex))->getSignature() . ".");
                             return true;
                         } catch (Throwable $e) {
-                            error_log("OIDC Dev :: Validate unsuccessful - Verification failed");
+                            error_log("OIDC Dev :: Validate unsuccessful - Verification failed.");
                             return false;
                         }
                     }

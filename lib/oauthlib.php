@@ -536,7 +536,7 @@ abstract class oauth2_client extends curl {
     }
 
     /**
-     * Upgrade a authorization token from oauth 2.0 to an access token
+     * Upgrade a authorization token from oauth 2.0 to an access token.
      *
      * @param string $code the code returned from the oauth authenticaiton
      * @param int $issuerid id from the issuer which is required for oidc process(JWT Validation)
@@ -597,18 +597,18 @@ abstract class oauth2_client extends curl {
         // Also add the scopes.
         self::$upgradedcodes[] = $code;
         
-        // OIDC :: Validate incoming ID token
+        // OIDC :: Validate incoming ID token.
         if (isset($r->id_token)) {
-            //verify the incoming id_token(JWT)
-            if(! \auth_oauth2\api::verifyAssertion($r->id_token, $issuerid )) {
-                //verification failed
+            // Verifying the incoming id_token(JWT).
+            if (!\auth_oauth2\api::verifyAssertion($r->id_token, $issuerid)) {
+                // Verification failed.
                 throw new moodle_exception("Error on validation process");
             } else {
-                //store token before return true
+                // Store the token before return true.
                 $this->store_token($accesstoken);
             }
         } else {
-            $this->store_token($accesstoken); //normal oauth2 flow
+            $this->store_token($accesstoken);   // Normal oauth2 flow.
         }
 
         return true;

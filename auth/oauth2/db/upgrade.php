@@ -47,5 +47,27 @@ function xmldb_auth_oauth2_upgrade($oldversion) {
     // Automatically generated Moodle v3.5.0 release upgrade line.
     // Put any upgrade step following this.
 
+    if ($oldversion < 2018091000) {
+        // Define table auth_oauth2_idp_key to be created.
+        $table = new xmldb_table('auth_oauth2_idp_key');
+
+        // Adding fields to table auth_oauth2_idp_key.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('keyid', XMLDB_TYPE_CHAR, '1024', null, null, null, null);
+        $table->add_field('ap_id', XMLDB_TYPE_CHAR, '1024', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('jwk', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table auth_oauth2_idp_key.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+        // Conditionally launch create table for auth_oauth2_idp_key.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Oauth2 savepoint reached.
+        upgrade_plugin_savepoint(true, 2018091000, 'auth', 'oauth2');
+    }
+
     return true;
 }

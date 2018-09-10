@@ -23,10 +23,10 @@
  */
 
 require_once('../../config.php');
-require_once(__DIR__ . '/classes/oidc_idp_key.php'); //OIDC :: issuer - jwk data model
-require_once('../../lib/filelib.php'); //OIDC :: curl wrapper class
+require_once(__DIR__ . '/classes/oidc_idp_key.php'); // OIDC :: issuer - jwk data model.
+require_once('../../lib/filelib.php'); // OIDC :: curl wrapper class.
 
-use auth_oauth2\oidc_idp_key; //persistent class for database access(table oidc_idp_key)
+use auth_oauth2\oidc_idp_key; // Persistent class for database access(table oidc_idp_key).
 
 $issuerid = required_param('id', PARAM_INT);
 $wantsurl = new moodle_url(optional_param('wantsurl', '', PARAM_URL));
@@ -40,41 +40,40 @@ if (!\auth_oauth2\api::is_enabled()) {
 
 $issuer = new \core\oauth2\issuer($issuerid);
 
-//OIDC Service
-if( strpos($issuer->get('scopessupported'), 'openid') !== false ) {
-    if(!isset($oauth2code)){
-        //First ertry, after login button pressed
-
-        //Check if there any key existed in DB(oidc_manager) for this Identity Provider (IdP)
+// OIDC Service.
+if (strpos($issuer->get('scopessupported'), 'openid') !== false) {
+    if (!isset($oauth2code)) {
+        // First entry, after login button pressed.
+        // Check if there any key existed in DB(oidc_manager) for this Identity Provider (IdP).
         $endpoint = new \core\oauth2\endpoint();
-        $discovery_ep = $endpoint::get_record(['issuerid' => $issuerid, 'name' => 'discovery_endpoint' ]);
-        $discovery_url = $discovery_ep->get('url');
-        error_log("OIDC Dev :: dicovery points = " . $discovery_url);
+        $discoveryendpoint = $endpoint::get_record(['issuerid' => $issuerid, 'name' => 'discovery_endpoint' ]);
+        $discoveryurl = $discoveryendpoint->get('url');
+        error_log("OIDC Dev :: dicovery points = " . $discoveryurl);
 
-        //send request to the discovery endpoint
-        $curl_client = new curl();
-        $json_response = $curl_client->get($discovery_url);
-        $response = json_decode($json_response);
+        // Sending request to the discovery endpoint.
+        $curlclient = new curl();
+        $jsonresponse = $curlclient->get($discoveryurl);
+        $response = json_decode($jsonresponse);
 
-        error_log("OIDC Dev :: dicovery response = " . $json_response );
+        error_log("OIDC Dev :: dicovery response = " . $jsonresponse );
 
-        //send request to get the jwk from jwk endpoint
-        $json_response = $curl_client->get($response->jwks_uri);
-        $response = json_decode($json_response);
+        // Sending request to get the jwk from jwk endpoint.
+        $jsonresponse = $curlclient->get($response->jwks_uri);
+        $response = json_decode($jsonresponse);
         $keys = $response->keys;
 
-        //checking every key if it's existed in the database already or not yet
+        // Checking every key if it's existed in the database already or not yet.
         foreach ($keys as $key) {
-            if($key->use === "sig"){
-                //first check if the key with same kid already exists
+            if ($key->use === "sig") {
+                // First check if the key with same kid already exists.
                 $persistent = new oidc_idp_key();
                 $count = $persistent::count_records(['keyid' => $key->kid , 'ap_id' => $issuerid]);
 
-                if ($count > 0){
-                    continue; //skip if the key already in the database
+                if ($count > 0) {
+                    continue; // Skip if the key is already in the database.
                 }
 
-                //save the key in the database, since it's new
+                // Save the key in the database, since it's new.
                 $data = new stdClass();
                 $data->keyid = $key->kid;
                 $data->ap_id = $issuerid;
