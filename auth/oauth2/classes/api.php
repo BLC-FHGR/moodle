@@ -22,13 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace auth_oauth2;
+defined('MOODLE_INTERNAL') || die();
 
+require_once($CFG->dirroot . '/auth/oauth2/vendor/autoload.php'); // Required for JWT Validation.
+use Jose\Object\JWK;
+use Jose\Loader;
 use context_user;
 use stdClass;
 use moodle_exception;
 use moodle_url;
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Static list of api methods for auth oauth2 configuration.
@@ -405,4 +407,73 @@ class api {
         $plugininfo = \core_plugin_manager::instance()->get_plugin_info('auth_oauth2');
         return $plugininfo->is_enabled();
     }
+
+    /**
+     * OIDC function to verify the incoming JWT assertion from the OIDC Provider.
+     *
+     * @param string $jwt (Json Web Token String)
+     * @param int $issuerid id from OIDC Provider
+     * @return bool true when verification successful otherwise false
+     */
+    public static function verify_assertion($jwt, $issuerid) {
+        if (!isset($issuerid)) {
+            return false;
+        }
+
+        // Validation of ID Token.
+        // First step is to get the jwks stored in the database, this will be used to verify the signature.
+        $keys = oidc_idp_key::get_records(['ap_id' => $issuerid]);
+
+        // Split the id token by '.'.
+        $jwtarray = explode('.' , $jwt);
+
+        if (count($jwtarray) == 3) {
+            // The token in JWS format.
+            $header = json_decode(base64_decode( $jwtarray[0]) );
+            $payload = json_decode(base64_decode( $jwtarray[1]) );
+
+            // Checking iss claim, if it holds the same issuer as the registered one.
+            $issuerobj = new \core\oauth2\issuer($issuerid);
+            $issuerobj->read();
+
+            if ( $payload->aud !== $issuerobj->get('clientid')) {
+                return false;
+            } else if ($payload->iss !== $issuerobj->get('baseurl')) {
+                return false;
+            } else if (isset($payload->iat) && $payload->iat >= time() + 10) {
+                return false;
+            } else if (isset($payload->exp) && $payload->exp <= time()) {
+                return false;
+            } else if (isset($payload->nbf) && $payload->nbf > time()) {
+                return false;
+            } else if (!isset($payload->sub)) {
+                return false;
+            } else {
+                // Verifying the signature with the keys using jose framework.
+                foreach ($keys as $key) {
+                    if ($header->kid === $key->get('keyid')) {
+                        // Convert the saved json format of jwk into a JWK object.
+                        $jwkjson = json_decode($key->get('jwk'), true );
+                        $jwk = new JWK($jwkjson);
+
+                        $loader = new Loader();
+                        $input = $jwt;
+                        try {
+                            $jws = $loader->loadAndVerifySignatureUsingKey(
+                                $input,
+                                $jwk,
+                                ['RS256'],
+                                $signatureindex
+                            );
+                            return true;
+                        } catch (Throwable $e) {
+                            return false;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
 }

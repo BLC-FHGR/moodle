@@ -28,5 +28,16 @@
         <INDEX NAME="search_index" UNIQUE="false" FIELDS="issuerid, username"/>
       </INDEXES>
     </TABLE>
+    <TABLE NAME="auth_oauth2_idp_key" COMMENT="keys for communicate with IDP/AP">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="keyid" TYPE="char" LENGTH="1024" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="ap_id" TYPE="char" LENGTH="1024" NOTNULL="true" SEQUENCE="false" COMMENT="AP/IdP id"/>
+        <FIELD NAME="jwk" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="jwk that belongs to a specific IdP/AP"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
   </TABLES>
 </XMLDB>

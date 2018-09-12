@@ -300,4 +300,17 @@ class client extends \oauth2_client {
 
         return (array)$user;
     }
+
+    /**
+     * Override the upgrade_token() from the oauthlib.
+     * This function will try to get the issuer id, which will be used to verify
+     * the incoming assertion from OIDC Provider.
+     *
+     * @param string $code authentication code from the Provider
+     * @param int $issuerid id from the issuer which is required for oidc process(JWT Validation)
+     */
+    public function upgrade_token($code, $issuerid = null) {
+        $issuerid = $this->get_issuer()->get('id');
+        return parent::upgrade_token($code, $issuerid);
+    }
 }
