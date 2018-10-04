@@ -2254,5 +2254,65 @@ function xmldb_main_upgrade($oldversion) {
         upgrade_main_savepoint(true, 2018051700.08);
     }
 
+    if ($oldversion < 2018051701.03) {
+        // Find all duplicate top level categories per context.
+        $duplicates = $DB->get_records_sql("SELECT qc1.*
+                                              FROM {question_categories} qc1
+                                              JOIN {question_categories} qc2
+                                                ON qc1.contextid = qc2.contextid AND qc1.id <> qc2.id
+                                             WHERE qc1.parent = 0 AND qc2.parent = 0
+                                          ORDER BY qc1.contextid, qc1.id");
+
+        // For each context, let the first top category to remain as top category and make the rest its children.
+        $currentcontextid = 0;
+        $chosentopid = 0;
+        foreach ($duplicates as $duplicate) {
+            if ($currentcontextid != $duplicate->contextid) {
+                $currentcontextid = $duplicate->contextid;
+                $chosentopid = $duplicate->id;
+            } else {
+                $DB->set_field('question_categories', 'parent', $chosentopid, ['id' => $duplicate->id]);
+            }
+        }
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018051701.03);
+    }
+
+    if ($oldversion < 2018051701.10) {
+        // Remove module associated blog posts for non-existent (deleted) modules.
+        $sql = "SELECT ba.contextid as modcontextid
+                  FROM {blog_association} ba
+                  JOIN {post} p
+                       ON p.id = ba.blogid
+             LEFT JOIN {context} c
+                       ON c.id = ba.contextid
+                 WHERE p.module = :module
+                       AND c.contextlevel IS NULL
+              GROUP BY ba.contextid";
+        if ($deletedmodules = $DB->get_records_sql($sql, array('module' => 'blog'))) {
+            foreach ($deletedmodules as $module) {
+                $assocblogids = $DB->get_fieldset_select('blog_association', 'blogid',
+                    'contextid = :contextid', ['contextid' => $module->modcontextid]);
+                list($sql, $params) = $DB->get_in_or_equal($assocblogids, SQL_PARAMS_NAMED);
+
+                $DB->delete_records_select('tag_instance', "itemid $sql", $params);
+                $DB->delete_records_select('post', "id $sql AND module = :module",
+                    array_merge($params, ['module' => 'blog']));
+                $DB->delete_records('blog_association', ['contextid' => $module->modcontextid]);
+            }
+        }
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018051701.10);
+    }
+
+    if ($oldversion < 2018051702.02) {
+        // Remove unused setting.
+        unset_config('messaginghidereadnotifications');
+
+        // Main savepoint reached.
+        upgrade_main_savepoint(true, 2018051702.02);
+    }
+
     return true;
 }

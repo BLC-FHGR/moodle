@@ -286,8 +286,10 @@ form.popupform div {
     overflow: auto;
 }
 
+// Minimum height required for a menu in a table inside a scrollable div.
 .no-overflow > .generaltable {
     margin-bottom: 0;
+    min-height: 10em;
 }
 // Accessibility features
 
@@ -1083,17 +1085,6 @@ body#page-lib-editor-tinymce-plugins-moodlemedia-preview {
     white-space: nowrap;
     text-align: center;
 }
-
-
-.initialbarlabel {
-    display: inline-block;
-    width: 6em;
-    float: left;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 
 /* Moodle Dialogue Settings (moodle-core-dialogue)  */
 .moodle-dialogue-base .moodle-dialogue-lightbox {
