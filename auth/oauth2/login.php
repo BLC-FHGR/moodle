@@ -40,17 +40,26 @@ if (!\auth_oauth2\api::is_enabled()) {
     throw new \moodle_exception('notenabled', 'auth_oauth2');
 }
 
-if(!isset($issuerid)){
-    //assertion handling search issuer in database
-    //get issuer from assertion claim(aud), assertion for now just JWS
+if (!isset($issuerid)) {
+    // Sssertion handling search issuer in database.
+    // Get issuer from assertion claim(aud), assertion for now just JWS.
     $assertion = required_param('assertion', PARAM_RAW);
     $assertion = explode('.', $assertion);
-    $payload = json_decode(base64_decode($assertion[1]));
+    $counter = count($assertion);
 
-    error_log('OIDC Dev :: payload assertion = ' . $payload->aud);
+    $baseurlIssuer = '';
 
+    if ($counter == 5) {
+        // JWE
+        $header = json_decode(base64_decode($assertion[0]));
+        $baseurlIssuer = $header->aud;
+    } else if ($counter == 3) {
+        // JWS
+        $payload = json_decode(base64_decode($assertion[1]));
+        $baseurlIssuer = $payload->aud;
+    }
+  
     //get issuer id from database
-    $baseurlIssuer = $payload->aud;
     $issuerRecord = $DB->get_record_sql('SELECT id FROM {oauth2_issuer} WHERE ' . $DB->sql_compare_text('baseurl') . ' = "'. $baseurlIssuer .'";');
     
     $issuerid = $issuerRecord->id;
