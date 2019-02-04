@@ -395,11 +395,12 @@ class assign_submission_onlinetext extends assign_submission_plugin {
         $files = array();
         $onlinetextsubmission = $this->get_onlinetext_submission($submission->id);
 
-        if ($onlinetextsubmission) {
-            $finaltext = $this->assignment->download_rewrite_pluginfile_urls($onlinetextsubmission->onlinetext, $user, $this);
-            $formattedtext = format_text($finaltext,
-                                         $onlinetextsubmission->onlineformat,
-                                         array('context'=>$this->assignment->get_context()));
+        // Note that this check is the same logic as the result from the is_empty function but we do
+        // not call it directly because we already have the submission record.
+        if ($onlinetextsubmission && !empty($onlinetextsubmission->onlinetext)) {
+            // Do not pass the text through format_text. The result may not be displayed in Moodle and
+            // may be passed to external services such as document conversion or portfolios.
+            $formattedtext = $this->assignment->download_rewrite_pluginfile_urls($onlinetextsubmission->onlinetext, $user, $this);
             $head = '<head><meta charset="UTF-8"></head>';
             $submissioncontent = '<!DOCTYPE html><html>' . $head . '<body>'. $formattedtext . '</body></html>';
 
@@ -575,8 +576,13 @@ class assign_submission_onlinetext extends assign_submission_plugin {
      */
     public function is_empty(stdClass $submission) {
         $onlinetextsubmission = $this->get_onlinetext_submission($submission->id);
+        $wordcount = 0;
 
-        return empty($onlinetextsubmission->onlinetext);
+        if (isset($onlinetextsubmission->onlinetext)) {
+            $wordcount = count_words(trim($onlinetextsubmission->onlinetext));
+        }
+
+        return $wordcount == 0;
     }
 
     /**
@@ -592,7 +598,13 @@ class assign_submission_onlinetext extends assign_submission_plugin {
         if (!isset($data->onlinetext_editor)) {
             return true;
         }
-        return !strlen((string)$data->onlinetext_editor['text']);
+        $wordcount = 0;
+
+        if (isset($data->onlinetext_editor['text'])) {
+            $wordcount = count_words(trim((string)$data->onlinetext_editor['text']));
+        }
+
+        return $wordcount == 0;
     }
 
     /**

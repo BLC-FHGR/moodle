@@ -683,6 +683,9 @@ if ($mform_post->is_cancelled()) {
     // WARNING: the $fromform->message array has been overwritten, do not use it anymore!
     $fromform->messagetrust  = trusttext_trusted($modcontext);
 
+    // Clean message text.
+    $fromform = trusttext_pre_edit($fromform, 'message', $modcontext);
+
     if ($fromform->edit) {           // Updating a post
         unset($fromform->groupid);
         $fromform->id = $fromform->edit;
@@ -1042,12 +1045,13 @@ if (!empty($parent)) {
 } else {
     if (!empty($forum->intro)) {
         echo $OUTPUT->box(format_module_intro('forum', $forum, $cm->id), 'generalbox', 'intro');
-
-        if (!empty($CFG->enableplagiarism)) {
-            require_once($CFG->libdir.'/plagiarismlib.php');
-            echo plagiarism_print_disclosure($cm->id);
-        }
     }
+}
+
+// Call print disclosure for enabled plagiarism plugins.
+if (!empty($CFG->enableplagiarism)) {
+    require_once($CFG->libdir.'/plagiarismlib.php');
+    echo plagiarism_print_disclosure($cm->id);
 }
 
 if (!empty($formheading)) {

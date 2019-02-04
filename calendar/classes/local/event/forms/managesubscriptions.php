@@ -40,9 +40,10 @@ class managesubscriptions extends \moodleform {
      * Defines the form used to add calendar subscriptions.
      */
     public function definition() {
+        global $PAGE;
         $mform = $this->_form;
-        $eventtypes = calendar_get_all_allowed_types();
-        if (empty($eventtypes)) {
+        $eventtypes = calendar_get_allowed_event_types();
+        if (in_array(true, $eventtypes, true) === false) {
             print_error('nopermissiontoupdatecalendar');
         }
 
@@ -86,6 +87,9 @@ class managesubscriptions extends \moodleform {
 
         // Eventtype: 0 = user, 1 = global, anything else = course ID.
         $mform->addElement('submit', 'add', get_string('add'));
+
+        // Add the javascript required to enhance this mform.
+        $PAGE->requires->js_call_amd('core_calendar/event_form', 'init', [$mform->getAttribute('id')]);
     }
 
     /**
@@ -100,9 +104,10 @@ class managesubscriptions extends \moodleform {
 
         $errors = parent::validation($data, $files);
 
-        $coursekey = isset($data['groupcourseid']) ? 'groupcourseid' : 'courseid';
-        $eventtypes = calendar_get_all_allowed_types();
         $eventtype = isset($data['eventtype']) ? $data['eventtype'] : null;
+        $coursekey = ($eventtype == 'group') ? 'groupcourseid' : 'courseid';
+        $courseid = (!empty($data[$coursekey])) ? $data[$coursekey] : null;
+        $eventtypes = calendar_get_allowed_event_types($courseid);
 
         if (empty($eventtype) || !isset($eventtypes[$eventtype])) {
             $errors['eventtype'] = get_string('invalideventtype', 'calendar');

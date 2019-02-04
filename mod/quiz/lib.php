@@ -1341,7 +1341,7 @@ function quiz_update_events($quiz, $override = null) {
                 }
                 $event->name = get_string('quizeventopens', 'quiz', $eventname);
                 // The method calendar_event::create will reuse a db record if the id field is set.
-                calendar_event::create($event);
+                calendar_event::create($event, false);
             }
             if ($timeclose && $addclose) {
                 if ($oldevent = array_shift($oldevents)) {
@@ -1360,7 +1360,7 @@ function quiz_update_events($quiz, $override = null) {
                         $event->priority = $closepriorities[$timeclose];
                     }
                 }
-                calendar_event::create($event);
+                calendar_event::create($event, false);
             }
         }
     }
@@ -1800,9 +1800,7 @@ function quiz_supports($feature) {
 function quiz_get_extra_capabilities() {
     global $CFG;
     require_once($CFG->libdir . '/questionlib.php');
-    $caps = question_get_all_capabilities();
-    $caps[] = 'moodle/site:accessallgroups';
-    return $caps;
+    return question_get_all_capabilities();
 }
 
 /**

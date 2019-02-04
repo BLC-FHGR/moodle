@@ -938,6 +938,34 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Check that it is possible to restrict the calendar events to events where the user is not suspended in the course.
+     */
+    public function test_get_calendar_action_events_by_timesort_suspended_course() {
+        $this->resetAfterTest();
+        $user1 = $this->getDataGenerator()->create_user();
+        $user2 = $this->getDataGenerator()->create_user();
+        $course = $this->getDataGenerator()->create_course();
+        $this->setAdminUser();
+        $lesson = $this->getDataGenerator()->create_module('lesson', [
+                'name' => 'Lesson 1',
+                'course' => $course->id,
+                'available' => time(),
+                'deadline' => (time() + (60 * 60 * 24 * 5))
+            ]
+        );
+        $this->getDataGenerator()->enrol_user($user1->id, $course->id, null, 'manual', 0, 0, ENROL_USER_SUSPENDED);
+        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
+
+        $this->setUser($user1);
+        $result = core_calendar_external::get_calendar_action_events_by_timesort(0, null, 0, 20, true);
+        $this->assertEmpty($result->events);
+        $this->setUser($user2);
+        $result = core_calendar_external::get_calendar_action_events_by_timesort(0, null, 0, 20, true);
+        $this->assertCount(1, $result->events);
+        $this->assertEquals('Lesson 1 closes', $result->events[0]->name);
+    }
+
+    /**
      * Requesting calendar events from a given course and time should return all
      * events with a sort time at or after the requested time. All events prior
      * to that time should not be return.
@@ -1981,12 +2009,12 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
         $this->resetAfterTest(true);
         $this->setUser($user);
 
-        $this->expectException('moodle_exception');
-
-        external_api::clean_returnvalue(
+        $result = external_api::clean_returnvalue(
             core_calendar_external::submit_create_update_form_returns(),
             core_calendar_external::submit_create_update_form($querystring)
         );
+
+        $this->assertTrue($result['validationerror']);
     }
 
     /**
@@ -2019,7 +2047,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
                 'minute' => 0,
             ],
             'eventtype' => 'group',
-            'groupid' => "{$course->id}-{$group->id}", // The form format.
+            'groupid' => $group->id,
             'groupcourseid' => $course->id,
             'description' => [
                 'text' => '',
@@ -2091,7 +2119,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
                 'minute' => 0,
             ],
             'eventtype' => 'group',
-            'groupid' => "{$course->id}-{$group->id}", // The form format.
+            'groupid' => $group->id,
             'groupcourseid' => $course->id,
             'description' => [
                 'text' => '',
@@ -2164,7 +2192,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
                 'minute' => 0,
             ],
             'eventtype' => 'group',
-            'groupid' => "{$course->id}-{$group->id}", // The form format.
+            'groupid' => $group->id,
             'groupcourseid' => $course->id,
             'description' => [
                 'text' => '',
@@ -2237,7 +2265,7 @@ class core_calendar_externallib_testcase extends externallib_advanced_testcase {
                 'minute' => 0,
             ],
             'eventtype' => 'group',
-            'groupid' => "{$course->id}-{$group->id}", // The form format.
+            'groupid' => $group->id,
             'groupcourseid' => $course->id,
             'description' => [
                 'text' => '',

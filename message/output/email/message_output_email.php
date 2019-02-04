@@ -51,7 +51,7 @@ class message_output_email extends message_output {
      * @param object $eventdata the event data submitted by the message sender plus $eventdata->savedmessageid
      */
     function send_message($eventdata) {
-        global $CFG;
+        global $CFG, $DB;
 
         // skip any messaging suspended and deleted users
         if ($eventdata->userto->auth === 'nologin' or $eventdata->userto->suspended or $eventdata->userto->deleted) {
@@ -140,6 +140,10 @@ class message_output_email extends message_output {
             // ---- END LOGGING EMAIL ----
         }
         // Extension end 2.
+
+        if ($result && $notification = $DB->get_record('notifications', ['id' => $eventdata->savedmessageid])) {
+            \core_message\api::mark_notification_as_read($notification);
+        }
 
         // Remove an attachment file if any.
         if (!empty($attachment) && file_exists($attachment)) {

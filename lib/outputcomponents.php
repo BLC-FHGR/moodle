@@ -519,12 +519,19 @@ class help_icon implements renderable, templatable {
         $data->icon = (new pix_icon('help', $alt, 'core', ['class' => 'iconhelp']))->export_for_template($output);
         $data->linktext = $this->linktext;
         $data->title = get_string('helpprefix2', '', trim($title, ". \t"));
-        $data->url = (new moodle_url('/help.php', [
+
+        $options = [
             'component' => $this->component,
             'identifier' => $this->identifier,
             'lang' => current_language()
-        ]))->out(false);
+        ];
 
+        // Debugging feature lets you display string identifier and component.
+        if (isset($CFG->debugstringids) && $CFG->debugstringids && optional_param('strings', 0, PARAM_INT)) {
+            $options['strings'] = 1;
+        }
+
+        $data->url = (new moodle_url('/help.php', $options))->out(false);
         $data->ltr = !right_to_left();
         return $data;
     }
@@ -4128,6 +4135,12 @@ class action_menu implements renderable, templatable {
     public $actiontext = null;
 
     /**
+     * The string to use for the accessible label for the menu.
+     * @var array
+     */
+    public $actionlabel = null;
+
+    /**
      * An icon to use for the toggling the secondary menu (dropdown).
      * @var actionicon
      */
@@ -4182,6 +4195,16 @@ class action_menu implements renderable, templatable {
         foreach ($actions as $action) {
             $this->add($action);
         }
+    }
+
+    /**
+     * Sets the label for the menu trigger.
+     *
+     * @param string $label The text
+     * @return null
+     */
+    public function set_action_label($label) {
+        $this->actionlabel = $label;
     }
 
     /**
@@ -4287,7 +4310,7 @@ class action_menu implements renderable, templatable {
             $pixicon = '<b class="caret"></b>';
             $linkclasses[] = 'textmenu';
         } else {
-            $title = new lang_string('actions', 'moodle');
+            $title = new lang_string('actionsmenu', 'moodle');
             $this->actionicon = new pix_icon(
                 't/edit_menu',
                 '',
@@ -4306,10 +4329,17 @@ class action_menu implements renderable, templatable {
         if ($this->actiontext) {
             $string = $this->actiontext;
         }
+        $label = '';
+        if ($this->actionlabel) {
+            $label = $this->actionlabel;
+        } else {
+            $label = $title;
+        }
         $actions = $this->primaryactions;
         $attributes = array(
             'class' => implode(' ', $linkclasses),
             'title' => $title,
+            'aria-label' => $label,
             'id' => 'action-menu-toggle-'.$this->instance,
             'role' => 'menuitem'
         );
@@ -4382,6 +4412,9 @@ class action_menu implements renderable, templatable {
      *
      * The constraint is applied when the dialogue is shown and limits the display of the dialogue to within the
      * element the constraint identifies.
+     *
+     * This is required whenever the action menu is displayed inside any CSS element with the .no-overflow class
+     * (flexible_table and any of it's child classes are a likely candidate).
      *
      * @param string $ancestorselector A snippet of CSS used to identify the ancestor to contrain the dialogue to.
      */
@@ -4472,9 +4505,16 @@ class action_menu implements renderable, templatable {
         if (!empty($this->menutrigger)) {
             $primary->menutrigger = $this->menutrigger;
             $primary->triggerextraclasses = $this->triggerextraclasses;
+            if ($this->actionlabel) {
+                $primary->title = $this->actionlabel;
+            } else if ($this->actiontext) {
+                $primary->title = $this->actiontext;
+            } else {
+                $primary->title = strip_tags($this->menutrigger);
+            }
         } else {
-            $primary->title = get_string('actions');
-            $actionicon = new pix_icon('t/edit_menu', '', 'moodle', ['class' => 'iconsmall actionmenu', 'title' => '']);
+            $primary->title = get_string('actionsmenu');
+            $actionicon = new pix_icon('t/edit_menu', '', 'moodle', ['class' => 'iconsmall actionmenu', 'title' => $primary->title]);
         }
 
         if ($actionicon instanceof pix_icon) {

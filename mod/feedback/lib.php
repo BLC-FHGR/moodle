@@ -45,15 +45,6 @@ define('FEEDBACK_EVENT_TYPE_OPEN', 'open');
 define('FEEDBACK_EVENT_TYPE_CLOSE', 'close');
 
 /**
- * Returns all other caps used in module.
- *
- * @return array
- */
-function feedback_get_extra_capabilities() {
-    return array('moodle/site:accessallgroups');
-}
-
-/**
  * @uses FEATURE_GROUPS
  * @uses FEATURE_GROUPINGS
  * @uses FEATURE_MOD_INTRO
@@ -828,7 +819,7 @@ function feedback_set_events($feedback) {
             // Calendar event exists so update it.
             $event->id = $eventid;
             $calendarevent = calendar_event::load($event->id);
-            $calendarevent->update($event);
+            $calendarevent->update($event, false);
         } else {
             // Event doesn't exist so create one.
             $event->courseid     = $feedback->course;
@@ -837,7 +828,7 @@ function feedback_set_events($feedback) {
             $event->modulename   = 'feedback';
             $event->instance     = $feedback->id;
             $event->eventtype    = FEEDBACK_EVENT_TYPE_OPEN;
-            calendar_event::create($event);
+            calendar_event::create($event, false);
         }
     } else if ($eventid) {
         // Calendar event is on longer needed.
@@ -863,7 +854,7 @@ function feedback_set_events($feedback) {
             // Calendar event exists so update it.
             $event->id = $eventid;
             $calendarevent = calendar_event::load($event->id);
-            $calendarevent->update($event);
+            $calendarevent->update($event, false);
         } else {
             // Event doesn't exist so create one.
             $event->courseid     = $feedback->course;
@@ -871,7 +862,7 @@ function feedback_set_events($feedback) {
             $event->userid       = 0;
             $event->modulename   = 'feedback';
             $event->instance     = $feedback->id;
-            calendar_event::create($event);
+            calendar_event::create($event, false);
         }
     } else if ($eventid) {
         // Calendar event is on longer needed.

@@ -1678,9 +1678,16 @@ class mod_assign_locallib_testcase extends advanced_testcase {
         assign::cron();
 
         $events = $sink->get_events();
+        // Notification has been marked as read, so now first event should be a 'notification_viewed' one. For student.
         $event = reset($events);
+        $this->assertInstanceOf('\core\event\notification_viewed', $event);
+        $this->assertEquals($student->id, $event->userid);
+
+        // And next event should be the 'notification_sent' one. For teacher.
+        $event = $events[1];
         $this->assertInstanceOf('\core\event\notification_sent', $event);
         $this->assertEquals($assign->get_course()->id, $event->other['courseid']);
+        $this->assertEquals($teacher->id, $event->userid);
         $sink->close();
     }
 
@@ -1719,6 +1726,11 @@ class mod_assign_locallib_testcase extends advanced_testcase {
 
         $this->setUser($teacher);
         $this->assertEquals(true, $assign->can_grade());
+
+        // Test the viewgrades capability for other users.
+        $this->setUser();
+        $this->assertTrue($assign->can_grade($teacher->id));
+        $this->assertFalse($assign->can_grade($student->id));
 
         // Test the viewgrades capability - without mod/assign:grade.
         $this->setUser($student);
@@ -3882,6 +3894,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $assign->get_user_grade($student->id, true);
 
         // Set the grade to something errant.
+        // We don't set the grader here, so we expect it to be -1 as a result.
         $DB->set_field(
             'assign_grades',
             'grade',
@@ -3899,6 +3912,7 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         // Check that the gradebook was updated with the assign grade. So we can guarentee test results later on.
         $expectedgrade = $grade == -1 ? null : $grade; // Assign sends null to the gradebook for -1 grades.
         $gradegrade = grade_grade::fetch(array('userid' => $student->id, 'itemid' => $assign->get_grade_item()->id));
+        $this->assertEquals(-1, $gradegrade->usermodified);
         $this->assertEquals($expectedgrade, $gradegrade->rawgrade);
 
         // Call fix_null_grades().
@@ -3909,6 +3923,9 @@ Anchor link 2:<a title=\"bananas\" href=\"../logo-240x60.gif\">Link text</a>
         $this->assertSame(true, $result);
 
         $gradegrade = grade_grade::fetch(array('userid' => $student->id, 'itemid' => $assign->get_grade_item()->id));
+
+        $this->assertEquals(-1, $gradegrade->usermodified);
+        $this->assertEquals($gradebookvalue, $gradegrade->finalgrade);
 
         // Check that the grade was updated in the gradebook by fix_null_grades.
         $this->assertEquals($gradebookvalue, $gradegrade->finalgrade);

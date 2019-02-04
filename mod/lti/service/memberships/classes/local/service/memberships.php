@@ -229,14 +229,16 @@ class memberships extends \mod_lti\local\ltiservice\service_base {
                                                                                      $user->id,
                                                                                      $lti->servicesalt,
                                                                                      $lti->typeid));
+                    // Not per specification but added to comply with earlier version of the service.
+                    $member->resultSourcedId = $message->lis_result_sourcedid;
                 }
-                $membership->message = $message;
+                $membership->message = [$message];
             }
 
             foreach ($includedcapabilities as $capabilityname => $capability) {
                 if ($islti2) {
-                    if (!in_array($capabilityname, $enabledcapabilities)) {
-                        continue;
+                    if (in_array($capabilityname, $enabledcapabilities)) {
+                        $member->{$capability['member.field']} = $capability['source.value'];
                     }
                 } else {
                     if (($capability['type'] === 'id')

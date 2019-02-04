@@ -2496,7 +2496,7 @@ class core_renderer extends renderer_base {
         global $CFG, $DB;
 
         $user = $userpicture->user;
-        $canviewfullnames = has_capability('moodle/site:viewfullnames', context_system::instance());
+        $canviewfullnames = has_capability('moodle/site:viewfullnames', $this->page->context);
 
         if ($userpicture->alttext) {
             if (!empty($user->imagealt)) {
@@ -3418,6 +3418,7 @@ EOD;
         $am->set_menu_trigger(
             $returnstr
         );
+        $am->set_action_label(get_string('usermenu'));
         $am->set_alignment(action_menu::TR, action_menu::BR);
         $am->set_nowrap_on_items();
         if ($withlinks) {
@@ -4447,6 +4448,22 @@ EOD;
                     } else {
                         $text = $element->getText();
                     }
+                }
+
+                // Generate the form element wrapper ids and names to pass to the template.
+                // This differs between group and non-group elements.
+                if ($element->getType() === 'group') {
+                    // Group element.
+                    // The id will be something like 'fgroup_id_NAME'. E.g. fgroup_id_mygroup.
+                    $elementcontext['wrapperid'] = $elementcontext['id'];
+
+                    // Ensure group elements pass through the group name as the element name so the id_error_{{element.name}} is
+                    // properly set in the template.
+                    $elementcontext['name'] = $elementcontext['groupname'];
+                } else {
+                    // Non grouped element.
+                    // Creates an id like 'fitem_id_NAME'. E.g. fitem_id_mytextelement.
+                    $elementcontext['wrapperid'] = 'fitem_' . $elementcontext['id'];
                 }
 
                 $context = array(
