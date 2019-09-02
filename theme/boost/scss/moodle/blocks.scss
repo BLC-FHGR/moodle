@@ -199,7 +199,7 @@ $doughnut-fill-colour: $brand-warning;
     }
 }
 
-.card-deck {
+.block_myoverview .card-deck {
     .card {
         $card-gutter : $card-deck-margin * 2;
         flex-grow: 0;
@@ -255,4 +255,8 @@ $doughnut-fill-colour: $brand-warning;
     .icon {
         margin-right: 2px;
     }
+}
+
+.block.invisibleblock .card-title {
+    color: $text-muted;
 }

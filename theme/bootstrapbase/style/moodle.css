@@ -5915,6 +5915,9 @@ img.iconsmall {
 .calendarwrapper {
   position: relative;
 }
+.summary-modal-container .description-content {
+  overflow-wrap: break-word;
+}
 .summary-modal-container .description-content > p {
   margin: 0;
 }
@@ -8577,6 +8580,7 @@ a.ygtvspacer:hover {
   display: table-cell;
 }
 .messaging-area-container .messaging-area .messages-area .response .message-box .message-text-container textarea {
+  direction: ltr;
   width: 100%;
   margin: 0;
   resize: none;
@@ -15998,7 +16002,7 @@ body {
   border-width: 2px;
   border-style: dashed;
 }
-.block.invisible .header h2 {
+.block.invisibleblock .header h2 {
   opacity: 0.5;
   filter: alpha(opacity=50);
 }
@@ -16601,12 +16605,14 @@ form {
 .jsenabled .mform .collapsed .fcontainer {
   display: none;
 }
-.mform .fitem .fitemtitle div {
+.mform .fitem .fitemtitle > div:not(.mediaplugin) div {
   display: inline;
 }
-.mform .fitem .fitemtitle .mediaplugin,
-.mform .fitem .fitemtitle .mediaplugin div {
-  display: block;
+.mform .fitem .fitemtitle .mediaplugin > div {
+  margin: 0;
+}
+.que.match .mediaplugin {
+  width: 50vw;
 }
 #adminsettings .error,
 .loginpanel .error,

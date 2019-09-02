@@ -174,7 +174,7 @@ class behat_general extends behat_base {
                 return true;
             },
             $iframename,
-            self::EXTENDED_TIMEOUT
+            behat_base::get_extended_timeout()
         );
     }
 
@@ -271,7 +271,7 @@ class behat_general extends behat_base {
             return;
         }
 
-        $this->getSession()->wait(self::TIMEOUT * 1000, self::PAGE_READY_JS);
+        $this->getSession()->wait(self::get_timeout() * 1000, self::PAGE_READY_JS);
     }
 
     /**
@@ -604,10 +604,10 @@ class behat_general extends behat_base {
             "[count(descendant::*[contains(., $xpathliteral)]) = 0]";
 
         // We should wait a while to ensure that the page is not still loading elements.
-        // Waiting less than self::TIMEOUT as we already waited for the DOM to be ready and
+        // Waiting less than self::get_timeout() as we already waited for the DOM to be ready and
         // all JS to be executed.
         try {
-            $nodes = $this->find_all('xpath', $xpath, false, false, self::REDUCED_TIMEOUT);
+            $nodes = $this->find_all('xpath', $xpath, false, false, self::get_reduced_timeout());
         } catch (ElementNotFoundException $e) {
             // All ok.
             return;
@@ -644,7 +644,7 @@ class behat_general extends behat_base {
                 return true;
             },
             array('nodes' => $nodes, 'text' => $text),
-            self::REDUCED_TIMEOUT,
+            behat_base::get_reduced_timeout(),
             false,
             true
         );
@@ -728,7 +728,7 @@ class behat_general extends behat_base {
         // We should wait a while to ensure that the page is not still loading elements.
         // Giving preference to the reliability of the results rather than to the performance.
         try {
-            $nodes = $this->find_all('xpath', $xpath, false, $container, self::REDUCED_TIMEOUT);
+            $nodes = $this->find_all('xpath', $xpath, false, $container, self::get_reduced_timeout());
         } catch (ElementNotFoundException $e) {
             // All ok.
             return;
@@ -754,7 +754,7 @@ class behat_general extends behat_base {
                 return true;
             },
             array('nodes' => $nodes, 'text' => $text, 'element' => $element),
-            self::REDUCED_TIMEOUT,
+            behat_base::get_reduced_timeout(),
             false,
             true
         );
@@ -763,53 +763,126 @@ class behat_general extends behat_base {
     /**
      * Checks, that the first specified element appears before the second one.
      *
-     * @Given /^"(?P<preceding_element_string>(?:[^"]|\\")*)" "(?P<selector1_string>(?:[^"]|\\")*)" should appear before "(?P<following_element_string>(?:[^"]|\\")*)" "(?P<selector2_string>(?:[^"]|\\")*)"$/
+     * @Then :preelement :preselectortype should appear before :postelement :postselectortype
+     * @Then :preelement :preselectortype should appear before :postelement :postselectortype in the :containerelement :containerselectortype
      * @throws ExpectationException
      * @param string $preelement The locator of the preceding element
      * @param string $preselectortype The locator of the preceding element
      * @param string $postelement The locator of the latest element
      * @param string $postselectortype The selector type of the latest element
+     * @param string $containerelement
+     * @param string $containerselectortype
      */
-    public function should_appear_before($preelement, $preselectortype, $postelement, $postselectortype) {
-
-        // We allow postselectortype as a non-text based selector.
-        list($preselector, $prelocator) = $this->transform_selector($preselectortype, $preelement);
-        list($postselector, $postlocator) = $this->transform_selector($postselectortype, $postelement);
-
-        $prexpath = $this->find($preselector, $prelocator)->getXpath();
-        $postxpath = $this->find($postselector, $postlocator)->getXpath();
-
-        // Using following xpath axe to find it.
-        $msg = '"'.$preelement.'" "'.$preselectortype.'" does not appear before "'.$postelement.'" "'.$postselectortype.'"';
-        $xpath = $prexpath.'/following::*[contains(., '.$postxpath.')]';
-        if (!$this->getSession()->getDriver()->find($xpath)) {
-            throw new ExpectationException($msg, $this->getSession());
-        }
+    public function should_appear_before(
+        string $preelement,
+        string $preselectortype,
+        string $postelement,
+        string $postselectortype,
+        $containerelement = null,
+        $containerselectortype = null
+    ) {
+        $msg = "'{$preelement}' '{$preselectortype}' does not appear after '{$postelement}' '{$postselectortype}'";
+        $this->check_element_order(
+            $containerelement,
+            $containerselectortype,
+            $preelement,
+            $preselectortype,
+            $postelement,
+            $postselectortype,
+            $msg
+        );
     }
 
     /**
      * Checks, that the first specified element appears after the second one.
      *
-     * @Given /^"(?P<following_element_string>(?:[^"]|\\")*)" "(?P<selector1_string>(?:[^"]|\\")*)" should appear after "(?P<preceding_element_string>(?:[^"]|\\")*)" "(?P<selector2_string>(?:[^"]|\\")*)"$/
+     * @Then :postelement :postselectortype should appear after :preelement :preselectortype
+     * @Then :postelement :postselectortype should appear after :preelement :preselectortype in the :containerelement :containerselectortype
      * @throws ExpectationException
      * @param string $postelement The locator of the latest element
      * @param string $postselectortype The selector type of the latest element
      * @param string $preelement The locator of the preceding element
      * @param string $preselectortype The locator of the preceding element
+     * @param string $containerelement
+     * @param string $containerselectortype
      */
-    public function should_appear_after($postelement, $postselectortype, $preelement, $preselectortype) {
+    public function should_appear_after(
+        string $postelement,
+        string $postselectortype,
+        string $preelement,
+        string $preselectortype,
+        $containerelement = null,
+        $containerselectortype = null
+    ) {
+        $msg = "'{$postelement}' '{$postselectortype}' does not appear after '{$preelement}' '{$preselectortype}'";
+        $this->check_element_order(
+            $containerelement,
+            $containerselectortype,
+            $preelement,
+            $preselectortype,
+            $postelement,
+            $postselectortype,
+            $msg
+        );
+    }
 
-        // We allow postselectortype as a non-text based selector.
-        list($postselector, $postlocator) = $this->transform_selector($postselectortype, $postelement);
+    /**
+     * Shared code to check whether an element is before or after another one.
+     *
+     * @param string $containerelement
+     * @param string $containerselectortype
+     * @param string $preelement The locator of the preceding element
+     * @param string $preselectortype The locator of the preceding element
+     * @param string $postelement The locator of the following element
+     * @param string $postselectortype The selector type of the following element
+     * @param string $msg Message to output if this fails
+     */
+    protected function check_element_order(
+        $containerelement,
+        $containerselectortype,
+        string $preelement,
+        string $preselectortype,
+        string $postelement,
+        string $postselectortype,
+        string $msg
+    ) {
+        $containernode = false;
+        if ($containerselectortype && $containerelement) {
+            // Get the container node.
+            $containernode = $this->get_selected_node($containerselectortype, $containerelement);
+            $msg .= " in the '{$containerelement}' '{$containerselectortype}'";
+        }
+
         list($preselector, $prelocator) = $this->transform_selector($preselectortype, $preelement);
+        list($postselector, $postlocator) = $this->transform_selector($postselectortype, $postelement);
 
-        $postxpath = $this->find($postselector, $postlocator)->getXpath();
-        $prexpath = $this->find($preselector, $prelocator)->getXpath();
+        $newlines = [
+            "\r\n",
+            "\r",
+            "\n",
+        ];
+        $prexpath = str_replace($newlines, ' ', $this->find($preselector, $prelocator, false, $containernode)->getXpath());
+        $postxpath = str_replace($newlines, ' ', $this->find($postselector, $postlocator, false, $containernode)->getXpath());
 
-        // Using preceding xpath axe to find it.
-        $msg = '"'.$postelement.'" "'.$postselectortype.'" does not appear after "'.$preelement.'" "'.$preselectortype.'"';
-        $xpath = $postxpath.'/preceding::*[contains(., '.$prexpath.')]';
-        if (!$this->getSession()->getDriver()->find($xpath)) {
+        if ($this->running_javascript()) {
+            // The xpath to do this was running really slowly on certain Chrome versions so we are using
+            // this DOM method instead.
+            $js = <<<EOF
+(function() {
+    var a = document.evaluate("{$prexpath}", document, null, XPathResult.ANY_TYPE, null).iterateNext();
+    var b = document.evaluate("{$postxpath}", document, null, XPathResult.ANY_TYPE, null).iterateNext();
+    return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING;
+})()
+EOF;
+            $ok = $this->getSession()->getDriver()->evaluateScript($js);
+        } else {
+
+            // Using following xpath axe to find it.
+            $xpath = "{$prexpath}/following::*[contains(., {$postxpath})]";
+            $ok = $this->getSession()->getDriver()->find($xpath);
+        }
+
+        if (!$ok) {
             throw new ExpectationException($msg, $this->getSession());
         }
     }
@@ -932,7 +1005,7 @@ class behat_general extends behat_base {
                     return $context->getSession()->getPage()->findAll($args['selector'], $args['locator']);
                 },
                 $params,
-                self::REDUCED_TIMEOUT,
+                behat_base::get_reduced_timeout(),
                 $exception,
                 false
             );
@@ -1124,7 +1197,7 @@ class behat_general extends behat_base {
             // Would be better to use a 1 second sleep because the element should not be there,
             // but we would need to duplicate the whole find_all() logic to do it, the benefit of
             // changing to 1 second sleep is not significant.
-            $this->find($selector, $locator, false, $containernode, self::REDUCED_TIMEOUT);
+            $this->find($selector, $locator, false, $containernode, behat_base::get_reduced_timeout());
         } catch (ElementNotFoundException $e) {
             // It passes.
             return;
@@ -1142,6 +1215,7 @@ class behat_general extends behat_base {
      *
      * @throws ExpectationException
      * @Then /^I change (window|viewport) size to "(small|medium|large|\d+x\d+)"$/
+     * @Then /^I change the (window|viewport) size to "(small|medium|large|\d+x\d+)"$/
      * @param string $windowsize size of the window (small|medium|large|wxh).
      */
     public function i_change_window_size_to($windowviewport, $windowsize) {
@@ -1280,7 +1354,6 @@ class behat_general extends behat_base {
 
     /**
      * Checks that the provided value exist in table.
-     * More info in http://docs.moodle.org/dev/Acceptance_testing#Providing_values_to_steps.
      *
      * First row may contain column headers or numeric indexes of the columns
      * (syntax -1- is also considered to be column index). Column indexes are
@@ -1309,8 +1382,7 @@ class behat_general extends behat_base {
     }
 
     /**
-     * Checks that the provided value exist in table.
-     * More info in http://docs.moodle.org/dev/Acceptance_testing#Providing_values_to_steps.
+     * Checks that the provided values do not exist in a table.
      *
      * @Then /^the following should not exist in the "(?P<table_string>[^"]*)" table:$/
      * @throws ExpectationException
@@ -1390,7 +1462,7 @@ class behat_general extends behat_base {
                 return $this->download_file_from_link($link);
             },
             array('link' => $link),
-            self::EXTENDED_TIMEOUT,
+            behat_base::get_extended_timeout(),
             $exception
         );
 
@@ -1433,7 +1505,7 @@ class behat_general extends behat_base {
                 return $this->download_file_from_link($link);
             },
             array('link' => $link),
-            self::EXTENDED_TIMEOUT,
+            behat_base::get_extended_timeout(),
             $exception
         );
 

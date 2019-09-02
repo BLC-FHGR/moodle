@@ -795,6 +795,12 @@ $CFG->admin = 'admin';
 // Example:
 //   $CFG->behat_usedeprecated = true;
 //
+// If you are using a slow machine, it may help to increase the timeouts that Behat uses. The
+// following example will increase timeouts by a factor of 3 (using 30 seconds instead of 10
+// seconds, for instance).
+// Example:
+//   $CFG->behat_increasetimeout = 3;
+//
 // Including feature files from directories outside the dirroot is possible if required. The setting
 // requires that the running user has executable permissions on all parent directories in the paths.
 // Example:
@@ -873,6 +879,11 @@ $CFG->admin = 'admin';
 // there are no spaces in the path - if necessary copy the files 'gswin32c.exe'
 // and 'gsdll32.dll' to a new folder without a space in the path)
 //      $CFG->pathtogs = '/usr/bin/gs';
+//
+// Path to PHP CLI.
+// Probably something like /usr/bin/php. If you enter this, cron scripts can be
+// executed from admin web interface.
+// $CFG->pathtophp = '';
 //
 // Path to du.
 // Probably something like /usr/bin/du. If you enter this, pages that display
