@@ -4,3 +4,7 @@
 [submodule "enrol/moodle-enrol_evento"]
 	path = enrol/evento
 	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
+[submodule "theme/boost_campus"]
+	path = theme/boost_campus
+	url = https://github.com/moodleuulm/moodle-theme_boost_campus.git
+	branch = master
