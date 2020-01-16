@@ -1,5 +1,5 @@
 [submodule "moodle-local_evento"]
-	path = moodle-local_evento
+	path = local/evento
 	url = https://github.com/BLC-FHGR/moodle-local_evento.git
 [submodule "enrol/moodle-enrol_evento"]
 	path = enrol/evento
