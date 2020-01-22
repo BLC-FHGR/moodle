@@ -8,3 +8,7 @@
 	path = theme/boost_campus
 	url = https://github.com/moodleuulm/moodle-theme_boost_campus.git
 	branch = master
+[submodule "local/eventocoursecreation"]
+	path = local/eventocoursecreation
+	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
+	branch = master
