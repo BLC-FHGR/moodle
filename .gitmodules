@@ -20,11 +20,3 @@
 	path = mod/realtimequiz
 	url = https://github.com/davosmith/moodle-realtimequiz.git
 	branch = master
-[submodule "mod/quiz/report/mod/quiz/report/archive"]
-	path = mod/quiz/report/archive
-	url = https://github.com/bfh/moodle-quiz_archive.git
-	branch = master
-[submodule "mod/quiz/report/mod/quiz/accessrule/safeexambrowser"]
-	path = mod/quiz/accessrule/safeexambrowser
-	url = https://github.com/lucaboesch/moodle-quizaccess_safeexambrowser.git
-	branch = master
