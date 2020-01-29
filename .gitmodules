@@ -12,3 +12,19 @@
 	path = local/eventocoursecreation
 	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
 	branch = master
+[submodule "mod/organizer"]
+	path = mod/organizer
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
+	branch = MOODLE_37_STABLE
+[submodule "mod/realtimequiz"]
+	path = mod/realtimequiz
+	url = https://github.com/davosmith/moodle-realtimequiz.git
+	branch = master
+[submodule "mod/quiz/report/mod/quiz/report/archive"]
+	path = mod/quiz/report/mod/quiz/report/archive
+	url = https://github.com/bfh/moodle-quiz_archive.git
+	branch = master
+[submodule "mod/quiz/report/mod/quiz/accessrule/safeexambrowser"]
+	path = mod/quiz/report/mod/quiz/accessrule/safeexambrowser
+	url = https://github.com/lucaboesch/moodle-quizaccess_safeexambrowser.git
+	branch = master
