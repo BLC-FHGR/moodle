@@ -40,3 +40,31 @@
 	path = question/type/regexp
 	url = https://github.com/rezeau/moodle-qtype_regexp.git
 	branch = MOODLE_38_STABLE
+[submodule "question/behaviour/regexpadaptivewithhelp"]
+	path = question/behaviour/regexpadaptivewithhelp
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
+	branch = MOODLE_38_STABLE
+[submodule "question/behaviour/regexpadaptivewithhelpnopenalty"]
+	path = question/behaviour/regexpadaptivewithhelpnopenalty
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
+	branch = MOODLE_38_STABLE
+[submodule "enrol/waitlist"]
+	path = enrol/waitlist
+	url = https://github.com/emeneo/moodle-enrol_waitlist.git
+	branch = master
+[submodule "availability/condition/language"]
+	path = availability/condition/language
+	url = https://github.com/ewallah/moodle-availability_language.git
+	branch = master
+[submodule "availability/condition/password"]
+	path = availability/condition/password
+	url = https://github.com/moodleuulm/moodle-availability_password.git
+	branch = master
+[submodule "local/downloadcenter"]
+	path = local/downloadcenter
+	url = https://github.com/academic-moodle-cooperation/moodle-local_downloadcenter.git
+	branch = MOODLE_38_STABLE
+[submodule "local/powertla"]
+	path = local/powertla
+	url = https://github.com/BLC-FHGR/PowerTLA.git
+	branch = master
