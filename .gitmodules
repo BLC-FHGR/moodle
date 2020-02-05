@@ -68,3 +68,7 @@
 	path = mod/groupselect
 	url = https://github.com/BLC-FHGR/moodle-mod_groupselect.git
 	branch = master
+[submodule "theme/boost_campus"]
+	path = theme/boost_campus
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_campus.git
+	branch = master
