@@ -24,10 +24,6 @@
 	path = mod/quiz/report/archive
 	url = https://github.com/bfh/moodle-quiz_archive.git
 	branch = master
-[submodule "question/type/kprime"]
-	path = question/type/kprime
-	url = https://github.com/ethz-let/moodle-qtype_kprime.git
-	branch = master
 [submodule "question/type/ordering"]
 	path = question/type/ordering
 	url = https://github.com/gbateson/moodle-qtype_ordering.git
