@@ -56,10 +56,6 @@
 	path = local/downloadcenter
 	url = https://github.com/academic-moodle-cooperation/moodle-local_downloadcenter.git
 	branch = MOODLE_38_STABLE
-[submodule "local/powertla"]
-	path = local/powertla
-	url = https://github.com/BLC-FHGR/PowerTLA.git
-	branch = master
 [submodule "mod/groupselect"]
 	path = mod/groupselect
 	url = https://github.com/BLC-FHGR/moodle-mod_groupselect.git
