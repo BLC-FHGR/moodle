@@ -72,3 +72,7 @@
 	path = theme/htwboost
 	url = https://github.com/BLC-FHGR/FHGRboost.git
 	branch = master
+[submodule "local/powertla"]
+	path = local/powertla
+	url = https://github.com/BLC-FHGR/PowerTLA.git
+	branch = master
