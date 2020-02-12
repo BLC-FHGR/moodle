@@ -56,10 +56,6 @@
 	path = mod/groupselect
 	url = https://github.com/BLC-FHGR/moodle-mod_groupselect.git
 	branch = master
-[submodule "theme/boost_campus"]
-	path = theme/boost_campus
-	url = https://github.com/BLC-FHGR/moodle-theme_boost_campus.git
-	branch = master
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime.git
@@ -68,7 +64,6 @@
 	path = theme/htwboost
 	url = https://github.com/BLC-FHGR/FHGRboost.git
 	branch = master
-
 [submodule "mod/organizer"]
 	path = mod/organizer
 	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
