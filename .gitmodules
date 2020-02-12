@@ -72,3 +72,7 @@
 	path = mod/h5p
 	url = https://github.com/h5p/h5p-moodle-plugin.git
 	branch = stable
+[submodule "theme/boost_campus"]
+	path = theme/boost_campus
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_campus.git
+	branch = master
