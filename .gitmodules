@@ -69,3 +69,7 @@
 	url = https://github.com/BLC-FHGR/FHGRboost.git
 	branch = master
 
+[submodule "mod/organizer"]
+	path = mod/organizer
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
+	branch = MOODLE_38_STABLE
