@@ -75,3 +75,6 @@
 [submodule "report/benchmark"]
 	path = report/benchmark
 	url = https://github.com/mikasmart/moodle-report_benchmark.git
+[submodule "question/type/mtf"]
+	path = question/type/mtf
+	url = https://github.com/ethz-let/qtype_mtf
