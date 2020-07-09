@@ -78,3 +78,15 @@
 [submodule "question/type/mtf"]
 	path = question/type/mtf
 	url = https://github.com/ethz-let/qtype_mtf
+[submodule "admin/tool/lifecycle"]
+	path = admin/tool/lifecycle
+	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+[submodule "course/format/collapsibletopics"]
+	path = course/format/collapsibletopics
+	url = https://github.com/cellule-tice/moodle-format_collapsibletopics.git
+[submodule "blocks/xp"]
+	path = blocks/xp
+	url = https://github.com/FMCorz/moodle-block_xp.git
+[submodule "availability/condition/xp"]
+	path = availability/condition/xp
+	url = https://github.com/FMCorz/moodle-availability_xp.git
