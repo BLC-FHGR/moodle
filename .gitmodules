@@ -54,8 +54,8 @@
 	branch = MOODLE_38_STABLE
 [submodule "mod/groupselect"]
 	path = mod/groupselect
-	url = https://github.com/BLC-FHGR/moodle-mod_groupselect.git
-	branch = master
+	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
+	branch = GROUPSELECT_3_17_STABLE
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime.git
