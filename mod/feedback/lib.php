@@ -1014,6 +1014,20 @@ function feedback_get_incomplete_users(cm_info $cm,
         $allusers = array_slice($allusers, $startpage, $pagecount);
     }
 
+    //Feedback show non-respondents fix(not showing inactive participants) -- FHGR
+    global $COURSE;
+    $sql = "SELECT mdl_user_enrolments.userid as id ,mdl_enrol.id as enrolid, mdl_enrol.courseid, mdl_user_enrolments.status as enrolstatus
+         FROM moodle.mdl_enrol
+         RIGHT JOIN moodle.mdl_user_enrolments ON moodle.mdl_enrol.id=moodle.mdl_user_enrolments.enrolid
+         WHERE courseid=:courseid";
+    $records = $DB->get_records_sql($sql, array('courseid'=> $COURSE->id),0,1000);
+    foreach($records as $record){
+        if(in_array($record->id, $allusers) & $record->enrolstatus == 1){
+           $key = array_search($record->id, $allusers);
+           unset($allusers[$key]);
+        }
+    }
+    
     // Check if we should return the full users objects.
     if ($includestatus) {
         $userrecords = [];
