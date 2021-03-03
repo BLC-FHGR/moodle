@@ -90,3 +90,7 @@
 [submodule "availability/condition/xp"]
 	path = availability/condition/xp
 	url = https://github.com/FMCorz/moodle-availability_xp.git
+[submodule "question/type/gapfill"]
+	path = question/type/gapfill
+	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
+	branch = gapfill_2.11
