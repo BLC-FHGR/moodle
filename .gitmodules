@@ -43,7 +43,7 @@
 [submodule "availability/condition/language"]
 	path = availability/condition/language
 	url = https://github.com/ewallah/moodle-availability_language.git
-	branch = master
+	branch = main
 [submodule "availability/condition/password"]
 	path = availability/condition/password
 	url = https://github.com/moodleuulm/moodle-availability_password.git
