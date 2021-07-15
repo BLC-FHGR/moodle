@@ -98,4 +98,4 @@
 	branch = gapfill_2.11
 [submodule "report/coursesize"]
 	path = report/coursesize
-	url = https://github.com/catalyst/moodle-report_coursesize
+	url = https://github.com/catalyst/moodle-report_coursesize.git
