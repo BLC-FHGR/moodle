@@ -113,10 +113,27 @@ class helper {
      */
     private static function unserializesession($serializedstring) {
         $variables = array();
-        $a = preg_split("/(\w+)\|/", $serializedstring, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+    /*    $a = preg_split("/(\w+)\|/", $serializedstring, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
         $counta = count($a);
         for ($i = 0; $i < $counta; $i = $i + 2) {
-            $variables[$a[$i]] = unserialize($a[$i + 1]);
+            $variables[$a[$i]] = unserialize($a[$i + 1]);*/
+
+        //Securitypatch Shibboleth https://github.com/moodle/moodle/commit/68fbcaf3038b845992c4207cb0523b6f228225fd#diff-bdf49c3c3882102fc017ffb661108c63a836d065888a4093994398cc55c2ea2f
+
+        $index = 0;
+
+        // Find next delimiter after current index. It's key being the characters between those points.
+        while ($delimiterpos = strpos($serializedstring, '|', $index)) {
+            $key = substr($serializedstring, $index, $delimiterpos - $index);
+
+            // Start unserializing immediately after the delimiter. PHP will read as much valid data as possible.
+            $value = unserialize(substr($serializedstring, $delimiterpos + 1),
+                ['allowed_classes' => ['stdClass']]);
+            $variables[$key] = $value;
+
+            // Advance index beyond the length of the previously captured serialized value.
+            $index = $delimiterpos + 1 + strlen(serialize($value));
+
         }
         return $variables;
     }
