@@ -1,0 +1,97 @@
+[submodule "local/evento"]
+	path = local/evento
+	url = https://github.com/BLC-FHGR/moodle-local_evento.git
+	branch = master
+[submodule "enrol/evento"]
+	path = enrol/evento
+	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
+	branch = master
+[submodule "local/eventocoursecreation"]
+	path = local/eventocoursecreation
+	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
+	branch = master
+[submodule "mod/realtimequiz"]
+	path = mod/realtimequiz
+	url = https://github.com/davosmith/moodle-realtimequiz.git
+	branch = master
+[submodule "mod/quiz/accessrule/safeexambrowser"]
+	path = mod/quiz/accessrule/safeexambrowser
+	url = https://github.com/lucaboesch/moodle-quizaccess_safeexambrowser.git
+	branch = master
+[submodule "mod/quiz/report/archive"]
+	path = mod/quiz/report/archive
+	url = https://github.com/bfh/moodle-quiz_archive.git
+	branch = master
+[submodule "question/type/ordering"]
+	path = question/type/ordering
+	url = https://github.com/gbateson/moodle-qtype_ordering.git
+	branch = master
+[submodule "question/type/regexp"]
+	path = question/type/regexp
+	url = https://github.com/rezeau/moodle-qtype_regexp.git
+	branch = MOODLE40
+[submodule "question/behaviour/regexpadaptivewithhelp"]
+	path = question/behaviour/regexpadaptivewithhelp
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
+	branch = master
+[submodule "question/behaviour/regexpadaptivewithhelpnopenalty"]
+	path = question/behaviour/regexpadaptivewithhelpnopenalty
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
+	branch = master
+[submodule "enrol/waitlist"]
+	path = enrol/waitlist
+	url = https://github.com/emeneo/moodle-enrol_waitlist.git
+	branch = master
+[submodule "availability/condition/language"]
+	path = availability/condition/language
+	url = https://github.com/ewallah/moodle-availability_language.git
+	branch = main
+[submodule "availability/condition/password"]
+	path = availability/condition/password
+	url = https://github.com/moodleuulm/moodle-availability_password.git
+	branch = master
+[submodule "local/downloadcenter"]
+	path = local/downloadcenter
+	url = https://github.com/academic-moodle-cooperation/moodle-local_downloadcenter.git
+	branch = master
+[submodule "mod/groupselect"]
+	path = mod/groupselect
+	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
+	branch = GROUPSELECT_3_17_STABLE
+[submodule "question/type/kprime"]
+	path = question/type/kprime
+	url = https://github.com/ethz-let/moodle-qtype_kprime.git
+	branch = master
+[submodule "mod/organizer"]
+	path = mod/organizer
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
+	branch = MOODLE_311_STABLE
+[submodule "theme/boost_campus"]
+	path = theme/boost_campus
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_campus.git
+	branch = master
+[submodule "report/benchmark"]
+	path = report/benchmark
+	url = https://github.com/mikasmart/moodle-report_benchmark.git
+[submodule "question/type/mtf"]
+	path = question/type/mtf
+	url = https://github.com/ethz-let/qtype_mtf
+[submodule "admin/tool/lifecycle"]
+	path = admin/tool/lifecycle
+	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+[submodule "course/format/collapsibletopics"]
+	path = course/format/collapsibletopics
+	url = https://github.com/cellule-tice/moodle-format_collapsibletopics.git
+[submodule "blocks/xp"]
+	path = blocks/xp
+	url = https://github.com/FMCorz/moodle-block_xp.git
+[submodule "availability/condition/xp"]
+	path = availability/condition/xp
+	url = https://github.com/FMCorz/moodle-availability_xp.git
+[submodule "question/type/gapfill"]
+	path = question/type/gapfill
+	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
+	branch = gapfill_2.133
+[submodule "report/coursesize"]
+	path = report/coursesize
+	url = https://github.com/catalyst/moodle-report_coursesize.git
