@@ -87,8 +87,8 @@
 	path = blocks/completion_progress
 	url = https://github.com/jonof/moodle-block_completion_progress.git
 	branch = master
-[submodule " admin/tool/log/store/lanalytics"]
-	path =  admin/tool/log/store/lanalytics
+[submodule "admin/tool/log/store/lanalytics"]
+	path = admin/tool/log/store/lanalytics
 	url = https://github.com/rwthanalytics/moodle-logstore_lanalytics.git
 	branch = master
 [submodule "local/learning_analytics"]
