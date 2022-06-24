@@ -95,3 +95,7 @@
 	path = local/learning_analytics
 	url = https://github.com/rwthanalytics/moodle-local_learning_analytics.git
 	branch = master
+[submodule "mod/hvp"]
+	path = mod/hvp
+	url = https://github.com/h5p/moodle-mod_hvp.git
+	branch = stable
