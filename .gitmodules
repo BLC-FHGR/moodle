@@ -79,3 +79,19 @@
 	path = report/coursesize
 	url = https://github.com/catalyst/moodle-report_coursesize.git
 	branch = MOODLE_39_STABLE
+[submodule "mod/quiz/report/downloadsubmissions"]
+	path = mod/quiz/report/downloadsubmissions
+	url = https://github.com/IITBombayWeb/moodle-quiz_downloadsubmissions.git
+	branch = master
+[submodule "blocks/completion_progress"]
+	path = blocks/completion_progress
+	url = https://github.com/jonof/moodle-block_completion_progress.git
+	branch = master
+[submodule " admin/tool/log/store/lanalytics"]
+	path =  admin/tool/log/store/lanalytics
+	url = https://github.com/rwthanalytics/moodle-logstore_lanalytics.git
+	branch = master
+[submodule "local/learning_analytics"]
+	path = local/learning_analytics
+	url = https://github.com/rwthanalytics/moodle-local_learning_analytics.git
+	branch = master
