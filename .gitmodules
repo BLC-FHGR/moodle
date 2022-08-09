@@ -99,3 +99,6 @@
 	path = mod/hvp
 	url = https://github.com/h5p/moodle-mod_hvp.git
 	branch = stable
+[submodule "blocks/sharing_cart"]
+	path = blocks/sharing_cart
+	url = https://github.com/donhinkelman/moodle-block_sharing_cart
