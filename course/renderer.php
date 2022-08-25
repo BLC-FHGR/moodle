@@ -1191,7 +1191,8 @@ class core_course_renderer extends plugin_renderer_base {
                 $rolenames = array_map(function ($role) {
                     return $role->displayname;
                 }, $coursecontact['roles']);
-                $name = html_writer::tag('span', implode(", ", $rolenames).': ', ['class' => 'font-weight-bold']);
+                //$name = html_writer::tag('span', implode(", ", $rolenames).': ', ['class' => 'font-weight-bold']); //FHGR - Fettschrift entfernen
+                $name = html_writer::tag('span', implode(", ", $rolenames).': ');
                 $name .= html_writer::link(new moodle_url('/user/view.php',
                         ['id' => $coursecontact['user']->id, 'course' => SITEID]),
                         $coursecontact['username']);
