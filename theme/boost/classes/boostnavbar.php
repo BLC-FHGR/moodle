@@ -74,7 +74,7 @@ class boostnavbar implements \renderable {
             $this->remove('mycourses');
             $this->remove('courses');
             // Remove the course category breadcrumb node.
-            $this->remove($this->page->course->category, \breadcrumb_navigation_node::TYPE_CATEGORY);
+            //$this->remove($this->page->course->category, \breadcrumb_navigation_node::TYPE_CATEGORY);
             // Remove the course breadcrumb node.
             $this->remove($this->page->course->id, \breadcrumb_navigation_node::TYPE_COURSE);
             // Remove the navbar nodes that already exist in the secondary navigation menu.
@@ -141,7 +141,7 @@ class boostnavbar implements \renderable {
         }
 
         // Make sure that the last item is not a link. Not sure if this is always a good idea.
-        $this->remove_last_item_action();
+        //$this->remove_last_item_action();
     }
 
     /**
