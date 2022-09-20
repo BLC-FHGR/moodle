@@ -190,7 +190,14 @@ class raw_event_retrieval_strategy implements raw_event_retrieval_strategy_inter
                 // Get the user's courses. Otherwise, get the default courses being shown by the calendar.
                 $usercourses = calendar_get_default_courses(null, 'id, category, groupmode, groupmodeforce',
                         false, $userrecord->id);
-
+                
+                $usercourses = array_filter($usercourses, function($course) use ($courses) {
+                    if (!is_array($courses)) {
+                        $courses = [$courses];
+                    }
+                    return in_array($course->id, $courses);
+                });
+                        
                 // Set calendar filters.
                 list($usercourses, $usergroups, $user) = calendar_set_filters($usercourses, true, $userrecord);
 
