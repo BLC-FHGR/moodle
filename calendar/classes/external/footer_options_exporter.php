@@ -100,19 +100,31 @@ class footer_options_exporter extends exporter {
         $values = new stdClass();
         $values->footerlinks = [];
 
-        if ($this->showfullcalendarlink) {
-            $values->footerlinks[] = (object)[
-                'url' => $this->get_calendar_url(),
-                'linkname' => get_string('fullcalendar', 'calendar'),
-            ];
-        }
 
-        if (!empty($CFG->enablecalendarexport) && $managesubscriptionlink = $this->get_manage_subscriptions_link()) {
-            $values->footerlinks[] = (object)[
-                'url' => $managesubscriptionlink,
-                'linkname' => get_string('managesubscriptions', 'calendar'),
-            ];
+    //FHGR ADJUSTMENT -- Links in calendar block are course specific
+    if ($this->showfullcalendarlink) {
+        $urltmp = $this->get_calendar_url();
+        if(!empty($this->calendar->courseid)){
+            $urltmp .= '&course=' . $this->calendar->courseid;
         }
+        $values->footerlinks[] = (object)[
+            'url' => $urltmp, //'url' => $this->get_calendar_url(),
+            'linkname' => get_string('fullcalendar', 'calendar'),
+        ];
+    }
+
+    if (!empty($CFG->enablecalendarexport) && $managesubscriptionlink = $this->get_manage_subscriptions_link()) {
+        $urltmp = $managesubscriptionlink;
+        if(!empty($this->calendar->courseid)){
+            $urltmp .= '?course=' . $this->calendar->courseid;
+        }
+        $values->footerlinks[] = (object)[
+            'url' => $urltmp, //$managesubscriptionlink,
+            'linkname' => get_string('managesubscriptions', 'calendar'),
+        ];
+    }
+    //FHGR ADJUSMENT END
+
 
         return (array) $values;
     }
