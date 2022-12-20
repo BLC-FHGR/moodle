@@ -262,14 +262,33 @@ trait moodle_read_slave_trait {
     /**
      * Called before each db query.
      * @param string $sql
-     * @param array $params array of parameters
+     * @param array|null $params An array of parameters.
      * @param int $type type of query
      * @param mixed $extrainfo driver specific extra information
      * @return void
      */
-    protected function query_start($sql, array $params = null, $type, $extrainfo = null) {
+    protected function query_start($sql, ?array $params, $type, $extrainfo = null) {
         parent::query_start($sql, $params, $type, $extrainfo);
         $this->select_db_handle($type, $sql);
+    }
+
+    /**
+     * This should be called immediately after each db query. It does a clean up of resources.
+     *
+     * @param mixed $result The db specific result obtained from running a query.
+     * @return void
+     */
+    protected function query_end($result) {
+        if ($this->written) {
+            // Adjust the written time.
+            array_walk($this->written, function (&$val) {
+                if ($val === true) {
+                    $val = microtime(true);
+                }
+            });
+        }
+
+        parent::query_end($result);
     }
 
     /**
@@ -323,15 +342,7 @@ trait moodle_read_slave_trait {
 
                     if (isset($this->written[$tablename])) {
                         $now = $now ?: microtime(true);
-                        // Paranoid check.
-                        if ($this->written[$tablename] === true) {
-                            debugging(
-                                "$tablename last written set to true outside transaction - should not happen!",
-                                DEBUG_DEVELOPER
-                            );
-                            $this->written[$tablename] = $now;
-                            return false;
-                        }
+
                         if ($now - $this->written[$tablename] < $this->slavelatency) {
                             return false;
                         }
@@ -342,9 +353,8 @@ trait moodle_read_slave_trait {
                 return true;
             case SQL_QUERY_INSERT:
             case SQL_QUERY_UPDATE:
-                $now = $this->transactions ? true : microtime(true);
                 foreach ($this->table_names($sql) as $tablename) {
-                    $this->written[$tablename] = $now;
+                    $this->written[$tablename] = true;
                 }
                 return false;
             case SQL_QUERY_STRUCTURE:

@@ -2158,11 +2158,7 @@ function calendar_set_filters(array $courseeventsfrom, $ignorefilters = false, s
             } else if ($isvaliduser) {
                 $groupids = array();
                 foreach ($courseeventsfrom as $courseid => $course) {
-                    // If the user is an editing teacher in there.
-                    if (!empty($user->groupmember[$course->id])) {
-                        // We've already cached the users groups for this course so we can just use that.
-                        $groupids = array_merge($groupids, $user->groupmember[$course->id]);
-                    } else if ($course->groupmode != NOGROUPS || !$course->groupmodeforce) {
+                    if ($course->groupmode != NOGROUPS || !$course->groupmodeforce) {
                         // If this course has groups, show events from all of those related to the current user.
                         $coursegroups = groups_get_user_groups($course->id, $user->id);
                         $groupids = array_merge($groupids, $coursegroups['0']);
@@ -3076,11 +3072,21 @@ function calendar_import_events_from_ical(iCalendar $ical, int $subscriptionid =
         \core_php_time_limit::raise(300);
     }
 
+    // Start with a safe default timezone.
+    $timezone = 'UTC';
+
     // Grab the timezone from the iCalendar file to be used later.
     if (isset($ical->properties['X-WR-TIMEZONE'][0]->value)) {
         $timezone = $ical->properties['X-WR-TIMEZONE'][0]->value;
-    } else {
-        $timezone = 'UTC';
+
+    } else if (isset($ical->properties['PRODID'][0]->value)) {
+        // If the timezone was not found, check to se if this is MS exchange / Office 365 which uses Windows timezones.
+        if (strncmp($ical->properties['PRODID'][0]->value, 'Microsoft', 9) == 0) {
+            if (isset($ical->components['VTIMEZONE'][0]->properties['TZID'][0]->value)) {
+                $tzname = $ical->components['VTIMEZONE'][0]->properties['TZID'][0]->value;
+                $timezone = IntlTimeZone::getIDForWindowsID($tzname);
+            }
+        }
     }
 
     $icaluuids = [];

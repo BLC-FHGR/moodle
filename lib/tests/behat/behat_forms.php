@@ -148,11 +148,14 @@ class behat_forms extends behat_base {
             $expandallxpath = "//div[@class='collapsible-actions']" .
                 "//a[contains(concat(' ', @class, ' '), ' collapsed ')]" .
                 "//span[contains(concat(' ', @class, ' '), ' expandall ')]";
-            // Else, look for the first expand fieldset link.
-            $expandonlysection = "//legend[@class='ftoggler']" .
+            // Else, look for the first expand fieldset link (old theme structure).
+            $expandsectionold = "//legend[@class='ftoggler']" .
+                    "//a[contains(concat(' ', @class, ' '), ' icons-collapse-expand ') and @aria-expanded = 'false']";
+            // Else, look for the first expand fieldset link (current theme structure).
+            $expandsectioncurrent = "//legend/div[contains(concat(' ', @class, ' '), ' ftoggler ')]" .
                     "//a[contains(concat(' ', @class, ' '), ' icons-collapse-expand ') and @aria-expanded = 'false']";
 
-            $collapseexpandlink = $this->find('xpath', $expandallxpath . '|' . $expandonlysection,
+            $collapseexpandlink = $this->find('xpath', $expandallxpath . '|' . $expandsectionold . '|' . $expandsectioncurrent,
                     false, false, behat_base::get_reduced_timeout());
             $collapseexpandlink->click();
             $this->wait_for_pending_js();
@@ -652,7 +655,6 @@ class behat_forms extends behat_base {
      * @param string $value
      */
     public function set_field_node_value(NodeElement $fieldnode, string $value): void {
-        $this->ensure_node_is_visible($fieldnode);
         $field = behat_field_manager::get_form_field($fieldnode, $this->getSession());
         $field->set_value($value);
     }
@@ -720,7 +722,7 @@ class behat_forms extends behat_base {
     public function i_open_the_autocomplete_suggestions_list($container = null, $containertype = null) {
         $csstarget = ".form-autocomplete-downarrow";
         if ($container && $containertype) {
-            $this->execute('behat_general::i_click_on', [$csstarget, 'css_element', $container, $containertype]);
+            $this->execute('behat_general::i_click_on_in_the', [$csstarget, 'css_element', $container, $containertype]);
         } else {
             $this->execute('behat_general::i_click_on', [$csstarget, 'css_element']);
         }

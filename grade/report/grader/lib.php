@@ -442,20 +442,17 @@ class grade_report_grader extends grade_report {
             $sort = "g.finalgrade $this->sortorder, u.idnumber, u.lastname, u.firstname, u.email";
         } else {
             $sortjoin = '';
-            switch($this->sortitemid) {
-                case 'lastname':
-                    $sort = "u.lastname $this->sortorder, u.firstname $this->sortorder, u.idnumber, u.email";
-                    break;
-                case 'firstname':
-                    $sort = "u.firstname $this->sortorder, u.lastname $this->sortorder, u.idnumber, u.email";
-                    break;
-                case 'email':
-                    $sort = "u.email $this->sortorder, u.firstname, u.lastname, u.idnumber";
-                    break;
-                case 'idnumber':
-                default:
-                    $sort = "u.idnumber $this->sortorder, u.firstname, u.lastname, u.email";
-                    break;
+
+            // The default sort will be that provided by the site for users, unless a valid user field is requested,
+            // the value of which takes precedence.
+            [$sort] = users_order_by_sql('u', null, $this->context, $userfieldssql->mappings);
+            if (array_key_exists($this->sortitemid, $userfieldssql->mappings)) {
+
+                // Ensure user sort field doesn't duplicate one of the default sort fields.
+                $usersortfield = $userfieldssql->mappings[$this->sortitemid];
+                $defaultsortfields = array_diff(explode(', ', $sort), [$usersortfield]);
+
+                $sort = "{$usersortfield} {$this->sortorder}, " . implode(', ', $defaultsortfields);
             }
 
             $params = array_merge($gradebookrolesparams, $this->userwheresql_params, $this->groupwheresql_params, $enrolledparams, $relatedctxparams);
@@ -1997,7 +1994,7 @@ class grade_report_grader extends grade_report {
      *
      * @return int The maximum number of students to display per page
      */
-    public function get_students_per_page() {
-        return $this->get_pref('studentsperpage');
+    public function get_students_per_page(): int {
+        return (int) $this->get_pref('studentsperpage');
     }
 }

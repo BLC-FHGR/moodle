@@ -406,7 +406,7 @@ EOF;
      * Helper to get an instance var.
      *
      * @param string $name
-     * @return string
+     * @return mixed|null
      */
     public function get_instance_var(string $name) {
         $instance = $this->get_instance_data();
@@ -726,6 +726,19 @@ EOF;
     }
 
     /**
+     * Get the appropriate designated role for the current user.
+     *
+     * @return string
+     */
+    public function get_current_user_role(): string {
+        if ($this->is_admin() || $this->is_moderator()) {
+            return 'MODERATOR';
+        }
+
+        return 'VIEWER';
+    }
+
+    /**
      * Whether to show the recording button
      *
      * @return bool
@@ -756,11 +769,26 @@ EOF;
      * @return bool
      */
     public function can_import_recordings(): bool {
+        if (!config::get('importrecordings_enabled')) {
+            return false;
+        }
         if ($this->can_manage_recordings()) {
             return true;
         }
 
         return $this->is_feature_enabled('importrecordings');
+    }
+
+    /**
+     * Get recordings_imported from instancedata.
+     *
+     * @return bool
+     */
+    public function get_recordings_imported(): bool {
+        if (config::get('recordings_imported_editable')) {
+            return (bool) $this->get_instance_var('recordings_imported');
+        }
+        return config::get('recordings_imported_default');
     }
 
     /**
@@ -1090,7 +1118,7 @@ EOF;
      * @param bool $viewdeleted view deleted recordings ?
      * @return recording[]
      */
-    public function get_recordings(array $excludedid = [], $viewdeleted = false): array {
+    public function get_recordings(array $excludedid = [], bool $viewdeleted = false): array {
         // Fetch the list of recordings depending on the status of the instance.
         // show room is enabled for TYPE_ALL and TYPE_ROOM_ONLY.
         if ($this->is_feature_enabled('showroom')) {

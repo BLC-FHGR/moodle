@@ -48,8 +48,7 @@ $string['bigbluebuttondisablednotification_subject'] = 'BigBlueButton activity m
 $string['bigbluebuttondisablednotification'] = 'The BigBlueButton activity module has been disabled and any existing BigBlueButton course activities are currently not accessible. Prior to re-enabling this plugin, please ensure that you have read and accepted the <a href="{$a}" target="_blank">data processing agreement</a> with Blindside Networks Inc.';
 $string['cannotperformaction'] = 'Cannot perform action {$a} on this recording';
 $string['enablingbigbluebutton'] = 'Enabling BigBlueButton activity';
-$string['enablingbigbluebuttondpainfo'] = 'In order to meet your data protection obligations, prior to enabling this plugin, you may need to ensure that you have read and accepted the <a href="{$a}" target="_blank">data processing agreement</a> with Blindside Networks Inc.<br/>
-Please consult with your own privacy professionals for advice.';
+$string['enablingbigbluebuttondpainfo'] = 'In order to meet your data protection obligations, before enabling this plugin, you must confirm that you have read and accepted the <a href="{$a}" target="_blank">Blindside Networks data processing agreement</a>. Please consult with your own privacy professionals for advice.';
 $string['indicator:cognitivedepth'] = 'BigBlueButton cognitive';
 $string['indicator:cognitivedepth_help'] = 'This indicator is based on the cognitive depth reached by the student in a BigBlueButton activity.';
 $string['indicator:socialbreadth'] = 'BigBlueButton social';
@@ -93,28 +92,28 @@ $string['privacy:metadata:bigbluebuttonbn_recordings'] = 'Stores metadata about 
 $string['privacy:metadata:bigbluebuttonbn_recordings:userid'] = 'The user ID of the user who last changed a recording.';
 
 $string['completionattendance'] = 'Student must attend the session for:';
-$string['completionattendance_desc'] = 'Student must enter the room and remain in the session for at least {$a} minute(s)';
+$string['completionattendance_desc'] = 'Enter and remain in the room for at least {$a} minute(s).';
 $string['completionattendance_event_desc'] = 'Student has entered the room and remained in the session for at least {$a} minute(s)';
 $string['completionattendancegroup'] = 'Require attendance';
 $string['completionattendancegroup_help'] = 'Attending the meeting for (n) minutes is required for completion.';
 
 $string['completionengagementchats'] = 'Chats';
-$string['completionengagementchats_desc'] = 'Student must participate in {$a} chat(s) to complete it.';
+$string['completionengagementchats_desc'] = 'Participate in {$a} chat(s).';
 $string['completionengagementchats_event_desc'] = 'Has raised {$a} chat(s)';
 $string['completionengagementtalks'] = 'Talk';
-$string['completionengagementtalks_desc'] = 'Student must talk {$a} time(s) to complete it';
+$string['completionengagementtalks_desc'] = 'Talk {$a} time(s)';
 $string['completionengagementtalks_event_desc'] = 'Has raised {$a} talk(s)';
 $string['completionengagementraisehand'] = 'Require raised hand';
-$string['completionengagementraisehand_desc'] = 'Student must raise hand {$a} time(s) to complete it.';
+$string['completionengagementraisehand_desc'] = 'Raise hand {$a} time(s).';
 $string['completionengagementraisehand_event_desc'] = 'Has raised hand {$a} times';
 $string['completionengagementpollvotes'] = 'Poll votes';
-$string['completionengagementpollvotes_desc'] = 'Student must vote in polls {$a} time(s) to complete it.';
-$string['completionengagementpollvotes_event_desc'] = 'Has raised {$a} poll vote(s)';
+$string['completionengagementpollvotes_desc'] = 'Vote in polls {$a} time(s).';
+$string['completionengagementpollvotes_event_desc'] = 'Has answered {$a} poll vote(s)';
 $string['completionengagementemojis'] = 'Emojis';
-$string['completionengagementemojis_desc'] = 'Student must send {$a} emoji(s) into polls to complete it.';
-$string['completionengagementemojis_event_desc'] = 'Has raised {$a} emoji(s)';
+$string['completionengagementemojis_desc'] = 'Change their emoji {$a} time(s).';
+$string['completionengagementemojis_event_desc'] = 'Changed their emoji {$a} time(s)';
 
-$string['completionengagement_desc'] = 'Student must engage in activities during the meeting';
+$string['completionengagement_desc'] = 'Engage in activities during the meeting.';
 $string['completionengagementgroup'] = 'Require participation';
 $string['completionengagementgroup_help'] = 'Active participation during the session is required for completion.';
 
@@ -123,16 +122,14 @@ $string['completionvalidatestate'] = 'Validate completion';
 $string['completionvalidatestatetriggered'] = 'Validate completion has been triggered.';
 
 $string['completionview'] = 'Require view';
-$string['completionview_desc'] = 'Student must join a room or play a recording to complete it.';
-$string['completionview_event_desc'] = 'Has joined the room or played a recording {$a} time(s)';
+$string['completionview_desc'] = 'Student must view the room to complete it.';
+$string['completionview_event_desc'] = 'Has viewed the room.';
 $string['sendnotification'] = 'Send notification';
 
 $string['minute'] = 'minute';
 $string['minutes'] = 'minutes';
 
-$string['config_dpa_note'] = 'Note: In order to meet your data protection obligations, prior to using a service provider for this plugin, you may need to ensure that you have read and accepted the service provider\'s data processing agreement.
-For the default free BigBlueButton service provided by Blindside Networks Inc., please read and accept the following <a href="{$a}" target="_blank">data processing agreement</a>.<br/>
-Please consult with your own privacy professionals for advice.';
+$string['config_dpa_note'] = 'Note: In order to meet your data protection obligations, before using a service provider for this plugin, you must ensure that you have read and accepted the service provider\'s data processing agreement. For the default free BigBlueButton service, this is the <a href="{$a}" target="_blank">Blindside Networks data processing agreement</a>. Please consult with your own privacy professionals for advice.';
 $string['config_general'] = 'General settings';
 $string['config_general_description'] = 'These settings are always used.';
 $string['config_server_url'] = 'BigBlueButton server URL';
@@ -378,8 +375,9 @@ $string['mod_form_field_disablenote'] = 'Disable shared notes';
 $string['mod_form_field_hideuserlist'] = 'Hide user list';
 $string['mod_form_field_lockonjoin'] = 'Lock settings on join';
 $string['mod_form_locksettings'] = 'Lock settings';
-
-
+$string['report_join_info']  = 'Has joined the room {$a} time(s)';
+$string['report_play_recording_info']  = 'Has played a recording {$a} time(s)';
+$string['report_room_view']  = 'Has viewed the room';
 $string['starts_at'] = 'Starts';
 $string['started_at'] = 'Started';
 $string['ends_at'] = 'Ends';
