@@ -84,6 +84,6 @@ function assignsubmission_file_pluginfile($course,
         return false;
     }
 
-    // Download MUST be forced - security!
-    send_stored_file($file, 0, 0, true, $options);
+    // Download MUST be forced - security! "false" for SEB Open book exam
+    send_stored_file($file, 0, 0, false, $options);
 }
