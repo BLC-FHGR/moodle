@@ -13,7 +13,7 @@
 [submodule "mod/quiz/report/archive"]
 	path = mod/quiz/report/archive
 	url = https://github.com/bfh/moodle-quiz_archive.git
-	branch = master
+	branch = moodle_401
 [submodule "question/type/ordering"]
 	path = question/type/ordering
 	url = https://github.com/gbateson/moodle-qtype_ordering.git
@@ -21,7 +21,7 @@
 [submodule "question/type/regexp"]
 	path = question/type/regexp
 	url = https://github.com/rezeau/moodle-qtype_regexp.git
-	branch = MOODLE_40_STABLE
+	branch = MOODLE_41_STABLE
 [submodule "question/behaviour/regexpadaptivewithhelp"]
 	path = question/behaviour/regexpadaptivewithhelp
 	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
@@ -45,7 +45,7 @@
 [submodule "mod/groupselect"]
 	path = mod/groupselect
 	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
-	branch = master
+	branch = GROUPSELECT_3_17_STABLE
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime.git
@@ -53,16 +53,19 @@
 [submodule "mod/organizer"]
 	path = mod/organizer
 	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
-	branch = MOODLE_311_STABLE
+	branch = MOODLE_401_STABLE
 [submodule "report/benchmark"]
 	path = report/benchmark
 	url = https://github.com/mikasmart/moodle-report_benchmark.git
+	branch = master
 [submodule "question/type/mtf"]
 	path = question/type/mtf
 	url = https://github.com/ethz-let/qtype_mtf
+	branch = master
 [submodule "admin/tool/lifecycle"]
 	path = admin/tool/lifecycle
 	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+	branch = master
 [submodule "blocks/xp"]
 	path = blocks/xp
 	url = https://github.com/FMCorz/moodle-block_xp.git
@@ -74,7 +77,7 @@
 [submodule "question/type/gapfill"]
 	path = question/type/gapfill
 	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
-	branch = gapfill_2.133
+	branch = master
 [submodule "report/coursesize"]
 	path = report/coursesize
 	url = https://github.com/catalyst/moodle-report_coursesize.git
@@ -102,3 +105,20 @@
 [submodule "blocks/sharing_cart"]
 	path = blocks/sharing_cart
 	url = https://github.com/donhinkelman/moodle-block_sharing_cart
+	branch = master
+[submodule "mod/attendance"]
+	path = mod/attendance
+	url = https://github.com/danmarsden/moodle-mod_attendance
+	branch = MOODLE_401_STABLE
+[submodule "plagiarism/turnitinsim"]
+	path = plagiarism/turnitinsim
+	url = https://github.com/turnitin/moodle-plagiarism_turnitinsim
+	branch = master
+[submodule "question/behaviour/adaptive_adapted_for_coderunner"]
+	path = question/behaviour/adaptive_adapted_for_coderunner
+	url = https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner
+	branch = master
+[submodule "guestion/type/coderunner"]
+	path = guestion/type/coderunner
+	url = https://github.com/trampgeek/moodle-qtype_coderunner/
+	branch = master
