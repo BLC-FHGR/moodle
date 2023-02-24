@@ -118,7 +118,7 @@
 	path = question/behaviour/adaptive_adapted_for_coderunner
 	url = https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner
 	branch = master
-[submodule "guestion/type/coderunner"]
-	path = guestion/type/coderunner
+[submodule "question/type/coderunner"]
+	path = question/type/coderunner
 	url = https://github.com/trampgeek/moodle-qtype_coderunner/
 	branch = master
