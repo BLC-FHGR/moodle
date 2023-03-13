@@ -118,3 +118,7 @@
 	path = enrol/evento
 	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
 	branch = MOODLE41
+[submodule "local/evento"]
+	path = local/evento
+	url = https://github.com/BLC-FHGR/moodle-local_evento.git
+	branch = MOODLE41
