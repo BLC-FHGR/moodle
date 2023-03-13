@@ -1,7 +1,3 @@
-[submodule "local/evento"]
-	path = local/evento
-	url = https://github.com/BLC-FHGR/moodle-local_evento.git
-	branch = master
 [submodule "local/eventocoursecreation"]
 	path = local/eventocoursecreation
 	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
