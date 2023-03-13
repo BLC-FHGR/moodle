@@ -118,3 +118,7 @@
 	path = question/type/coderunner
 	url = https://github.com/trampgeek/moodle-qtype_coderunner/
 	branch = master
+[submodule "enrol/evento"]
+	path = enrol/evento
+	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
+	branch = MOODLE41
