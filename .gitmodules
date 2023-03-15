@@ -122,3 +122,7 @@
 	path = local/evento
 	url = https://github.com/BLC-FHGR/moodle-local_evento.git
 	branch = MOODLE41
+[submodule "theme/boost_union"]
+	path = theme/boost_union
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_union.git
+	branch = MOODLE_401_STABLE
