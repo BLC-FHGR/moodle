@@ -122,3 +122,7 @@
 	path = theme/boost_union
 	url = https://github.com/BLC-FHGR/moodle-theme_boost_union.git
 	branch = MOODLE_401_STABLE
+[submodule "blocks/sharing_cart"]
+	path = blocks/sharing_cart
+	url = https://github.com/donhinkelman/moodle-block_sharing_cart
+	branch = MOODLE_41_STABLE
