@@ -1,7 +1,7 @@
 [submodule "local/eventocoursecreation"]
 	path = local/eventocoursecreation
 	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
-	branch = master
+	branch = 40
 [submodule "mod/quiz/report/archive"]
 	path = mod/quiz/report/archive
 	url = https://github.com/bfh/moodle-quiz_archive.git
