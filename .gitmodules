@@ -118,3 +118,7 @@
 	path = blocks/sharing_cart
 	url = https://github.com/donhinkelman/moodle-block_sharing_cart
 	branch = MOODLE_41_STABLE
+[submodule "mod/groupselect"]
+	path = mod/groupselect
+	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
+	branch = master
