@@ -122,3 +122,7 @@
 	path = mod/groupselect
 	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
 	branch = master
+[submodule "lib/editor/atto/plugins/wordcount"]
+	path = lib/editor/atto/plugins/wordcount
+	url = https://github.com/SysBind/moodle-atto_wordcount
+	branch = main
