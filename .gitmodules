@@ -126,3 +126,7 @@
 	path = lib/editor/atto/plugins/wordcount
 	url = https://github.com/SysBind/moodle-atto_wordcount
 	branch = main
+[submodule "local/bulkenrol"]
+	path = local/bulkenrol
+	url = https://github.com/moodle-an-hochschulen/moodle-local_bulkenrol
+	branch = MOODLE_401_STABLE
