@@ -305,17 +305,9 @@ define([
      */
     DragDropToTextQuestion.prototype.dragMove = function(pageX, pageY, drag) {
         var thisQ = this;
-        this.getRoot().find('span.drop.group' + this.getGroup(drag)).each(function(i, dropNode) {
+        this.getRoot().find('span.group' + this.getGroup(drag)).not('.beingdragged').each(function(i, dropNode) {
             var drop = $(dropNode);
             if (thisQ.isPointInDrop(pageX, pageY, drop)) {
-                drop.addClass('valid-drag-over-drop');
-            } else {
-                drop.removeClass('valid-drag-over-drop');
-            }
-        });
-        this.getRoot().find('span.draghome.placed.group' + this.getGroup(drag)).not('.beingdragged').each(function(i, dropNode) {
-            var drop = $(dropNode);
-            if (thisQ.isPointInDrop(pageX, pageY, drop) && !thisQ.isDragSameAsDrop(drag, drop)) {
                 drop.addClass('valid-drag-over-drop');
             } else {
                 drop.removeClass('valid-drag-over-drop');
@@ -334,36 +326,31 @@ define([
         var thisQ = this,
             root = this.getRoot(),
             placed = false;
-        root.find('span.drop.group' + this.getGroup(drag)).each(function(i, dropNode) {
-            var drop = $(dropNode);
-            if (!thisQ.isPointInDrop(pageX, pageY, drop)) {
-                // Not this drop.
+        root.find('span.group' + this.getGroup(drag)).not('.beingdragged').each(function(i, dropNode) {
+            if (placed) {
+                return false;
+            }
+            const dropZone = $(dropNode);
+            if (!thisQ.isPointInDrop(pageX, pageY, dropZone)) {
+                // Not this drop zone.
                 return true;
             }
-
+            let drop = null;
+            if (dropZone.hasClass('placed')) {
+                // This is an placed drag item in a drop.
+                dropZone.removeClass('valid-drag-over-drop');
+                // Get the correct drop.
+                drop = thisQ.getDrop(drag, thisQ.getClassnameNumericSuffix(dropZone, 'inplace'));
+            } else {
+                // Empty drop.
+                drop = dropZone;
+            }
             // Now put this drag into the drop.
             drop.removeClass('valid-drag-over-drop');
             thisQ.sendDragToDrop(drag, drop);
             placed = true;
             return false; // Stop the each() here.
         });
-
-        root.find('span.draghome.placed.group' + this.getGroup(drag)).not('.beingdragged').each(function(i, placedNode) {
-            var placedDrag = $(placedNode);
-            if (!thisQ.isPointInDrop(pageX, pageY, placedDrag) || thisQ.isDragSameAsDrop(drag, placedDrag)) {
-                // Not this placed drag.
-                return true;
-            }
-
-            // Now put this drag into the drop.
-            placedDrag.removeClass('valid-drag-over-drop');
-            var currentPlace = thisQ.getClassnameNumericSuffix(placedDrag, 'inplace');
-            var drop = thisQ.getDrop(drag, currentPlace);
-            thisQ.sendDragToDrop(drag, drop);
-            placed = true;
-            return false; // Stop the each() here.
-        });
-
         if (!placed) {
             this.sendDragHome(drag);
         }
@@ -376,6 +363,12 @@ define([
      * @param {jQuery} drop the place to put it.
      */
     DragDropToTextQuestion.prototype.sendDragToDrop = function(drag, drop) {
+        // Send drag home if there is no place in drop.
+        if (this.getPlace(drop) === null) {
+            this.sendDragHome(drag);
+            return;
+        }
+
         // Is there already a drag in this drop? if so, evict it.
         var oldDrag = this.getCurrentDragInPlace(this.getPlace(drop));
         if (oldDrag.length !== 0) {
@@ -676,7 +669,7 @@ define([
      */
     DragDropToTextQuestion.prototype.getClassnameNumericSuffix = function(node, prefix) {
         var classes = node.attr('class');
-        if (classes !== '') {
+        if (classes !== undefined && classes !== '') {
             var classesArr = classes.split(' ');
             for (var index = 0; index < classesArr.length; index++) {
                 var patt1 = new RegExp('^' + prefix + '([0-9])+$');
@@ -767,17 +760,6 @@ define([
      */
     DragDropToTextQuestion.prototype.getDrop = function(drag, currentPlace) {
         return this.getRoot().find('.drop.group' + this.getGroup(drag) + '.place' + currentPlace);
-    };
-
-    /**
-     * Check that the drag is drop to it's clone.
-     *
-     * @param {jQuery} drag The drag.
-     * @param {jQuery} drop The drop.
-     * @returns {boolean}
-     */
-    DragDropToTextQuestion.prototype.isDragSameAsDrop = function(drag, drop) {
-        return this.getChoice(drag) === this.getChoice(drop) && this.getGroup(drag) === this.getGroup(drop);
     };
 
     /**

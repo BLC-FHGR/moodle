@@ -920,13 +920,11 @@ class single_button implements renderable {
         }
 
         // Form parameters.
-        $params = $this->url->params();
+        $actionurl = new moodle_url($this->url);
         if ($this->method === 'post') {
-            $params['sesskey'] = sesskey();
+            $actionurl->param('sesskey', sesskey());
         }
-        $data->params = array_map(function($key) use ($params) {
-            return ['name' => $key, 'value' => $params[$key]];
-        }, array_keys($params));
+        $data->params = $actionurl->export_params_for_template();
 
         // Button actions.
         $actions = $this->actions;
@@ -1128,13 +1126,11 @@ class single_select implements renderable, templatable {
         }, array_keys($attributes));
 
         // Form parameters.
-        $params = $this->url->params();
+        $actionurl = new moodle_url($this->url);
         if ($this->method === 'post') {
-            $params['sesskey'] = sesskey();
+            $actionurl->param('sesskey', sesskey());
         }
-        $data->params = array_map(function($key) use ($params) {
-            return ['name' => $key, 'value' => $params[$key]];
-        }, array_keys($params));
+        $data->params = $actionurl->export_params_for_template();
 
         // Select options.
         $hasnothing = false;
@@ -3502,7 +3498,10 @@ class custom_menu_item implements renderable, templatable {
      */
     public function __construct($text, moodle_url $url = null, $title = null, $sort = null, custom_menu_item $parent = null,
                                 array $attributes = []) {
-        $this->text = $text;
+
+        // Use class setter method for text to ensure it's always a string type.
+        $this->set_text($text);
+
         $this->url = $url;
         $this->title = $title;
         $this->sort = (int)$sort;
@@ -3779,7 +3778,7 @@ class custom_menu extends custom_menu_item {
             $settings = explode('|', $line);
             foreach ($settings as $i => $setting) {
                 $setting = trim($setting);
-                if (!empty($setting)) {
+                if ($setting !== '') {
                     switch ($i) {
                         case 0: // Menu text.
                             $itemtext = ltrim($setting, '-');

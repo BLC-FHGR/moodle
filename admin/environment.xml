@@ -3751,6 +3751,7 @@
       <VENDOR name="oracle" version="19" />
     </DATABASE>
     <PHP version="7.4.0" level="required">
+      <RESTRICT function="restrict_php_version_82" message="unsupportedphpversion82" />
     </PHP>
     <PCREUNICODE level="optional">
       <FEEDBACK>
@@ -4108,6 +4109,8 @@
         </FEEDBACK>
       </CUSTOM_CHECK>
       <CUSTOM_CHECK file="lib/upgradelib.php" function="check_xmlrpc_usage" level="optional">
+      </CUSTOM_CHECK>
+      <CUSTOM_CHECK file="lib/upgradelib.php" function="check_mod_assignment" level="required">
       </CUSTOM_CHECK>
     </CUSTOM_CHECKS>
   </MOODLE>
