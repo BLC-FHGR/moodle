@@ -138,3 +138,7 @@
 	path = blocks/onlinesurvey
 	url = https://github.com/evasys-community/moodle-block_onlinesurvey
 	branch = MOODLE_400_STABLE
+[submodule "enrol/waitlist"]
+	path = enrol/waitlist
+	url = https://github.com/emeneo/moodle-enrol_waitlist.git
+	branch = master
