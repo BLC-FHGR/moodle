@@ -142,3 +142,7 @@
 	path = enrol/waitlist
 	url = https://github.com/emeneo/moodle-enrol_waitlist.git
 	branch = master
+[submodule "blocks/accessibility"]
+	path = blocks/accessibility
+	url = https://github.com/brickfield/moodle-block_accessibility
+	branch = main
