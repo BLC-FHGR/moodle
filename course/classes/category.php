@@ -3196,6 +3196,9 @@ class core_course_category implements renderable, cacheable_object, IteratorAggr
             return $parentcat;
         }
 
+        // TODO: hack until performance from below is improved.
+        return null;
+
         // Get all course category contexts that are children of the parent category's context where
         // a) there is a role assignment for the current user or
         // b) there are role capability overrides for a role that the user has in this context.
