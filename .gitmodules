@@ -29,7 +29,7 @@
 [submodule "availability/condition/password"]
 	path = availability/condition/password
 	url = https://github.com/moodleuulm/moodle-availability_password.git
-	branch = master
+	branch = Moodle_401_STABLE
 [submodule "question/type/kprime"]
 	path = question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime.git
