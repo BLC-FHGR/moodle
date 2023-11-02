@@ -146,3 +146,7 @@
 	path = blocks/accessibility
 	url = https://github.com/brickfield/moodle-block_accessibility
 	branch = main
+[submodule "mod/quiz/accessrule"]
+        path = mod/quiz/accessrule
+        url = https://github.com/ethz-let/moodle-quizaccess_sebserver
+        branch = moodle-311-401
