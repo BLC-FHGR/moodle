@@ -146,3 +146,11 @@
 	path = blocks/accessibility
 	url = https://github.com/brickfield/moodle-block_accessibility
 	branch = main
+[submodule "mod/surveytracker"]
+	path = mod/surveytracker
+	url = https://github.com/BLC-FHGR/surveytracker
+	branch = master
+[submodule "blocks/surveytrackerinfo"]
+	path = blocks/surveytrackerinfo
+	url = https://github.com/BLC-FHGR/surveytrackerinfo
+	branch = master
