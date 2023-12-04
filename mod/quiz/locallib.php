@@ -663,6 +663,11 @@ function quiz_update_sumgrades($quiz) {
         // we will get a divide by zero error.
         quiz_set_grade(0, $quiz);
     }
+
+    $callbackclasses = \core_component::get_plugin_list_with_class('quiz', 'quiz_structure_modified');
+    foreach ($callbackclasses as $callbackclass) {
+        component_class_callback($callbackclass, 'callback', [$quiz->id]);
+    }
 }
 
 /**
@@ -2352,9 +2357,11 @@ function quiz_add_quiz_question($questionid, $quiz, $page = 0, $maxmark = null) 
               JOIN {question_bank_entries} qbe ON qbe.id = qr.questionbankentryid
              WHERE slot.quizid = ?
                AND qr.component = ?
-               AND qr.questionarea = ?";
+               AND qr.questionarea = ?
+               AND qr.usingcontextid = ?";
 
-    $questionslots = $DB->get_records_sql($sql, [$quiz->id, 'mod_quiz', 'slot']);
+    $questionslots = $DB->get_records_sql($sql, [$quiz->id, 'mod_quiz', 'slot',
+            context_module::instance($quiz->cmid)->id]);
 
     $currententry = get_question_bank_entry($questionid);
 

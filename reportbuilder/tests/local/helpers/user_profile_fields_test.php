@@ -240,7 +240,7 @@ class user_profile_fields_test extends core_reportbuilder_testcase {
             [
                 'c0_firstname' => 'Admin',
                 'c1_data' => '',
-                'c2_data' => 'Not set',
+                'c2_data' => '',
                 'c3_data' => '',
                 'c4_data' => '',
                 'c5_data' => '',
@@ -349,5 +349,32 @@ class user_profile_fields_test extends core_reportbuilder_testcase {
 
         $this->assertCount(1, $content);
         $this->assertEquals($expectmatchuser, reset($content[0]));
+    }
+
+    /**
+     * Stress test user datasource using profile fields
+     *
+     * In order to execute this test PHPUNIT_LONGTEST should be defined as true in phpunit.xml or directly in config.php
+     */
+    public function test_stress_datasource(): void {
+        if (!PHPUNIT_LONGTEST) {
+            $this->markTestSkipped('PHPUNIT_LONGTEST is not defined');
+        }
+
+        $this->resetAfterTest();
+
+        $userprofilefields = $this->generate_userprofilefields();
+        $user = $this->getDataGenerator()->create_user([
+            'profile_field_checkbox' => true,
+            'profile_field_datetime' => '2021-12-09',
+            'profile_field_menu' => 'Dog',
+            'profile_field_Social' => '12345',
+            'profile_field_text' => 'Hello',
+            'profile_field_textarea' => 'Goodbye',
+        ]);
+
+        $this->datasource_stress_test_columns(users::class);
+        $this->datasource_stress_test_columns_aggregation(users::class);
+        $this->datasource_stress_test_conditions(users::class, 'user:idnumber');
     }
 }
