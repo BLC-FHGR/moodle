@@ -101,7 +101,7 @@
 [submodule "blocks/sharing_cart"]
 	path = blocks/sharing_cart
 	url = https://github.com/donhinkelman/moodle-block_sharing_cart
-	branch = MOODLE_41_STABLE
+	branch = master
 [submodule "mod/attendance"]
 	path = mod/attendance
 	url = https://github.com/danmarsden/moodle-mod_attendance
