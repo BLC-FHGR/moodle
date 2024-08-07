@@ -1252,8 +1252,8 @@ function question_get_top_categories_for_contexts($contextids): array {
 function question_make_default_categories($contexts): object {
     global $DB;
     static $preferredlevels = array(
-        CONTEXT_COURSE => 4,
-        CONTEXT_MODULE => 3,
+        CONTEXT_COURSE => 3,
+        CONTEXT_MODULE => 4,
         CONTEXT_COURSECAT => 2,
         CONTEXT_SYSTEM => 1,
     );
