@@ -440,6 +440,15 @@ class renderer_base {
         return false;
     }
 
+
+    /**
+     * Returns the moodle page object.
+     *
+     * @return moodle_page
+     */
+    public function get_page(): moodle_page {
+        return $this->page;
+    }
 }
 
 
@@ -4570,9 +4579,42 @@ EOD;
 
                     if ($USER->id != $user->id) {
                         $iscontact = \core_message\api::is_contact($USER->id, $user->id);
-                        $contacttitle = $iscontact ? 'removefromyourcontacts' : 'addtoyourcontacts';
-                        $contacturlaction = $iscontact ? 'removecontact' : 'addcontact';
-                        $contactimage = $iscontact ? 'removecontact' : 'addcontact';
+                        $isrequested = \core_message\api::get_contact_requests_between_users($USER->id, $user->id);
+                        $contacturlaction = '';
+                        $linkattributes = \core_message\helper::togglecontact_link_params(
+                            $user,
+                            $iscontact,
+                            true,
+                            !empty($isrequested),
+                        );
+                        // If the user is not a contact.
+                        if (!$iscontact) {
+                            if ($isrequested) {
+                                // We just need the first request.
+                                $requests = array_shift($isrequested);
+                                if ($requests->userid == $USER->id) {
+                                    // If the user has requested to be a contact.
+                                    $contacttitle = 'contactrequestsent';
+                                } else {
+                                    // If the user has been requested to be a contact.
+                                    $contacttitle = 'waitingforcontactaccept';
+                                }
+                                $linkattributes = array_merge($linkattributes, [
+                                    'class' => 'disabled',
+                                    'tabindex' => '-1',
+                                ]);
+                            } else {
+                                // If the user is not a contact and has not requested to be a contact.
+                                $contacttitle = 'addtoyourcontacts';
+                                $contacturlaction = 'addcontact';
+                            }
+                            $contactimage = 'addcontact';
+                        } else {
+                            // If the user is a contact.
+                            $contacttitle = 'removefromyourcontacts';
+                            $contacturlaction = 'removecontact';
+                            $contactimage = 'removecontact';
+                        }
                         $userbuttons['togglecontact'] = array(
                                 'buttontype' => 'togglecontact',
                                 'title' => get_string($contacttitle, 'message'),
@@ -4583,7 +4625,7 @@ EOD;
                                         'sesskey' => sesskey())
                                 ),
                                 'image' => $contactimage,
-                                'linkattributes' => \core_message\helper::togglecontact_link_params($user, $iscontact),
+                                'linkattributes' => $linkattributes,
                                 'page' => $this->page
                             );
                     }
@@ -4593,9 +4635,24 @@ EOD;
             }
         }
 
+        // Return the heading wrapped in an sr-only element so it is only visible to screen-readers.
+        if (!empty($this->page->layout_options['nocontextheader'])) {
+            return html_writer::div($heading, 'sr-only');
+        }
 
         $contextheader = new context_header($heading, $headinglevel, $imagedata, $userbuttons);
-        return $this->render_context_header($contextheader);
+        return $this->render($contextheader);
+    }
+
+    /**
+     * Renders the header bar.
+     *
+     * @param context_header $contextheader Header bar object.
+     * @return string HTML for the header bar.
+     */
+    protected function render_context_header(context_header $contextheader) {
+        $context = $contextheader->export_for_template($this);
+        return $this->render_from_template('core/context_header', $context);
     }
 
     /**
@@ -4612,74 +4669,6 @@ EOD;
         }
 
         return $this->render_from_template('core/skip_links', $context);
-    }
-
-     /**
-      * Renders the header bar.
-      *
-      * @param context_header $contextheader Header bar object.
-      * @return string HTML for the header bar.
-      */
-    protected function render_context_header(context_header $contextheader) {
-
-        // Generate the heading first and before everything else as we might have to do an early return.
-        if (!isset($contextheader->heading)) {
-            $heading = $this->heading($this->page->heading, $contextheader->headinglevel);
-        } else {
-            $heading = $this->heading($contextheader->heading, $contextheader->headinglevel);
-        }
-
-        $showheader = empty($this->page->layout_options['nocontextheader']);
-        if (!$showheader) {
-            // Return the heading wrapped in an sr-only element so it is only visible to screen-readers.
-            return html_writer::div($heading, 'sr-only');
-        }
-
-        // All the html stuff goes here.
-        $html = html_writer::start_div('page-context-header');
-
-        // Image data.
-        if (isset($contextheader->imagedata)) {
-            // Header specific image.
-            $html .= html_writer::div($contextheader->imagedata, 'page-header-image icon-size-7');
-        }
-
-        // Headings.
-        if (isset($contextheader->prefix)) {
-            $prefix = html_writer::div($contextheader->prefix, 'text-muted');
-            $heading = $prefix . $heading;
-        }
-        $html .= html_writer::tag('div', $heading, array('class' => 'page-header-headings'));
-
-        // Buttons.
-        if (isset($contextheader->additionalbuttons)) {
-            $html .= html_writer::start_div('btn-group header-button-group');
-            foreach ($contextheader->additionalbuttons as $button) {
-                if (!isset($button->page)) {
-                    // Include js for messaging.
-                    if ($button['buttontype'] === 'togglecontact') {
-                        \core_message\helper::togglecontact_requirejs();
-                    }
-                    if ($button['buttontype'] === 'message') {
-                        \core_message\helper::messageuser_requirejs();
-                    }
-                    $image = $this->pix_icon($button['formattedimage'], '', 'moodle', array(
-                        'class' => 'iconsmall',
-                    ));
-                    $image .= html_writer::span($button['title'], 'header-button-title');
-                } else {
-                    $image = html_writer::empty_tag('img', array(
-                        'src' => $button['formattedimage'],
-                        'alt' => $button['title'],
-                    ));
-                }
-                $html .= html_writer::link($button['url'], html_writer::tag('span', $image), $button['linkattributes']);
-            }
-            $html .= html_writer::end_div();
-        }
-        $html .= html_writer::end_div();
-
-        return $html;
     }
 
     /**
@@ -5507,7 +5496,7 @@ class core_renderer_cli extends core_renderer {
 
         $ascii .= str_repeat('#', $delta);
         if ($percent >= 100 && $delta > 0) {
-            $ascii .= sprintf("] %3.1f%%\n$msg\n", $percent);
+            $ascii .= sprintf("] %3.1f%%", $percent) . "\n$msg\n";
         }
         $this->progressmaximums[$id] += $delta;
         return $ascii;
