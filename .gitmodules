@@ -146,10 +146,6 @@
 	path = mod/surveytracker
 	url = https://github.com/BLC-FHGR/surveytracker
 	branch = master
-[submodule "mod/quiz/accessrule/sebserver"]
-	path = mod/quiz/accessrule/sebserver
-	url = https://github.com/ethz-let/moodle-quizaccess_sebserver
-	branch = MOODLE_403_STABLE
 [submodule "blocks/surveytrackerinfo"]
 	path = blocks/surveytrackerinfo
 	url = https://github.com/BLC-FHGR/surveytrackerinfo
