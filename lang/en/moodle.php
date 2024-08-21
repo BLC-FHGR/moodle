@@ -342,8 +342,8 @@ $string['country'] = 'Country';
 $string['course'] = 'Course';
 $string['courseheader'] = 'Course menu';
 $string['courseadministration'] = 'Course administration';
-$string['courseapprovedemail'] = 'Your requested course, {$a->name}, has been approved and you have been made a {$a->teacher}.  To access your new course, go to {$a->url}';
-$string['courseapprovedemail2'] = 'Your requested course, {$a->name}, has been approved.  To access your new course, go to {$a->url}';
+$string['courseapprovedemail'] = 'Your requested course is approved, <a href="{$a->url}">{$a->name}</a>, and you are a {$a->teacher}.';
+$string['courseapprovedemail2'] = 'Your requested course is approved: <a href="{$a->url}">{$a->name}</a>.';
 $string['courseapprovedfailed'] = 'Failed to save the course as approved!';
 $string['courseapprovedsubject'] = 'Your course has been approved!';
 $string['courseavailable'] = 'This course is available to students';
@@ -700,7 +700,7 @@ $string['emailcharset'] = 'Email charset';
 $string['emailmustbereal'] = 'Note: your email address must be a real one';
 $string['emailnotallowed'] = 'Email addresses in these domains are not allowed ({$a})';
 $string['emailnotfound'] = 'The email address was not found in the database';
-$string['emailonlyallowed'] = 'This email is not one of those that are allowed ({$a})';
+$string['emailonlyallowed'] = 'This email cannot be used. Allowed email domains are: {$a}.';
 $string['emailpasswordconfirmation'] = 'Hi {$a->firstname},
 
 Someone (probably you) has requested a new password for your
@@ -762,7 +762,7 @@ $string['emailresetconfirmation'] = 'Hi {$a->firstname},
 A password reset was requested for your account \'{$a->username}\' at {$a->sitename}.
 
 To confirm this request, and set a new password for your account, please go to the following web address:
-{$a->link}
+<a href="{$a->link}">{$a->link}</a>
 
 (This link is valid for {$a->resetminutes} minutes from the time this reset was first requested.)
 
@@ -2069,8 +2069,8 @@ $string['showtheselogs'] = 'Show these logs';
 $string['showthishelpinlanguage'] = 'Show this help in language: {$a}';
 $string['schedule'] = 'Schedule';
 $string['sidepanel'] = 'Side panel';
-$string['signoutofotherservices'] = 'Sign out everywhere';
-$string['signoutofotherservices_help'] = 'If ticked, the account will be signed out of all devices and systems which use web services, such as the mobile app.';
+$string['signoutofotherservices'] = 'Log out of all web apps';
+$string['signoutofotherservices_help'] = 'Log out of all devices and systems that use web services, such as the mobile app. Browser sessions will remain active.';
 $string['since'] = 'Since';
 $string['sincelast'] = 'since last login';
 $string['site'] = 'Site';
@@ -2404,7 +2404,7 @@ $string['welcometocoursetext'] = 'Welcome to {$a->coursename}!
 
 If you have not done so already, you should edit your profile page so that we can learn more about you:
 
-<a href="{$a->profileurl}">{$a->profileurl}<a>';
+<a href="{$a->profileurl}">{$a->profileurl}</a>';
 $string['whatforlink'] = 'What do you want to do with the link?';
 $string['whatforpage'] = 'What do you want to do with the text?';
 $string['whatisyourage'] = 'What is your age?';

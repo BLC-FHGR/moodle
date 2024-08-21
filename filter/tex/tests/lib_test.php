@@ -49,6 +49,7 @@ class lib_test extends advanced_testcase {
             ['x\ =\ \frac{\sqrt{144}}{2}\ \times\ (y\ +\ 12)', 'x\ =\ \frac{\sqrt{144}}{2}\ \times\ (y\ +\ 12)'],
             ['\usepackage[latin1]{inputenc}', '\usepackage[latin1]{inputenc}'],
             ['\newcommand{\A}{\verbatiminput}', '\newforbiddenkeyword_command{\A}{\verbatimforbiddenkeyword_input}'],
+            ['\pdffiledump offset 0 length', 'forbiddenkeyword_\pdffiledump offset 0 length'],
         ];
     }
 
@@ -59,7 +60,7 @@ class lib_test extends advanced_testcase {
      * @param $formula The formula to test
      * @param $expected The sanitized version of the formula we expect to get
      */
-    public function test_filter_tex_sanitize_formula(string $formula, string $expected) {
+    public function test_filter_tex_sanitize_formula(string $formula, string $expected): void {
         $this->assertEquals($expected, filter_tex_sanitize_formula($formula));
     }
 }

@@ -75,9 +75,7 @@ $string['alternativefullnameformat_desc'] = 'This defines how names are shown to
 $string['always'] = 'Always';
 $string['appearance'] = 'Appearance';
 $string['aspellpath'] = 'Path to aspell';
-$string['asyncbackupdisabled'] = 'Your site is currently configured to use synchronous backups. Asynchronous backups provide a better user experience.
-Asynchronous backups will be enabled for all sites from Moodle LMS 4.5 LTS.
-Synchronous backups will be removed from Moodle LMS the version after 4.5 LTS';
+$string['asyncbackupdisabled'] = 'Your site is currently configured to use synchronous backups. Asynchronous backups provide a better user experience, allowing users to do other operations while a backup or restore is in progress. Asynchronous backups are enabled for all sites from Moodle 4.5 LTS. Synchronous backups will be removed from Moodle LMS the version after 4.5 LTS.';
 $string['authentication'] = 'Authentication';
 $string['authpreventaccountcreation'] = 'Prevent account creation when authenticating';
 $string['authpreventaccountcreation_help'] = 'When a user authenticates, an account on the site is automatically created if it doesn\'t yet exist. If an external database, such as LDAP, is used for authentication, but you wish to restrict access to the site to users with an existing account only, then this option should be enabled. New accounts will need to be created manually or via the upload users feature. Note that this setting doesn\'t apply to MNet authentication.';
@@ -184,7 +182,7 @@ $string['configallowemailaddresses'] = 'To restrict new email addresses to parti
 $string['configallowemojipicker'] = 'The emoji picker enables users to select emojis, such as smilies, to add to messages and other text areas via an emoji picker button in the Atto toolbar.';
 $string['configallowemojipickerincompatible'] = 'Your current database configuration does not properly support emojis. In order to enable the emoji picker you will need to <a href="https://docs.moodle.org/en/MySQL_full_unicode_support">upgrade your database for full unicode support</a>.';
 $string['configallowguestmymoodle'] = 'If enabled, guests can access the Dashboard. Otherwise guests are redirected to the site home.';
-$string['configallowobjectembed'] = 'As a default security measure, normal users are not allowed to embed multimedia (like Flash) within texts using explicit EMBED and OBJECT tags in their HTML (although it can still be done safely using the mediaplugins filter).  If you wish to allow these tags then enable this option.';
+$string['configallowobjectembed'] = 'For security, users with the role of student are not allowed to embed multimedia within texts using EMBED and OBJECT tags in HTML, though multimedia can still be displayed using the multimedia plugins filter. If you wish to allow these tags then enable this option.';
 $string['configallowoverride'] = 'You can allow people with the roles on the left side to override some of the column roles';
 $string['configallowoverride2'] = 'For each role in the left column, select which roles that they can set overrides for.<br />Users must also have either the capability moodle/role:override or moodle/role:safeoverride.';
 $string['configallowswitch'] = 'For each role in the left column, select which roles they can switch to.<br />Users must also have the capability moodle/role:switchroles.';
@@ -447,7 +445,7 @@ $string['courselistshortnames_desc'] = 'If enabled, course short names will be d
 $string['coursemgmt'] = 'Manage courses and categories';
 $string['courseoverview'] = 'Course overview';
 $string['courserequestnotify'] = 'Course request notification';
-$string['courserequestnotifyemail'] = '{$a->user} requested a new course <a href="{$a->link}">{$a->link}</a>';
+$string['courserequestnotifyemail'] = 'User {$a->user} requested a new course at <a href="{$a->link}">{$a->link}</a>.';
 $string['courserequests'] = 'Course requests';
 $string['courserequestspending'] = 'Pending course requests';
 $string['courses'] = 'Courses';
@@ -1261,7 +1259,7 @@ $string['serverchecks'] = 'Server checks';
 $string['serverlimit'] = 'Server limit';
 $string['servicespage'] = 'Services and support link';
 $string['sessionautostartwarning'] = '<p>Serious configuration error detected, please notify server administrator.</p><p> To operate properly, Moodle requires that administrator changes PHP settings.</p><p><code>session.auto_start</code> must be set to <code>off</code>.</p><p>This setting is controlled by editing <code>php.ini</code>, Apache/IIS <br />configuration or <code>.htaccess</code> file on the server.</p>';
-$string['sessioncookie'] = 'Cookie prefix';
+$string['sessioncookie'] = 'Cookie suffix';
 $string['sessioncookiedomain'] = 'Cookie domain';
 $string['sessioncookiepath'] = 'Cookie path';
 $string['sessionhandling'] = 'Session handling';
@@ -1569,9 +1567,9 @@ $string['user'] = 'User';
 $string['userbulk'] = 'Bulk user actions';
 $string['userbulkdownload'] = 'Export users as';
 $string['userfeedbackafterupgrade'] = 'After every major upgrade';
-$string['userfeedbackencouragement'] = '<p>In Moodle 3.9 onwards, a new feature is included which gives users the option to provide feedback about Moodle software to Moodle HQ via an external survey site hosted by Moodle HQ. No user-identifying information is forwarded to the survey site.</p>
+$string['userfeedbackencouragement'] = '<p>Moodle includes a feature which gives users the option to provide feedback about Moodle software via an external survey site hosted by Moodle HQ. No user-identifying information is forwarded to the survey site.</p>
 <p>Moodle HQ strives to be open and transparent about its data collection practices. Thus, we want to make sure that you are aware and in control of this functionality.</p>
-<p>Feedback from users will greatly assist Moodle HQ in improving the Moodle software. To enable this feature, please go to <a href="{$a}">Feedback settings</a>.</p>';
+<p>Feedback from users helps Moodle HQ in improving the Moodle software. To enable this feature, please go to <a href="{$a}">Feedback settings</a>.</p>';
 $string['userfeedbacknextreminder'] = 'Next feedback reminder';
 $string['userfeedbacknextreminder_desc'] = 'When should we ask the user to give feedback again?';
 $string['userfeedbackperiodically'] = 'Periodically';

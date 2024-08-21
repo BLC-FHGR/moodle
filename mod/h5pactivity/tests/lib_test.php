@@ -27,7 +27,7 @@ use mod_h5pactivity\local\manager;
  * @copyright  2021 Ilya Tregubov <ilya@moodle.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class lib_test extends advanced_testcase {
+final class lib_test extends advanced_testcase {
 
     /**
      * Load required test libraries
@@ -42,7 +42,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_delete_instance
      */
-    public function test_h5pactivity_delete_instance() {
+    public function test_h5pactivity_delete_instance(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -79,7 +79,6 @@ class lib_test extends advanced_testcase {
             'filearea' => 'package',
             'itemid' => 0,
             'filepath' => '/',
-            'filepath' => '/',
             'filename' => 'dummy.h5p',
             'addxapistate' => true,
         ];
@@ -111,7 +110,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_print_recent_activity
      */
-    public function test_print_recent_activity() {
+    public function test_print_recent_activity(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -138,7 +137,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_print_recent_activity
      */
-    public function test_print_recent_activity_fullname() {
+    public function test_print_recent_activity_fullname(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -169,7 +168,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_get_recent_mod_activity
      */
-    public function test_h5pactivity_get_recent_mod_activity() {
+    public function test_h5pactivity_get_recent_mod_activity(): void {
         $this->resetAfterTest();
         $this->setAdminUser();
 
@@ -209,7 +208,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_fetch_recent_activity
      */
-    public function test_h5pactivity_fetch_recent_activity() {
+    public function test_h5pactivity_fetch_recent_activity(): void {
         global $DB;
 
         $this->resetAfterTest();
@@ -336,7 +335,7 @@ class lib_test extends advanced_testcase {
      *
      * @covers ::h5pactivity_reset_userdata
      */
-    public function test_h5pactivity_reset_userdata() {
+    public function test_h5pactivity_reset_userdata(): void {
         global $DB;
         $this->resetAfterTest();
         $this->setAdminUser();
@@ -372,7 +371,6 @@ class lib_test extends advanced_testcase {
             'component' => 'mod_h5pactivity',
             'filearea' => 'package',
             'itemid' => 0,
-            'filepath' => '/',
             'filepath' => '/',
             'filename' => 'dummy.h5p',
             'addxapistate' => true,

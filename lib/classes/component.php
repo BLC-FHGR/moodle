@@ -130,6 +130,45 @@ class core_component {
     ];
 
     /**
+     *  An array containing files which are normally in a package's composer/autoload.files section.
+     *
+     * PHP does not provide a mechanism for automatically including the files that methods are in.
+     *
+     * The Composer autoloader includes all files in this section of the composer.json file during the instantiation of the loader.
+     *
+     * @var array<string>
+     */
+    protected static $composerautoloadfiles = [
+        'lib/aws-sdk/src/functions.php',
+        'lib/guzzlehttp/guzzle/src/functions_include.php',
+        'lib/guzzlehttp/promises/src/functions_include.php',
+        'lib/jmespath/src/JmesPath.php',
+        'lib/php-di/php-di/src/functions.php',
+        'lib/ralouphi/getallheaders/src/getallheaders.php',
+        'lib/symfony/deprecation-contracts/function.php',
+    ];
+
+    /**
+     * Register the Moodle class autoloader.
+     */
+    public static function register_autoloader(): void {
+        if (defined('COMPONENT_CLASSLOADER')) {
+            spl_autoload_register(COMPONENT_CLASSLOADER);
+        } else {
+            spl_autoload_register([self::class, 'classloader']);
+        }
+
+        // Load any composer-driven autoload files.
+        // This is intended to mimic the behaviour of the standard Composer Autoloader.
+        foreach (static::$composerautoloadfiles as $file) {
+            $path = dirname(__DIR__, 2) . '/' . $file;
+            if (file_exists($path)) {
+                require_once($path);
+            }
+        }
+    }
+
+    /**
      * Class loader for Frankenstyle named classes in standard locations.
      * Frankenstyle namespaces are supported.
      *
@@ -171,6 +210,38 @@ class core_component {
         if (!empty($file)) {
             require($file);
             return;
+        }
+
+        if (defined('PHPUNIT_TEST') && PHPUNIT_TEST) {
+            // For unit tests we support classes in `\frankenstyle_component\tests\` to be loaded from
+            // `path/to/frankenstyle/component/tests/classes` directory.
+            // Note: We do *not* support the legacy `\frankenstyle_component_tests_style_classnames`.
+            if ($component = self::get_component_from_classname($classname)) {
+                $pathoptions = [
+                    '/tests/classes' => "{$component}\\tests\\",
+                    '/tests/behat' => "{$component}\\behat\\",
+                ];
+                foreach ($pathoptions as $path => $testnamespace) {
+                    if (preg_match("#^" . preg_quote($testnamespace) . "#", $classname)) {
+                        $path = self::get_component_directory($component) . $path;
+                        $relativeclassname = str_replace(
+                            $testnamespace,
+                            '',
+                            $classname,
+                        );
+                        $file = sprintf(
+                            "%s/%s.php",
+                            $path,
+                            str_replace('\\', '/', $relativeclassname),
+                        );
+                        if (!empty($file) && file_exists($file)) {
+                            require($file);
+                            return;
+                        }
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -241,7 +312,6 @@ class core_component {
 
         return $file;
     }
-
 
     /**
      * Initialise caches, always call before accessing self:: caches.
@@ -365,6 +435,17 @@ class core_component {
             @unlink($cachefile . '.tmp'); // Just in case anything fails (race condition).
             self::invalidate_opcode_php_cache($cachefile);
         }
+    }
+
+    /**
+     * Reset the initialisation of the component utility.
+     *
+     * Note: It should not be necessary to call this in regular code.
+     * Please only use it where strictly required.
+     */
+    public static function reset(): void {
+        // The autoloader will re-initialise if plugintypes is null.
+        self::$plugintypes = null;
     }
 
     /**
