@@ -150,3 +150,7 @@
 	path = blocks/surveytrackerinfo
 	url = https://github.com/BLC-FHGR/surveytrackerinfo
 	branch = master
+[submodule "mod/publication"]
+	path = mod/publication
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_publication
+	branch = MOODLE_404_STABLE
