@@ -25982,7 +25982,12 @@ blockquote {
   margin: 0 0.5rem 1rem;
   padding-left: 1rem;
   color: #495057;
-  border-left: 5px solid #ced4da;
+  border-left: 5px solid #8f959e;
+}
+
+.pagelayout-maintenance .page-header-headings,
+.pagelayout-secure .page-header-headings {
+  background-color: #fff;
 }
 
 /* Prevent long strings exceeding page width */
@@ -29781,6 +29786,9 @@ span.editinstructions .alert-link {
 .bulkenabled .bulk-hidden {
   display: none !important;
 }
+.bulkenabled .section {
+  margin-left: 1rem;
+}
 .bulkenabled .section:not(:first-child) {
   margin-top: 1.5rem;
 }
@@ -30334,11 +30342,6 @@ body.drawer-ease {
 /* The javascript is adding a style="height: 0px;" to this element - we need to set the min-height so the height is ignored. */
 .filepicker .moodle-dialogue-bd {
   min-height: 520px;
-}
-
-.file-picker .fp-navbar {
-  min-height: 40px;
-  padding: 4px;
 }
 
 .fp-navbar {
