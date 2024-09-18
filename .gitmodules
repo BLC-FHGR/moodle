@@ -154,3 +154,7 @@
 	path = mod/publication
 	url = https://github.com/academic-moodle-cooperation/moodle-mod_publication
 	branch = MOODLE_404_STABLE
+[submodule "mod/quiz/accessrule/sebserver"]
+	path = mod/quiz/accessrule/sebserver
+	url = https://github.com/ethz-let/moodle-quizaccess_sebserver/
+	branch = main
