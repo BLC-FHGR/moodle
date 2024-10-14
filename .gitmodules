@@ -129,7 +129,7 @@
 [submodule "mod/questionnaire"]
 	path = mod/questionnaire
 	url = https://github.com/PoetOS/moodle-mod_questionnaire
-	branch = MOODLE_400_STABLE
+	branch = MOODLE_404_STABLE
 [submodule "blocks/onlinesurvey"]
 	path = blocks/onlinesurvey
 	url = https://github.com/evasys-community/moodle-block_onlinesurvey
