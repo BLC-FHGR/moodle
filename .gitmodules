@@ -105,7 +105,7 @@
 [submodule "mod/attendance"]
 	path = mod/attendance
 	url = https://github.com/danmarsden/moodle-mod_attendance
-	branch = MOODLE_401_STABLE
+	branch = MOODLE_404_STABLE
 [submodule "plagiarism/turnitinsim"]
 	path = plagiarism/turnitinsim
 	url = https://github.com/turnitin/moodle-plagiarism_turnitinsim
