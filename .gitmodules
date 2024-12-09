@@ -1,0 +1,160 @@
+[submodule "theme/boost_union"]
+	path = theme/boost_union
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_union.git
+	branch = MOODLE_404_STABLE
+[submodule "local/evento"]
+	path = local/evento
+	url = https://github.com/BLC-FHGR/moodle-local_evento.git
+	branch = master
+[submodule "enrol/evento"]
+	path = enrol/evento
+	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
+	branch = master
+[submodule "local/eventocoursecreation"]
+	path = local/eventocoursecreation
+	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
+	branch = master
+[submodule "mod/quiz/report/archive"]
+	path = mod/quiz/report/archive
+	url = https://github.com/bfh/moodle-quiz_archive.git
+	branch = main
+[submodule "question/type/regexp"]
+	path = question/type/regexp
+	url = https://github.com/rezeau/moodle-qtype_regexp.git
+	branch = master
+[submodule "question/behaviour/regexpadaptivewithhelp"]
+	path = question/behaviour/regexpadaptivewithhelp
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
+	branch = main
+[submodule "question/behaviour/regexpadaptivewithhelpnopenalty"]
+	path = question/behaviour/regexpadaptivewithhelpnopenalty
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
+	branch = main
+[submodule "availability/condition/language"]
+	path = availability/condition/language
+	url = https://github.com/ewallah/moodle-availability_language.git
+	branch = main
+[submodule "availability/condition/password"]
+	path = availability/condition/password
+	url = https://github.com/moodleuulm/moodle-availability_password.git
+	branch = MOODLE_401_STABLE
+[submodule "mod/groupselect"]
+	path = mod/groupselect
+	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
+	branch = master
+[submodule "question/type/kprime"]
+	path = question/type/kprime
+	url = https://github.com/ethz-let/moodle-qtype_kprime.git
+	branch = master
+[submodule "mod/organizer"]
+	path = mod/organizer
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
+	branch = MOODLE_404_STABLE
+[submodule "report/benchmark"]
+	path = report/benchmark
+	url = https://github.com/mikasmart/moodle-report_benchmark.git
+	branch = master
+[submodule "question/type/mtf"]
+	path = question/type/mtf
+	url = https://github.com/ethz-let/qtype_mtf
+	branch = master
+[submodule "admin/tool/lifecycle"]
+	path = admin/tool/lifecycle
+	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+	branch = master
+[submodule "blocks/xp"]
+	path = blocks/xp
+	url = https://github.com/FMCorz/moodle-block_xp.git
+	branch = master
+[submodule "availability/condition/xp"]
+	path = availability/condition/xp
+	url = https://github.com/FMCorz/moodle-availability_xp.git
+	branch = master
+[submodule "question/type/gapfill"]
+	path = question/type/gapfill
+	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
+	branch = master
+[submodule "report/coursesize"]
+	path = report/coursesize
+	url = https://github.com/catalyst/moodle-report_coursesize.git
+	branch = MOODLE_39_STABLE
+[submodule "blocks/completion_progress"]
+	path = blocks/completion_progress
+	url = https://github.com/jonof/moodle-block_completion_progress.git
+	branch = master
+[submodule "admin/tool/log/store/lanalytics"]
+	path = admin/tool/log/store/lanalytics
+	url = https://github.com/rwthanalytics/moodle-logstore_lanalytics.git
+	branch = master
+[submodule "local/learning_analytics"]
+	path = local/learning_analytics
+	url = https://github.com/rwthanalytics/moodle-local_learning_analytics.git
+	branch = master
+[submodule "mod/hvp"]
+	path = mod/hvp
+	url = https://github.com/h5p/moodle-mod_hvp.git
+	branch = stable
+[submodule "blocks/sharing_cart"]
+	path = blocks/sharing_cart
+	url = https://github.com/donhinkelman/moodle-block_sharing_cart
+	branch = master
+[submodule "mod/attendance"]
+	path = mod/attendance
+	url = https://github.com/danmarsden/moodle-mod_attendance
+	branch = MOODLE_404_STABLE
+[submodule "plagiarism/turnitinsim"]
+	path = plagiarism/turnitinsim
+	url = https://github.com/turnitin/moodle-plagiarism_turnitinsim
+	branch = master
+[submodule "question/behaviour/adaptive_adapted_for_coderunner"]
+	path = question/behaviour/adaptive_adapted_for_coderunner
+	url = https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner
+	branch = master
+[submodule "question/type/coderunner"]
+	path = question/type/coderunner
+	url = https://github.com/trampgeek/moodle-qtype_coderunner/
+	branch = master
+[submodule "lib/editor/atto/plugins/wordcount"]
+	path = lib/editor/atto/plugins/wordcount
+	url = https://github.com/SysBind/moodle-atto_wordcount
+	branch = main
+[submodule "local/bulkenrol"]
+	path = local/bulkenrol
+	url = https://github.com/moodle-an-hochschulen/moodle-local_bulkenrol
+	branch = MOODLE_401_STABLE
+[submodule "mod/questionnaire"]
+	path = mod/questionnaire
+	url = https://github.com/PoetOS/moodle-mod_questionnaire
+	branch = MOODLE_404_STABLE
+[submodule "blocks/onlinesurvey"]
+	path = blocks/onlinesurvey
+	url = https://github.com/evasys-community/moodle-block_onlinesurvey
+	branch = MOODLE_400_STABLE
+[submodule "enrol/waitlist"]
+	path = enrol/waitlist
+	url = https://github.com/emeneo/moodle-enrol_waitlist.git
+	branch = master
+[submodule "blocks/accessibility"]
+	path = blocks/accessibility
+	url = https://github.com/brickfield/moodle-block_accessibility
+	branch = main
+[submodule "mod/surveytracker"]
+	path = mod/surveytracker
+	url = https://github.com/BLC-FHGR/surveytracker
+	branch = master
+[submodule "blocks/surveytrackerinfo"]
+	path = blocks/surveytrackerinfo
+	url = https://github.com/BLC-FHGR/surveytrackerinfo
+	branch = master
+[submodule "mod/publication"]
+	path = mod/publication
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_publication
+	branch = MOODLE_404_STABLE
+[submodule "mod/quiz/accessrule/sebserver"]
+	path = mod/quiz/accessrule/sebserver
+	url = https://github.com/ethz-let/moodle-quizaccess_sebserver/
+	branch = main
+[submodule "mod/subcourse"]
+	path = mod/subcourse
+	url = https://github.com/catalyst/moodle-mod_subcourse
+	branch = MOODLE_404_STABLE
