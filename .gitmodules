@@ -29,7 +29,7 @@
 [submodule "question/behaviour/regexpadaptivewithhelpnopenalty"]
 	path = question/behaviour/regexpadaptivewithhelpnopenalty
 	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
-	branch = master
+	branch = main
 [submodule "availability/condition/language"]
 	path = availability/condition/language
 	url = https://github.com/ewallah/moodle-availability_language.git
