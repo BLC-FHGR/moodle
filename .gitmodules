@@ -25,7 +25,7 @@
 [submodule "question/behaviour/regexpadaptivewithhelp"]
 	path = question/behaviour/regexpadaptivewithhelp
 	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
-	branch = master
+	branch = main
 [submodule "question/behaviour/regexpadaptivewithhelpnopenalty"]
 	path = question/behaviour/regexpadaptivewithhelpnopenalty
 	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
