@@ -48,8 +48,8 @@
 	branch = master
 [submodule "mod/organizer"]
 	path = mod/organizer
-	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
-	branch = MOODLE_404_STABLE
+	url = https://github.com/BLC-FHGR/moodle-mod_organizer.git
+	branch = MOODLE_401_STABLE
 [submodule "report/benchmark"]
 	path = report/benchmark
 	url = https://github.com/mikasmart/moodle-report_benchmark.git
