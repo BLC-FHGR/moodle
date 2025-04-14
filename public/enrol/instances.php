@@ -218,6 +218,16 @@ foreach ($instances as $instance) {
     $plugin = $plugins[$instance->enrol];
 
     $displayname = $plugin->get_instance_name_for_management_page($instance);
+
+    //showing evento "Anlassnummer" behind enrolment name on the Enrolment methods tab
+    if ($instance->enrol === 'evento') {
+        if (!empty($instance->customtext1)) {
+            $displayname = $displayname . " (" . $instance->customtext1 . ")";
+        } else {
+            $displayname = $displayname . " (" . $course->idnumber . ")";
+        }
+    }
+    
     if (!enrol_is_enabled($instance->enrol) or $instance->status != ENROL_INSTANCE_ENABLED) {
         $displayname = html_writer::tag('span', $displayname, array('class'=>'dimmed_text'));
     }
