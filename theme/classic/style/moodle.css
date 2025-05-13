@@ -29776,6 +29776,9 @@ aside[id^=block-region-side-] .block_recentlyaccesseditems .card:nth-of-type(n+4
     width: 100%;
   }
 }
+.block_myoverview .dropdown-item {
+  padding-left: 1.5rem;
+}
 
 .block_timeline .paged-content-page-container {
   background-color: var(--bs-body-bg);
@@ -40106,6 +40109,10 @@ div.editor_atto_toolbar button .icon {
 }
 
 @media (max-width: 575.98px) {
+  .reportbuilder-report[data-report-type="0"]:not([data-editing]):not([data-force-table]) table.reportbuilder-table {
+    --bs-table-striped-bg: var(--bs-body-bg);
+    --bs-table-hover-bg: var(--bs-body-bg);
+  }
   .reportbuilder-report[data-report-type="0"]:not([data-editing]):not([data-force-table]) table.reportbuilder-table thead {
     display: none;
   }
@@ -40114,14 +40121,10 @@ div.editor_atto_toolbar button .icon {
     flex-direction: column;
     margin: 0.5rem 0;
     padding: 0.25rem 0.5rem 0 0.5rem;
-    background-color: var(--bs-body-bg) !important; /* stylelint-disable-line declaration-no-important */
     word-wrap: break-word;
     background-clip: border-box;
     border: var(--bs-border-width) solid var(--bs-border-color-translucent);
     border-radius: var(--bs-border-radius);
-  }
-  .reportbuilder-report[data-report-type="0"]:not([data-editing]):not([data-force-table]) table.reportbuilder-table tr:hover {
-    background-color: var(--bs-body-bg) !important; /* stylelint-disable-line declaration-no-important */
   }
   .reportbuilder-report[data-report-type="0"]:not([data-editing]):not([data-force-table]) table.reportbuilder-table tr.emptyrow {
     display: none;
@@ -40166,6 +40169,10 @@ div.editor_atto_toolbar button .icon {
   }
 }
 @media (min-width: 576px) {
+  .reportbuilder-report[data-report-type="0"]:not([data-editing])[data-force-card] table.reportbuilder-table {
+    --bs-table-striped-bg: var(--bs-body-bg);
+    --bs-table-hover-bg: var(--bs-body-bg);
+  }
   .reportbuilder-report[data-report-type="0"]:not([data-editing])[data-force-card] table.reportbuilder-table thead {
     display: none;
   }
@@ -40174,14 +40181,10 @@ div.editor_atto_toolbar button .icon {
     flex-direction: column;
     margin: 0.5rem 0;
     padding: 0.25rem 0.5rem 0 0.5rem;
-    background-color: var(--bs-body-bg) !important; /* stylelint-disable-line declaration-no-important */
     word-wrap: break-word;
     background-clip: border-box;
     border: var(--bs-border-width) solid var(--bs-border-color-translucent);
     border-radius: var(--bs-border-radius);
-  }
-  .reportbuilder-report[data-report-type="0"]:not([data-editing])[data-force-card] table.reportbuilder-table tr:hover {
-    background-color: var(--bs-body-bg) !important; /* stylelint-disable-line declaration-no-important */
   }
   .reportbuilder-report[data-report-type="0"]:not([data-editing])[data-force-card] table.reportbuilder-table tr.emptyrow {
     display: none;
@@ -40674,6 +40677,7 @@ div.editor_atto_toolbar button .icon {
   display: flex;
 }
 .moodlenet-share-dialog .modal-header .moodlenet-share-moodlenetinfo .moodlenet-logo .icon {
+  max-width: initial;
   width: auto;
   height: 1.3rem;
 }
@@ -40729,7 +40733,7 @@ div.editor_atto_toolbar button .icon {
 }
 .moodlenet-share-dialog .modal-body .moodlenet-share-modal-content .moodlenet-circle-status span.status-icon .icon {
   font-size: 8rem;
-  width: auto;
+  max-width: initial;
   margin: 0;
 }
 .moodlenet-share-dialog .modal-footer .moodlenet-share-to {

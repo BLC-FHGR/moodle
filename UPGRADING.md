@@ -6,6 +6,24 @@ More detailed information on key changes can be found in the [Developer update n
 
 The format of this change log follows the advice given at [Keep a CHANGELOG](https://keepachangelog.com).
 
+## 5.0+
+
+### core
+
+#### Added
+
+- Added a new optional param to adhoc_task_failed and scheduled_task_failed to allow skipping log finalisation when called from a separate task.
+
+  For more information see [MDL-84442](https://tracker.moodle.org/browse/MDL-84442)
+
+### core_user
+
+#### Added
+
+- New method `\core_user::get_dummy_fullname(...)` for returning dummy user fullname comprised of configured name fields only
+
+  For more information see [MDL-82132](https://tracker.moodle.org/browse/MDL-82132)
+
 ## 5.0
 
 ### core
