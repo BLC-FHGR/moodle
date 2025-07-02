@@ -455,6 +455,12 @@ function upgrade_stale_php_files_present(): bool {
     global $CFG;
 
     $someexamplesofremovedfiles = [
+        // Removed in 5.0.
+        '/admin/process_email.php',
+        '/badges/preferences_form.php',
+        '/lib/ajax/setuserpref.php',
+        '/lib/cronlib.php',
+        '/question/classes/local/bank/action_column_base.php',
         // Removed in 4.5.
         '/backup/util/ui/classes/copy/copy.php',
         '/backup/util/ui/yui/build/moodle-backup-backupselectall/moodle-backup-backupselectall.js',
@@ -2787,6 +2793,26 @@ function check_async_backup(environment_results $result): ?environment_results {
     if (!during_initial_install() && empty($CFG->enableasyncbackup)) { // Have to use $CFG as config table may not be available.
         $result->setInfo('Asynchronous backups disabled');
         $result->setFeedbackStr('asyncbackupdisabled');
+        return $result;
+    }
+
+    return null;
+}
+
+/**
+ * Checks if the current database vendor is Aurora MySQL.
+ *
+ * If the database vendor is 'auroramysql', this function sets additional information.
+ *
+ * @param environment_results $result The environment results object to update.
+ * @return environment_results|null The updated environment results object if Aurora is detected, or null otherwise.
+ */
+function check_aurora_version(environment_results $result): ?environment_results {
+    global $CFG;
+
+    if ($CFG->dbtype === 'auroramysql') {
+        $result->setInfo('Aurora compatibility');
+        $result->setFeedbackStr('ensureauroraversion');
         return $result;
     }
 
