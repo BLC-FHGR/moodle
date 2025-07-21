@@ -1,5 +1,35 @@
 # core_question (subsystem) Upgrade notes
 
+## 5.0.1+
+
+### Added
+
+- The question backup API has been improved to only include questions that are actually used or owned by backed up activities.
+  Any activities that use question references should be supported automatically. Activities that use *question set references* (for example, random quiz questions) need to add a call to `backup_question_set_reference_trait::annotate_set_reference_bank_entries()` alongside the call to `backup_question_set_reference_trait::add_question_set_references()` in their backup step. See `backup_quiz_activity_structure_step::define_structure()` for an example.
+
+  For more information see [MDL-41924](https://tracker.moodle.org/browse/MDL-41924)
+
+### Changed
+
+- `core_question_search_shared_banks` will now search all question banks, not just those outside the current course.
+  This makes the service usable in cases outside of the current "Switch banks" UI, which require searching all banks on the site.
+  It also makes the autocomplete in the "Switch banks" UI more consistent, as it was previously excluding some of the banks listed in the UI (Question banks in this course), but not others (Recently viewed question banks).
+  This change has also adds a 'requiredcapabilties' parameter to the function, which accepts an list of abbreviated capabilities for  checking access against question banks before they are returned.
+
+  For more information see [MDL-85069](https://tracker.moodle.org/browse/MDL-85069)
+- `question_edit_contexts` now only considers the provided context when checking permissions, rather than all parent contexts as well. As questions now exist only at the activity module context level, permissions can be inherited or overridden as normal for each question bank. The previous pattern of checking for a permission in any parent context circumvented the override system, and no longer makes sense.
+
+  For more information see [MDL-85754](https://tracker.moodle.org/browse/MDL-85754)
+
+## 5.0.1
+
+### Fixed
+
+- The unit test repeated\_restore\_test::test\_restore\_course\_with\_same\_stamp\_questions was passing incorrectly on 5.x for question types that use answers.
+  Maintainers of third-party question types may want to re-run the test with the fix in place, or if they have copied parts of this test as the basis of a test in their own plugin, review the changes and see if they should be reflected in their own test.
+
+  For more information see [MDL-85556](https://tracker.moodle.org/browse/MDL-85556)
+
 ## 5.0
 
 ### Added

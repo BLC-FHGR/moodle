@@ -18,16 +18,22 @@ Feature: Adding questions to a quiz from the question bank
       | activity | name                                                                                                             | intro                                    | course | idnumber |
       | quiz     | Quiz 1                                                                                                           | Quiz 1 for testing the Add menu          | C1     | quiz1    |
       | qbank    | <span lang="en" class="multilang">Qbank</span><span lang="fr" class="multilang">Banqueq</span> 1 & < > " ' &amp; | Question bank 1 for testing the Add menu | C1     | qbank1   |
+      | qbank    | Question Bank A                                                                                                  | Question Bank A for testing qbank name   | C1     | qbankA   |
+      | qbank    | Question Bank B                                                                                                  | Question Bank B for testing qbank name   | C1     | qbankB   |
     And the following "question categories" exist:
       | contextlevel    | reference  | name              |
       | Activity module | quiz1      | Test questions    |
       | Activity module | qbank1     | Qbank questions   |
+      | Activity module | qbankA     | Qbank Questions 1 |
+      | Activity module | qbankB     | Qbank Questions 2 |
     And the following "questions" exist:
       | questioncategory  | qtype     | name             | user     | questiontext     | idnumber |
       | Test questions    | essay     | question 01 name | admin    | Question 01 text |          |
       | Test questions    | essay     | question 02 name | teacher1 | Question 02 text | qidnum   |
       | Qbank questions   | essay     | question 03 name | teacher1 | Question 03 text | q3idnum  |
       | Qbank questions   | essay     | question 04 name | teacher1 | Question 04 text | q4idnum  |
+      | Qbank Questions 1 | truefalse | TF1              | admin    | Qbank 1 question |          |
+      | Qbank Questions 2 | truefalse | TF2              | admin    | Qbank 2 question |          |
 
   Scenario: The questions can be filtered by tag
     Given I am on the "question 01 name" "core_question > edit" page logged in as teacher1
@@ -172,6 +178,7 @@ Feature: Adding questions to a quiz from the question bank
     And I click on "Select" "checkbox" in the "question 03 name" "table_row"
     And I click on "Add selected questions to the quiz" "button"
     And I should see "question 03 name"
+    And "Qbank 1 & < > " "text" should appear after "question 03 name" "text"
 
   @javascript
   Scenario: Validate the sorting while adding questions from question bank
@@ -200,3 +207,65 @@ Feature: Adding questions to a quiz from the question bank
     And I open the "last" add to quiz menu
     And I follow "from question bank"
     Then I should see "question 01 name"
+
+  Scenario: Question bank names are displayed in quiz questions
+    Given quiz "Quiz 1" contains the following questions:
+      | question | page |
+      | TF1      | 1    |
+      | TF2      | 1    |
+    When I am on the "Quiz 1" "mod_quiz > Edit" page logged in as teacher1
+    Then I should see "Question Bank A" in the "TF1" "list_item"
+    And I should see "Question Bank B" in the "TF2" "list_item"
+
+  Scenario: User doesn't see the option to switch to a bank they can't use
+    Given the "multilang" filter is "on"
+    And the "multilang" filter applies to "content and headings"
+    And the following "users" exist:
+      | username | firstname | lastname | email                |
+      | teacher2 | Teacher   | 2        | teacher2@example.com |
+    And the following "role" exists:
+      | shortname               | noquestions          |
+      | name                    | Cannot use questions |
+      | moodle/question:usemine | prohibit             |
+      | moodle/question:useall  | prohibit             |
+    And the following "course enrolments" exist:
+      | user     | course | role           |
+      | teacher2 | C1     | editingteacher |
+    And I am on the "Quiz 1" "mod_quiz > Edit" page logged in as "teacher2"
+    And I open the "last" add to quiz menu
+    And I follow "from question bank"
+    And I click on "Switch bank" "button"
+    And I click on "Qbank 1 & < > \" ' &amp;" "link" in the "Select question bank" "dialogue"
+    And I click on "Select" "checkbox" in the "question 03 name" "table_row"
+    And I click on "Add selected questions to the quiz" "button"
+    When the following "role assigns" exist:
+      | user     | role        | contextlevel    | reference |
+      | teacher2 | noquestions | Activity module | qbank1    |
+    And I open the "Page 1" add to quiz menu
+    And I follow "from question bank"
+    And I click on "Switch bank" "button"
+    Then "Qbank 1 & < > \" ' &amp;" "link" should not exist in the "Select question bank" "dialogue"
+
+  @javascript
+  Scenario: Don't show the edit link if the user doesn't have permission
+    Given the following "courses" exist:
+      | fullname | shortname | category |
+      | Course 2 | C2        | 0        |
+    And the following "activities" exist:
+      | activity   | name            | course | idnumber |
+      | qbank      | Question Bank C | C2     | qbankC   |
+    And the following "question categories" exist:
+      | contextlevel    | reference | name              |
+      | Activity module | qbankC    | Qbank Questions 3 |
+    And the following "questions" exist:
+      | questioncategory  | qtype     | name            | questiontext        |
+      | Qbank Questions 3 | truefalse | Shared question | Answer the question |
+    And quiz "Quiz 1" contains the following questions:
+      | question        | page |
+      | TF1             | 1    |
+      | Shared question | 1    |
+    When I am on the "Quiz 1" "mod_quiz > Edit" page logged in as teacher1
+    Then "TF1" "link" should exist
+    And "Question Bank A" "link" should exist
+    And "Shared question" "link" should not exist
+    And "Question Bank C" "link" should not exist

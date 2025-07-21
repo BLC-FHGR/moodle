@@ -2180,12 +2180,14 @@ $footer-link-color: $bg-inverse-link-color !default;
     }
 }
 
-.btn-footer-popover {
-    display: none;
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    @include box-shadow($popover-box-shadow);
+.footer-popover {
+    .btn-footer-popover {
+        display: none;
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        @include box-shadow($popover-box-shadow);
+    }
 }
 
 .btn-footer-communication {
@@ -2553,7 +2555,7 @@ $picker-emojis-per-row: 7 !default;
 .emoji-auto-complete {
     height: $picker-row-height;
 
-    .btn.btn-link.btn-icon.emoji-button {
+    .btn.btn-icon.emoji-button {
         height: $picker-emoji-button-size;
         width: $picker-emoji-button-size;
         line-height: $picker-emoji-button-size;
@@ -2901,13 +2903,22 @@ body.dragging {
     }
 }
 
-.drawers {
+.page-mycourses {
     .block_myoverview {
-        border: 0;
-        & > .card-body {
-            padding-top: 0 !important; /* stylelint-disable-line declaration-no-important */
-            padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
-            padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
+        .block-cards {
+            border-top: 1px solid $border-color;
+            padding-top: map-get($spacers, 2);
+        }
+    }
+    // Boost theme styling only (drawers not used in classic).
+    .drawers {
+        .block_myoverview {
+            border: 0;
+            & > .card-body {
+                padding-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+                padding-left: 0 !important; /* stylelint-disable-line declaration-no-important */
+                padding-right: 0 !important; /* stylelint-disable-line declaration-no-important */
+            }
         }
     }
 }
@@ -3080,11 +3091,9 @@ blockquote {
             display: none;
         }
     }
-    button {
+    .showmore-button {
         float: right;
-        &.btn-link {
-            text-decoration: none;
-        }
+        text-decoration: none;
         .icon {
             font-size: $btn-font-size-sm;
             margin: 0;

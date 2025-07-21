@@ -57,16 +57,20 @@
         <div>{{{questionname}}}</div>
         {{#issharedbank}}
             <div class="sharedbank">
-                <a href="{{bankurl}}">
-                    <span class="badge bg-primary text-light ms-2 mt-1">{{bankname}}</span>
-                </a>
+                {{#bankurl}}
+                    <a href="{{bankurl}}">
+                {{/bankurl}}
+                    <span class="badge bg-primary text-light ms-2 mt-1">{{{bankname}}}</span>
+                {{#bankurl}}
+                    </a>
+                {{/bankurl}}
             </div>
         {{/issharedbank}}
     </div>
     <div class="actions">
         {{#versionselection}}
             <label for="version-{{slotid}}" class="visually-hidden">{{#str}}question_version, question{{/str}}</label>
-            <select id="version-{{slotid}}" name="version" class="form-control me-2 version-selection"
+            <select id="version-{{slotid}}" name="version" class="form-select me-2 version-selection"
             data-action="mod_quiz-select_slot" data-slot-id="{{slotid}}">
                 {{#versionoption}}
                     <option value="{{version}}" {{#selected}}selected="selected"{{/selected}}>{{versionvalue}}</option>

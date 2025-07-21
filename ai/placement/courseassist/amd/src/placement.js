@@ -32,6 +32,8 @@ import DrawerEvents from 'core/drawer_events';
 import {subscribe} from 'core/pubsub';
 import * as MessageDrawerHelper from 'core_message/message_drawer_helper';
 import {getString} from 'core/str';
+import * as FocusLock from 'core/local/aria/focuslock';
+import {isSmall} from "core/pagehelpers";
 
 const AICourseAssist = class {
 
@@ -58,8 +60,12 @@ const AICourseAssist = class {
         this.aiDrawerElement = document.querySelector(Selectors.ELEMENTS.AIDRAWER);
         this.aiDrawerBodyElement = document.querySelector(Selectors.ELEMENTS.AIDRAWER_BODY);
         this.pageElement = document.querySelector(Selectors.ELEMENTS.PAGE);
+        this.jumpToElement = document.querySelector(Selectors.ELEMENTS.JUMPTO);
+        this.actionElement = document.querySelector(Selectors.ELEMENTS.ACTION);
+        this.aiDrawerCloseElement = this.aiDrawerElement.querySelector(Selectors.ELEMENTS.AIDRAWER_CLOSE);
         this.lastAction = '';
         this.responses = new Map();
+        this.isDrawerFocusLocked = false;
 
         this.registerEventListeners();
     }
@@ -75,6 +81,7 @@ const AICourseAssist = class {
                 e.preventDefault();
                 this.openAIDrawer();
                 this.lastAction = 'summarise';
+                this.actionElement.focus();
                 const isPolicyAccepted = await this.isPolicyAccepted();
                 if (!isPolicyAccepted) {
                     // Display policy.
@@ -89,6 +96,7 @@ const AICourseAssist = class {
                 e.preventDefault();
                 this.openAIDrawer();
                 this.lastAction = 'explain';
+                this.actionElement.focus();
                 const isPolicyAccepted = await this.isPolicyAccepted();
                 if (!isPolicyAccepted) {
                     // Display policy.
@@ -105,11 +113,32 @@ const AICourseAssist = class {
             }
         });
 
+        document.addEventListener('keydown', e => {
+            if (this.isAIDrawerOpen() && e.key === 'Escape') {
+                this.closeAIDrawer();
+            }
+        });
+
         // Close AI drawer if message drawer is shown.
         subscribe(DrawerEvents.DRAWER_SHOWN, () => {
             if (this.isAIDrawerOpen()) {
                 this.closeAIDrawer();
             }
+        });
+
+        // Focus on the AI drawer's close button when the jump-to element is focused.
+        this.jumpToElement.addEventListener('focus', () => {
+            this.aiDrawerCloseElement.focus();
+        });
+
+        // Focus on the action element when the AI drawer container receives focus.
+        this.aiDrawerElement.addEventListener('focus', () => {
+            this.actionElement.focus();
+        });
+
+        // Remove active from the action element when it loses focus.
+        this.actionElement.addEventListener('blur', () => {
+            this.actionElement.classList.remove('active');
         });
     }
 
@@ -212,9 +241,20 @@ const AICourseAssist = class {
         // Close message drawer if it is shown.
         MessageDrawerHelper.hide();
         this.aiDrawerElement.classList.add('show');
+        this.aiDrawerElement.setAttribute('tabindex', 0);
         this.aiDrawerBodyElement.setAttribute('aria-live', 'polite');
         if (!this.pageElement.classList.contains('show-drawer-right')) {
             this.addPadding();
+        }
+        this.jumpToElement.setAttribute('tabindex', 0);
+        this.jumpToElement.focus();
+
+        // If the AI drawer is opened on a small screen, we need to trap the focus tab within the AI drawer.
+        if (isSmall()) {
+            FocusLock.trapFocus(this.aiDrawerElement);
+            this.aiDrawerElement.setAttribute('aria-modal', 'true');
+            this.aiDrawerElement.setAttribute('role', 'dialog');
+            this.isDrawerFocusLocked = true;
         }
     }
 
@@ -222,11 +262,29 @@ const AICourseAssist = class {
      * Close the AI drawer.
      */
     closeAIDrawer() {
+        // Untrap focus if it was locked.
+        if (this.isDrawerFocusLocked) {
+            FocusLock.untrapFocus();
+            this.aiDrawerElement.removeAttribute('aria-modal');
+            this.aiDrawerElement.setAttribute('role', 'region');
+        }
+
         this.aiDrawerElement.classList.remove('show');
+        this.aiDrawerElement.setAttribute('tabindex', -1);
         this.aiDrawerBodyElement.removeAttribute('aria-live');
         if (this.pageElement.classList.contains('show-drawer-right') && this.aiDrawerBodyElement.dataset.removepadding === '1') {
             this.removePadding();
         }
+        this.jumpToElement.setAttribute('tabindex', -1);
+
+        // We can enforce a focus-visible state on the focus element using element.focus({focusVisible: true}).
+        // Unfortunately, this feature isn't supported in all browsers, only Firefox provides support for it.
+        // Therefore, we will apply the active class to the action element and set focus on it.
+        // This action will make the action element appear focused.
+        // When the action element loses focus,
+        // we will remove the active class at {@see registerEventListeners()}
+        this.actionElement.classList.add('active');
+        this.actionElement.focus();
     }
 
     /**

@@ -73,7 +73,7 @@ $string['assignmentduedigesthtml'] = '<p>Hi {$a->firstname},</p>
 $string['assignmentduedigestitem'] = '<strong>{$a->assignmentname}</strong> in course {$a->coursename}<br/>
 <strong>Due: {$a->duetime}</strong><br/>
 <a href="{$a->url}" aria-label="Go to {$a->assignmentname}">Go to activity</a>';
-$string['assignmentduedigestsms'] = '{$a->grader} has posted some feedback on your assignment submission for {$a->assignment}: {$a->url}';
+$string['assignmentduedigestsms'] = 'One or more assignments are due in 7 days. Log in to view upcoming assignments.';
 $string['assignmentduedigestsubject'] = 'You have assignments due in 7 days';
 $string['assignmentduesoonhtml'] = '<p>Hi {$a->firstname},</p>
 <p>The assignment <strong>{$a->assignmentname}</strong> in course {$a->coursename} is due soon.</p>
@@ -147,7 +147,8 @@ $string['batchsetallocatedmarker'] = 'Set allocated marker for {$a} selected use
 $string['batchsetmarkingworkflowstateforusers'] = 'Set marking workflow state for {$a} selected user(s).';
 $string['beginassignment'] = 'Begin assignment';
 $string['blindmarking'] = 'Anonymous submissions';
-$string['blindmarkingenabledwarning'] = 'Anonymous submissions are enabled for this activity. Grades will not be added to the gradebook until student identities are revealed via the "Actions" menu.';
+$string['blindmarkingenabledwarning'] = 'Anonymous submissions are enabled for this activity.';
+$string['blindmarkingnogradewarning'] = 'Anonymous submissions are enabled for this activity. Grades will not be added to the gradebook until student identities are revealed via the "Actions" menu.';
 $string['blindmarking_help'] = 'Anonymous submissions hide the identity of students from markers. Anonymous submission settings will be locked once a submission or grade has been made in relation to this assignment.';
 $string['cachedef_overrides'] = 'User and group override information';
 $string['calendardue'] = '{$a} is due';
@@ -220,6 +221,7 @@ $string['editingstatus'] = 'Editing status';
 $string['enabled'] = 'Enabled';
 $string['enabletimelimit'] = 'Enable timed assignments';
 $string['enabletimelimit_help'] = 'If enabled, you can set a time limit on assignment settings page.';
+$string['errorgradechangessaveddetail'] = 'The changes to the grade and feedback were not saved.';
 $string['eventallsubmissionsdownloaded'] = 'All the submissions are being downloaded.';
 $string['eventassessablesubmitted'] = 'A submission has been submitted.';
 $string['eventbatchsetmarkerallocationviewed'] = 'Batch set marker allocation viewed';
@@ -272,7 +274,7 @@ It is available here:
     {$a->url}';
 $string['gradersubmissionupdatedhtml'] = '{$a->username} has updated their assignment submission for \'{$a->assignment}\' at {$a->timeupdated}. It is available in <a href="{$a->url}">assignment submissions</a>.';
 $string['gradersubmissionupdatedsmall'] = '{$a->username} has updated their submission for assignment {$a->assignment}.';
-$string['gradersubmissionupdatedsms'] = '{$a->username} updated {$a->assignment}: {$a->url}';
+$string['gradersubmissionupdatedsms'] = '{$a->username} updated their submission for assignment \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view';
 $string['gradeuser'] = 'Grade {$a}';
 $string['grantextension'] = 'Grant extension';
 $string['grantextensionforusers'] = 'Grant extension for {$a} students';
@@ -298,8 +300,8 @@ You can see it appended to your assignment submission:
     {$a->url}';
 $string['feedbackavailableanonhtml'] = 'You have new feedback on your assignment submission for \'{$a->assignment}\'. You can see it appended to your <a href="{$a->url}">assignment submission</a>.';
 $string['feedbackavailableanonsmall'] = 'New feedback for assignment {$a->assignment}';
-$string['feedbackavailableanonsms'] = 'You have feedback on {$a->assignment}: {$a->url}';
-$string['feedbackavailablesms'] = '{$a->username} gave feedback on {$a->assignment}: {$a->url}';
+$string['feedbackavailableanonsms'] = 'New feedback on \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view';
+$string['feedbackavailablesms'] = 'New feedback on \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view';
 $string['feedbackplugins'] = 'Feedback plugins';
 $string['feedbackpluginforgradebook'] = 'Feedback plugin that will push comments to the gradebook';
 $string['feedbackpluginforgradebook_help'] = 'Only one assignment feedback plugin can push feedback into the gradebook.';
@@ -584,7 +586,7 @@ You can see the status of your assignment submission:
 $string['submissioncopiedhtml'] = '<p>You have made a copy of your previous assignment submission for \'{$a->assignment}\'.</p>
 <p>You can see the status of your <a href="{$a->url}">assignment submission</a>.</p>';
 $string['submissioncopiedsmall'] = 'You have copied your previous assignment submission for {$a->assignment}';
-$string['submissioncopiedsms'] = 'You have copied your previous assignment submission for {$a->assignment}: {$a->url}';
+$string['submissioncopiedsms'] = 'You have made a copy of your previous submission for \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view';
 $string['submissiondrafts'] = 'Require students to click the submit button';
 $string['submissiondrafts_help'] = 'Should students have a submit button to indicate when they have finished making changes to their submission and it is ready for grading?';
 $string['submissioneditable'] = 'Student can edit this submission';
@@ -606,9 +608,10 @@ You can see the status of your assignment submission:
     {$a->url}';
 $string['submissionreceiptotherhtml'] = 'Your assignment submission for \'{$a->assignment}\' has been submitted. You can see the status of your <a href="{$a->url}">assignment submission</a>.';
 $string['submissionreceiptothersmall'] = 'Your assignment submission for {$a->assignment} has been submitted.';
-$string['submissionreceiptothersms'] = 'Your submission for {$a->assignment} has been submitted: {$a->url}';
+$string['submissionreceiptothersms'] = 'Submission made for \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view your submission status';
 $string['submissionreceipts'] = 'Send submission receipts';
 $string['submissionreceiptsmall'] = 'Assignment submission confirmation - {$a->assignment}';
+$string['submissionreceiptsms'] = 'You have submitted \'{$a->assignment}\' in \'{$a->coursefullname}\'. Log in to view the submission status';
 $string['submissionreceipttext'] = 'You have submitted an assignment submission for \'{$a->assignment}\'.
 
 You can see the status of your assignment submission:
@@ -616,7 +619,6 @@ You can see the status of your assignment submission:
     {$a->url}
 
 {$a->submissionsummarytext}';
-$string['submissionreceiptsms'] = 'You have submitted {$a->assignment}: {$a->url}';
 $string['submissions'] = 'Submissions';
 $string['submissionslocked'] = 'This assignment is not accepting submissions';
 $string['submissionslockedshort'] = 'Submission changes not allowed';
@@ -660,9 +662,9 @@ $string['subplugintype_assignsubmission'] = 'Submission plugin';
 $string['subplugintype_assignsubmission_plural'] = 'Submission plugins';
 $string['subplugintype_assignfeedback'] = 'Feedback plugin';
 $string['subplugintype_assignfeedback_plural'] = 'Feedback plugins';
-$string['teamname'] = 'Team: {$a}';
+$string['teamname'] = 'Group: {$a}';
 $string['teamsubmission'] = 'Students submit in groups';
-$string['teamsubmission_help'] = 'If enabled, students will be divided into groups based on the default set of groups or a custom grouping. A group submission will be shared among group members and all members of the group will see each others\' changes to the submission.';
+$string['teamsubmission_help'] = 'If enabled, students will be divided into groups based on the default set of groups or a custom grouping. A group submission will be shared among group members and all members of the group will see each others\' changes to the submission. Note: You cannot change this setting if there are submissions already.';
 $string['teamsubmissiongroupingid'] = 'Grouping for student groups';
 $string['teamsubmissiongroupingid_help'] = 'This is the grouping that the assignment will use to find groups for student groups. If not set, the default set of groups will be used.';
 $string['textinstructions'] = 'Assignment instructions';

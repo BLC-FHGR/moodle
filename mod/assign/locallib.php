@@ -4533,7 +4533,11 @@ class assign {
         $o .= $actionformtext;
 
         if ($this->is_blind_marking() && has_capability('mod/assign:viewblinddetails', $this->get_context())) {
-            $o .= $this->get_renderer()->notification(get_string('blindmarkingenabledwarning', 'assign'), 'notifymessage');
+            if ($this->is_marking_anonymous()) {
+                $o .= $this->get_renderer()->notification(get_string('blindmarkingenabledwarning', 'assign'), 'notifymessage');
+            } else {
+                $o .= $this->get_renderer()->notification(get_string('blindmarkingnogradewarning', 'assign'), 'notifymessage');
+            }
         }
 
         // Print the table of submissions.
@@ -6032,7 +6036,7 @@ class assign {
         require_once($CFG->dirroot.'/mod/assign/lib.php');
         // Do not push grade to gradebook if blind marking is active as
         // the gradebook would reveal the students.
-        if ($this->is_blind_marking()) {
+        if ($this->is_blind_marking() && !$this->is_marking_anonymous()) {
             return false;
         }
 
@@ -6603,6 +6607,7 @@ class assign {
         global $USER;
         $userid = core_user::is_real_user($userfrom->id) ? $userfrom->id : $USER->id;
         $uniqueid = $this->get_uniqueid_for_user($userid);
+        $oldforcelang = force_current_language($userto->lang);
         self::send_assignment_notification($userfrom,
                                            $userto,
                                            $messagetype,
@@ -6616,6 +6621,7 @@ class assign {
                                            $this->is_blind_marking(),
                                            $uniqueid,
                                            $extrainfo);
+        force_current_language($oldforcelang);
     }
 
     /**
@@ -6664,7 +6670,9 @@ class assign {
             $user = $USER;
         }
         // Prepare extra data for submission receipt notification.
+        $oldforcelang = force_current_language($user->lang);
         $extrainfo = $this->get_submission_summaries_for_messages($submission);
+        force_current_language($oldforcelang);
         if ($submission->userid == $USER->id) {
             $this->send_notification(core_user::get_noreply_user(),
                                      $user,
@@ -8403,15 +8411,6 @@ class assign {
                         $grade->feedbackfiles = $plugin->files_for_gradebook($grade);
                     }
                     $this->update_grade($grade);
-                    $assign = clone $this->get_instance();
-                    $assign->cmidnumber = $this->get_course_module()->idnumber;
-                    // Set assign gradebook feedback plugin status.
-                    $assign->gradefeedbackenabled = $this->is_gradebook_feedback_enabled();
-
-                    // If markinganonymous is enabled then allow to release grades anonymously.
-                    if (isset($assign->markinganonymous) && $assign->markinganonymous == 1) {
-                        assign_update_grades($assign, $userid);
-                    }
                     $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
                     \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $state)->trigger();
                 }
@@ -9732,6 +9731,15 @@ class assign {
         }
 
         return !empty($submission) && $submission->status !== ASSIGN_SUBMISSION_STATUS_SUBMITTED && $timedattemptstarted;
+    }
+
+    /**
+     * Is "Allow partial release of grades while marking anonymously" enabled?
+     *
+     * @return bool
+     */
+    public function is_marking_anonymous(): bool {
+        return isset($this->get_instance()->markinganonymous) && $this->get_instance()->markinganonymous;
     }
 }
 

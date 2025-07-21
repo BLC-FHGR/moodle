@@ -6,6 +6,88 @@ More detailed information on key changes can be found in the [Developer update n
 
 The format of this change log follows the advice given at [Keep a CHANGELOG](https://keepachangelog.com).
 
+## 5.0.1+
+
+### core
+
+#### Changed
+
+- The `\core\attribute\deprecated` attribute constructor `$replacement` parameter now defaults to null, and can be omitted
+
+  For more information see [MDL-84531](https://tracker.moodle.org/browse/MDL-84531)
+
+### core_message
+
+#### Added
+
+- The web service `core_message_get_member_info` additionally returns `cancreatecontact` which is a boolean value for a user's permission to add a contact.
+
+  For more information see [MDL-72123](https://tracker.moodle.org/browse/MDL-72123)
+
+### core_question
+
+#### Added
+
+- The question backup API has been improved to only include questions that are actually used or owned by backed up activities.
+  Any activities that use question references should be supported automatically. Activities that use *question set references* (for example, random quiz questions) need to add a call to `backup_question_set_reference_trait::annotate_set_reference_bank_entries()` alongside the call to `backup_question_set_reference_trait::add_question_set_references()` in their backup step. See `backup_quiz_activity_structure_step::define_structure()` for an example.
+
+  For more information see [MDL-41924](https://tracker.moodle.org/browse/MDL-41924)
+
+#### Changed
+
+- `core_question_search_shared_banks` will now search all question banks, not just those outside the current course.
+  This makes the service usable in cases outside of the current "Switch banks" UI, which require searching all banks on the site.
+  It also makes the autocomplete in the "Switch banks" UI more consistent, as it was previously excluding some of the banks listed in the UI (Question banks in this course), but not others (Recently viewed question banks).
+  This change has also adds a 'requiredcapabilties' parameter to the function, which accepts an list of abbreviated capabilities for  checking access against question banks before they are returned.
+
+  For more information see [MDL-85069](https://tracker.moodle.org/browse/MDL-85069)
+- `question_edit_contexts` now only considers the provided context when checking permissions, rather than all parent contexts as well. As questions now exist only at the activity module context level, permissions can be inherited or overridden as normal for each question bank. The previous pattern of checking for a permission in any parent context circumvented the override system, and no longer makes sense.
+
+  For more information see [MDL-85754](https://tracker.moodle.org/browse/MDL-85754)
+
+## 5.0.1
+
+### core
+
+#### Added
+
+- - Added is_site_registered_in_hub method in lib/classes/hub/api.php to
+    check if the site is registered or not.
+  - Added get_secret method in lib/classes/hub/registration.php to get site's secret.
+
+  For more information see [MDL-83448](https://tracker.moodle.org/browse/MDL-83448)
+- Added a new optional param to adhoc_task_failed and scheduled_task_failed to allow skipping log finalisation when called from a separate task.
+
+  For more information see [MDL-84442](https://tracker.moodle.org/browse/MDL-84442)
+- There is a new `core/page_title` Javascript module for manipulating the current page title
+
+  For more information see [MDL-84804](https://tracker.moodle.org/browse/MDL-84804)
+
+### core_auth
+
+#### Added
+
+- A new method called `get_additional_upgrade_token_parameters` has been added to `oauth2_client` class. This will allow custom clients to override this one and add their extra parameters for upgrade token request.
+
+  For more information see [MDL-80380](https://tracker.moodle.org/browse/MDL-80380)
+
+### core_question
+
+#### Fixed
+
+- The unit test repeated\_restore\_test::test\_restore\_course\_with\_same\_stamp\_questions was passing incorrectly on 5.x for question types that use answers.
+  Maintainers of third-party question types may want to re-run the test with the fix in place, or if they have copied parts of this test as the basis of a test in their own plugin, review the changes and see if they should be reflected in their own test.
+
+  For more information see [MDL-85556](https://tracker.moodle.org/browse/MDL-85556)
+
+### core_user
+
+#### Added
+
+- New method `\core_user::get_dummy_fullname(...)` for returning dummy user fullname comprised of configured name fields only
+
+  For more information see [MDL-82132](https://tracker.moodle.org/browse/MDL-82132)
+
 ## 5.0
 
 ### core
