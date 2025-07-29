@@ -30,6 +30,12 @@
     .dropdown-toggle::after {
         display: none;
     }
+    .dropdown-menu {
+        max-width: 500px;
+        .dropdown-item {
+            @include text-truncate;
+        }
+    }
 }
 
 $blocks-column-width: 360px !default;
@@ -259,6 +265,10 @@ $blocks-plus-gutter: calc(#{$blocks-column-width} + (#{$grid-gutter-width} * 0.5
             width: 100%;
         }
     }
+    // Make space for active item indicator.
+    .dropdown-item {
+        padding-left: map-get($spacers, 4);
+    }
 }
 
 //
@@ -273,6 +283,14 @@ $blocks-plus-gutter: calc(#{$blocks-column-width} + (#{$grid-gutter-width} * 0.5
 .block_timeline {
     .event-action {
         padding-left: 5.55em;
+    }
+}
+.block_timeline {
+    .dropdown-menu {
+        // Make space for active item indicator.
+        .dropdown-item {
+            padding-left: map-get($spacers, 4);
+        }
     }
 }
 

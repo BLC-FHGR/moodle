@@ -9,7 +9,7 @@
     {{$element}}
         {{#label}}
             <fieldset class="w-100 m-0 p-0 border-0">
-                <legend class="visually-hidden">{{label}}</legend>
+                <legend class="visually-hidden">{{{label}}}</legend>
                 <div class="d-flex flex-wrap align-items-center">
                 {{#element.elements}}
                     {{{separator}}}
@@ -34,7 +34,7 @@
 require(['jquery'], function($) {
     $('#{{element.id}}_label').css('cursor', 'default');
     $('#{{element.id}}_label').click(function() {
-        $('#{{element.id}}')
+        $('#{{element.id}}, [data-groupname="{{element.name}}"]')
             .find('button, a, input:not([type="hidden"]), select, textarea, [tabindex]')
             .filter(':not([disabled]):not([tabindex="0"]):not([tabindex="-1"])')
             .first().focus();
