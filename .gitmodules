@@ -174,3 +174,7 @@
 	path = customfield/field/semester
 	url = https://github.com/learnweb/moodle-customfield_semester
 	branch = main
+[submodule "mod/etherpadlite"]
+	path = mod/etherpadlite
+	url = https://github.com/moodlehu/moodle-mod_etherpadlite
+	branch = MOODLE_500_STABLE
