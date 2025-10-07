@@ -61,7 +61,7 @@
 [submodule "admin/tool/lifecycle"]
 	path = admin/tool/lifecycle
 	url = https://github.com/learnweb/moodle-tool_lifecycle.git
-	branch = master
+	branch = main
 [submodule "blocks/xp"]
 	path = blocks/xp
 	url = https://github.com/FMCorz/moodle-block_xp.git
