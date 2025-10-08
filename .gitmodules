@@ -58,10 +58,6 @@
 	path = question/type/mtf
 	url = https://github.com/ethz-let/qtype_mtf
 	branch = MOODLE_500_STABLE
-[submodule "admin/tool/lifecycle"]
-	path = admin/tool/lifecycle
-	url = https://github.com/learnweb/moodle-tool_lifecycle.git
-	branch = main
 [submodule "blocks/xp"]
 	path = blocks/xp
 	url = https://github.com/FMCorz/moodle-block_xp.git
