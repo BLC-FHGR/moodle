@@ -69,7 +69,7 @@
 [submodule "question/type/gapfill"]
 	path = question/type/gapfill
 	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
-	branch = master
+	branch = main
 [submodule "report/coursesize"]
 	path = report/coursesize
 	url = https://github.com/catalyst/moodle-report_coursesize.git
