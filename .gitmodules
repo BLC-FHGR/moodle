@@ -174,3 +174,7 @@
 	path = public/mod/etherpadlite
 	url = https://github.com/moodlehu/moodle-mod_etherpadlite
 	branch = MOODLE_500_STABLE
+[submodule "admin/tool/lifecycle"]
+	path = admin/tool/lifecycle
+	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+	branch = MOODLE_500_STABLE
