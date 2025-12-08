@@ -13297,8 +13297,8 @@ readers do not read off random characters that represent icons */
   --bs-purple: #613d7c;
   --bs-pink: #db1a74;
   --bs-red: #ca3120;
-  --bs-orange: #f0ad4e;
-  --bs-yellow: #ff7518;
+  --bs-orange: #ff7518;
+  --bs-yellow: #f0ad4e;
   --bs-green: #357a32;
   --bs-teal: #20c997;
   --bs-cyan: #008196;
@@ -13387,7 +13387,7 @@ readers do not read off random characters that represent icons */
   --bs-link-hover-decoration: underline;
   --bs-code-color: #db1a74;
   --bs-highlight-color: #1d2125;
-  --bs-highlight-bg: #ffe3d1;
+  --bs-highlight-bg: #fcefdc;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: #dee2e6;
@@ -13459,7 +13459,7 @@ readers do not read off random characters that represent icons */
   --bs-link-hover-color-rgb: 140, 185, 225;
   --bs-code-color: #e976ac;
   --bs-highlight-color: #dee2e6;
-  --bs-highlight-bg: #662f0a;
+  --bs-highlight-bg: #60451f;
   --bs-border-color: #495057;
   --bs-border-color-translucent: rgba(255, 255, 255, 0.15);
   --bs-form-valid-color: #86af84;
@@ -27355,6 +27355,11 @@ nav.navbar .logo img {
 ul.dragdrop-keyboard-drag li {
   list-style-type: none;
 }
+ul.dragdrop-keyboard-drag li a,
+ul.dragdrop-keyboard-drag li a:hover {
+  color: inherit;
+  text-decoration: none;
+}
 
 a.disabled:hover,
 a.disabled {
@@ -29450,6 +29455,11 @@ img.icon {
 }
 .block .block-controls .dropdown-menu {
   max-width: 500px;
+}
+@media (max-width: 575.98px) {
+  .block .block-controls .dropdown-menu {
+    max-width: 85vw;
+  }
 }
 .block .block-controls .dropdown-menu .dropdown-item {
   overflow: hidden;
@@ -33995,10 +34005,22 @@ table.question-bank-table th {
   text-align: left;
 }
 table.question-bank-table > tbody > tr.r1 {
-  background-color: transparent;
+  background-color: rgba(var(--bs-emphasis-color-rgb), 0.03);
 }
-table.question-bank-table > tbody > tr.highlight {
-  border: 1px solid #008196;
+table.question-bank-table.generaltable > tbody > tr.highlight.firstrow td {
+  border-top: 3px solid #008196;
+}
+table.question-bank-table > tbody > tr.highlight.firstrow {
+  border-right: 2px solid #008196;
+  border-left: 2px solid #008196;
+}
+table.question-bank-table.generaltable > tbody > tr.highlight.extrarow td, table.question-bank-table.generaltable > tbody > tr.highlight.firstrow.onlyhighlightrow td {
+  border-bottom: 2px solid #008196;
+}
+table.question-bank-table > tbody > tr.highlight.extrarow {
+  border-top: 0;
+  border-right: 2px solid #008196;
+  border-left: 2px solid #008196;
 }
 table.question-bank-table .checkbox input[type=checkbox] {
   margin-left: 0;
@@ -36814,9 +36836,6 @@ img.userpicture {
  */
 .path-mod-feedback span.feedback_info {
   font-weight: bold;
-}
-.path-mod-feedback div.feedback_is_dependent {
-  background: #6a737b;
 }
 .path-mod-feedback span.feedback_depend {
   color: #ca3120;
