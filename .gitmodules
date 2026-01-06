@@ -37,7 +37,7 @@
 [submodule "public/availability/condition/password"]
 	path = public/availability/condition/password
 	url = https://github.com/moodleuulm/moodle-availability_password.git
-	branch = MOODLE_500_STABLE
+	branch = MOODLE_501_STABLE
 [submodule "public/mod/groupselect"]
 	path = public/mod/groupselect
 	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
@@ -45,7 +45,7 @@
 [submodule "public/question/type/kprime"]
 	path = public/question/type/kprime
 	url = https://github.com/ethz-let/moodle-qtype_kprime.git
-	branch = MOODLE_500_STABLE
+	branch = MOODLE_501_STABLE
 [submodule "public/mod/organizer"]
 	path = public/mod/organizer
 	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
@@ -57,7 +57,7 @@
 [submodule "public/question/type/mtf"]
 	path = public/question/type/mtf
 	url = https://github.com/ethz-let/qtype_mtf
-	branch = MOODLE_500_STABLE
+	branch = MOODLE_501_STABLE
 [submodule "public/blocks/xp"]
 	path = public/blocks/xp
 	url = https://github.com/FMCorz/moodle-block_xp.git
@@ -117,7 +117,7 @@
 [submodule "public/local/bulkenrol"]
 	path = public/local/bulkenrol
 	url = https://github.com/moodle-an-hochschulen/moodle-local_bulkenrol
-	branch = MOODLE_500_STABLE
+	branch = MOODLE_501_STABLE
 [submodule "public/mod/questionnaire"]
 	path = public/mod/questionnaire
 	url = https://github.com/PoetOS/moodle-mod_questionnaire
@@ -149,7 +149,7 @@
 [submodule "public/mod/quiz/accessrule/sebserver"]
 	path = public/mod/quiz/accessrule/sebserver
 	url = https://github.com/ethz-let/moodle-quizaccess_sebserver/
-	branch = MOODLE_500_STABLE
+	branch = MOODLE_501_STABLE
 [submodule "public/mod/subcourse"]
 	path = public/mod/subcourse
 	url = https://github.com/catalyst/moodle-mod_subcourse
@@ -169,7 +169,7 @@
 [submodule "public/customfield/field/semester"]
 	path = public/customfield/field/semester
 	url = https://github.com/learnweb/moodle-customfield_semester
-	branch = main
+	branch = MOODLE_500_STABLE
 [submodule "public/mod/etherpadlite"]
 	path = public/mod/etherpadlite
 	url = https://github.com/moodlehu/moodle-mod_etherpadlite
