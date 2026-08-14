@@ -1,0 +1,192 @@
+[submodule "public/theme/boost_union"]
+	path = public/theme/boost_union
+	url = https://github.com/BLC-FHGR/moodle-theme_boost_union.git
+	branch = MOODLE_502_STABLE
+[submodule "public/local/evento"]
+	path = public/local/evento
+	url = https://github.com/BLC-FHGR/moodle-local_evento.git
+	branch = master
+[submodule "public/enrol/evento"]
+	path = public/enrol/evento
+	url = https://github.com/BLC-FHGR/moodle-enrol_evento.git
+	branch = master
+[submodule "public/local/eventocoursecreation"]
+	path = public/local/eventocoursecreation
+	url = https://github.com/BLC-FHGR/moodle-local_eventocoursecreation.git
+	branch = master
+[submodule "public/mod/quiz/report/archive"]
+	path = public/mod/quiz/report/archive
+	url = https://github.com/bfh/moodle-quiz_archive.git
+	branch = moodle-502
+[submodule "public/question/type/regexp"]
+	path = public/question/type/regexp
+	url = https://github.com/rezeau/moodle-qtype_regexp.git
+	branch = master
+[submodule "public/question/behaviour/regexpadaptivewithhelp"]
+	path = public/question/behaviour/regexpadaptivewithhelp
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelp.git
+	branch = main
+[submodule "public/question/behaviour/regexpadaptivewithhelpnopenalty"]
+	path = public/question/behaviour/regexpadaptivewithhelpnopenalty
+	url = https://github.com/rezeau/moodle-qbehaviour_regexpadaptivewithhelpnopenalty.git
+	branch = main
+[submodule "public/availability/condition/language"]
+	path = public/availability/condition/language
+	url = https://github.com/ewallah/moodle-availability_language.git
+	branch = MOODLE_500_STABLE
+[submodule "public/availability/condition/password"]
+	path = public/availability/condition/password
+	url = https://github.com/moodleuulm/moodle-availability_password.git
+	branch = MOODLE_502_STABLE
+[submodule "public/mod/groupselect"]
+	path = public/mod/groupselect
+	url = https://github.com/rogerbaba/moodle-mod_groupselect.git
+	branch = master
+[submodule "public/question/type/kprime"]
+	path = public/question/type/kprime
+	url = https://github.com/ethz-let/moodle-qtype_kprime.git
+	branch = MOODLE_502_STABLE
+[submodule "public/mod/organizer"]
+	path = public/mod/organizer
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_organizer.git
+	branch = MOODLE_502_STABLE
+[submodule "public/report/benchmark"]
+	path = public/report/benchmark
+	url = https://github.com/mikasmart/moodle-report_benchmark.git
+	branch = master
+[submodule "public/question/type/mtf"]
+	path = public/question/type/mtf
+	url = https://github.com/ethz-let/qtype_mtf
+	branch = MOODLE_502_STABLE
+[submodule "public/admin/tool/lifecycle"]
+	path = public/admin/tool/lifecycle
+	url = https://github.com/learnweb/moodle-tool_lifecycle.git
+	branch = MOODLE_502_STABLE
+[submodule "public/blocks/xp"]
+	path = public/blocks/xp
+	url = https://github.com/FMCorz/moodle-block_xp.git
+	branch = master
+[submodule "public/availability/condition/xp"]
+	path = public/availability/condition/xp
+	url = https://github.com/FMCorz/moodle-availability_xp.git
+	branch = master
+[submodule "public/question/type/gapfill"]
+	path = public/question/type/gapfill
+	url = https://github.com/marcusgreen/moodle-qtype_gapfill.git
+	branch = main
+[submodule "public/report/coursesize"]
+	path = public/report/coursesize
+	url = https://github.com/catalyst/moodle-report_coursesize.git
+	branch = MOODLE_39_STABLE
+[submodule "public/blocks/completion_progress"]
+	path = public/blocks/completion_progress
+	url = https://github.com/jonof/moodle-block_completion_progress.git
+	branch = master
+[submodule "public/admin/tool/log/store/lanalytics"]
+	path = public/admin/tool/log/store/lanalytics
+	url = https://github.com/rwthanalytics/moodle-logstore_lanalytics.git
+	branch = master
+[submodule "public/local/learning_analytics"]
+	path = public/local/learning_analytics
+	url = https://github.com/rwthanalytics/moodle-local_learning_analytics.git
+	branch = master
+[submodule "public/mod/hvp"]
+	path = public/mod/hvp
+	url = https://github.com/h5p/moodle-mod_hvp.git
+	branch = stable
+[submodule "public/blocks/sharing_cart"]
+	path = public/blocks/sharing_cart
+	url = https://github.com/praxisdigital/moodle-block_sharing_cart
+	branch = MOODLE_52_STABLE
+[submodule "public/mod/attendance"]
+	path = public/mod/attendance
+	url = https://github.com/danmarsden/moodle-mod_attendance
+	branch = MOODLE_501_STABLE
+[submodule "public/plagiarism/turnitinsim"]
+	path = public/plagiarism/turnitinsim
+	url = https://github.com/turnitin/moodle-plagiarism_turnitinsim
+	branch = master
+[submodule "public/question/behaviour/adaptive_adapted_for_coderunner"]
+	path = public/question/behaviour/adaptive_adapted_for_coderunner
+	url = https://github.com/trampgeek/moodle-qbehaviour_adaptive_adapted_for_coderunner
+	branch = master
+[submodule "public/question/type/coderunner"]
+	path = public/question/type/coderunner
+	url = https://github.com/trampgeek/moodle-qtype_coderunner/
+	branch = master
+[submodule "public/lib/editor/atto/plugins/wordcount"]
+	path = public/lib/editor/atto/plugins/wordcount
+	url = https://github.com/SysBind/moodle-atto_wordcount
+	branch = main
+[submodule "public/local/bulkenrol"]
+	path = public/local/bulkenrol
+	url = https://github.com/moodle-an-hochschulen/moodle-local_bulkenrol
+	branch = MOODLE_502_STABLE
+[submodule "public/mod/questionnaire"]
+	path = public/mod/questionnaire
+	url = https://github.com/PoetOS/moodle-mod_questionnaire
+	branch = MOODLE_500_STABLE
+[submodule "public/blocks/onlinesurvey"]
+	path = public/blocks/onlinesurvey
+	url = https://github.com/evasys-community/moodle-block_onlinesurvey
+	branch = MOODLE_400_STABLE
+[submodule "public/enrol/waitlist"]
+	path = public/enrol/waitlist
+	url = https://github.com/emeneo/moodle-enrol_waitlist.git
+	branch = master
+[submodule "public/blocks/accessibility"]
+	path = public/blocks/accessibility
+	url = https://github.com/brickfield/moodle-block_accessibility
+	branch = main
+[submodule "public/mod/surveytracker"]
+	path = public/mod/surveytracker
+	url = https://github.com/BLC-FHGR/surveytracker
+	branch = master
+[submodule "public/blocks/surveytrackerinfo"]
+	path = public/blocks/surveytrackerinfo
+	url = https://github.com/BLC-FHGR/surveytrackerinfo
+	branch = master
+[submodule "public/mod/publication"]
+	path = public/mod/publication
+	url = https://github.com/academic-moodle-cooperation/moodle-mod_publication
+	branch = MOODLE_502_STABLE
+[submodule "public/mod/quiz/accessrule/sebserver"]
+	path = public/mod/quiz/accessrule/sebserver
+	url = https://github.com/ethz-let/moodle-quizaccess_sebserver/
+	branch = main
+[submodule "public/mod/subcourse"]
+	path = public/mod/subcourse
+	url = https://github.com/catalyst/moodle-mod_subcourse
+	branch = MOODLE_501_STABLE
+[submodule "public/blocks/fhgr_code_server"]
+	path = public/blocks/fhgr_code_server
+	url = https://github.com/BLC-FHGR/moodle-block_fhgr_code_server
+	branch = main
+[submodule "public/filter/multilang2"]
+	path = public/filter/multilang2
+	url = https://github.com/iarenaza/moodle-filter_multilang2
+	branch = master
+[submodule "public/blocks/openai_chat"]
+	path = public/blocks/openai_chat
+	url = https://github.com/Limekiller/moodle-block_openai_chat
+	branch = main
+[submodule "public/customfield/field/semester"]
+	path = public/customfield/field/semester
+	url = https://github.com/learnweb/moodle-customfield_semester
+	branch = MOODLE_502_STABLE
+[submodule "public/mod/etherpadlite"]
+	path = public/mod/etherpadlite
+	url = https://github.com/moodlehu/moodle-mod_etherpadlite
+	branch = MOODLE_500_STABLE
+[submodule "public/admin/tool/sebprep"]
+	path = public/admin/tool/sebprep
+	url = https://github.com/BLC-FHGR/moodle-tool_sebprep
+	branch = main
+[submodule "public/mod/openbook"]
+	path = public/mod/openbook
+	url = https://github.com/a-camacho/moodle-mod_openbook
+	branch = main
+[submodule "public/blocks/openbook"]
+	path = public/blocks/openbook
+	url = https://github.com/lucaboesch/moodle-block_openbook
+	branch = main
