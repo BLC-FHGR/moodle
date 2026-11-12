@@ -1955,8 +1955,24 @@ class assign {
      * @return grade_item The grade_item record
      */
     public function get_grade_item() {
+        if (!$this->has_grade_item()) {
+            throw new coding_exception('Improper use of the assignment class. ' .
+                                       'Cannot load the grade item.');
+        }
+        return $this->gradeitem;
+    }
+
+    /**
+     * Does the primary grade item exist for this assign instance?
+     *
+     * It does not exist when the assignment has no grade and no feedback plugin writing to the
+     * gradebook, because grade_update() does not create a grade item of type GRADE_TYPE_NONE.
+     *
+     * @return bool true if the grade item exists
+     */
+    protected function has_grade_item(): bool {
         if ($this->gradeitem) {
-            return $this->gradeitem;
+            return true;
         }
         $instance = $this->get_instance();
         $params = array('itemtype' => 'mod',
@@ -1965,11 +1981,7 @@ class assign {
                         'courseid' => $instance->course,
                         'itemnumber' => 0);
         $this->gradeitem = grade_item::fetch($params);
-        if (!$this->gradeitem) {
-            throw new coding_exception('Improper use of the assignment class. ' .
-                                       'Cannot load the grade item.');
-        }
-        return $this->gradeitem;
+        return !empty($this->gradeitem);
     }
 
     /**
@@ -3173,13 +3185,6 @@ class assign {
 
         $grade->timemodified = \core\di::get(\core\clock::class)->time();
 
-        if (!empty($grade->workflowstate)) {
-            $validstates = $this->get_marking_workflow_states_for_current_user();
-            if (!array_key_exists($grade->workflowstate, $validstates)) {
-                return false;
-            }
-        }
-
         if ($grade->grade && $grade->grade != -1) {
             if ($this->get_instance()->grade > 0) {
                 if (!is_numeric($grade->grade)) {
@@ -3285,6 +3290,10 @@ class assign {
      */
     public function update_mark(stdClass $grade, mixed $mark, ?string $workflowstate = null): bool {
         global $DB;
+
+        if ($this->grading_disabled($grade->userid) || $this->grading_locked($grade->userid)) {
+            return false;
+        }
 
         if ($workflowstate === '') {
             $workflowstate = null;
@@ -6027,7 +6036,10 @@ class assign {
             $gradingitem = $gradinginfo->items[0];
         }
 
-        $usergrade = $this->get_grade_item()->get_grade($userid, false);
+        // The grade item does not exist when the assignment has no grade and no feedback plugin
+        // writing to the gradebook, in which case there is nothing to read from the gradebook.
+        $gradeitem = $this->has_grade_item() ? $this->get_grade_item() : null;
+        $usergrade = $gradeitem ? $gradeitem->get_grade($userid, false) : null;
 
         foreach ($grades as $grade) {
             // First lookup the grader info.
@@ -6054,10 +6066,11 @@ class assign {
                 $penaltyindicator = \core_grades\penalty_manager::show_penalty_indicator(
                     new \grade_grade([
                         'deductedmark' => $deductedmark,
-                        'overridden' => $userid > 0 ? $this->get_grade_item()->get_grade($userid)->overridden : 0,
+                        'overridden' => $userid > 0 && $gradeitem ? $gradeitem->get_grade($userid)->overridden : 0,
                     ], false)
                 );
-                $gradeoutput = $penaltyindicator . format_float($penalisedgrade, $this->get_grade_item()->get_decimals());
+                $decimals = $gradeitem ? $gradeitem->get_decimals() : 0;
+                $gradeoutput = $penaltyindicator . format_float($penalisedgrade, $decimals);
 
                 $grade->gradefordisplay = $controller->render_grade($PAGE, $grade->id, $gradingitem, $gradeoutput, $cangrade);
             } else {
@@ -6089,6 +6102,11 @@ class assign {
         if ($grade->penalty > 0) {
             $deductedmark = $grade->grade * $grade->penalty / 100;
             $penalisedgrade = $grade->grade - $deductedmark;
+        }
+
+        // No grade item means no grade in the gradebook, so there are no factors to apply.
+        if (!$this->has_grade_item()) {
+            return [$penalisedgrade, $deductedmark];
         }
 
         $gradeitem = $this->get_grade_item();
@@ -6497,8 +6515,11 @@ class assign {
         } else {
             $gradebookgrade = $this->convert_grade_for_gradebook($grade);
         }
-        // Grading is disabled, return.
-        if ($this->grading_disabled($gradebookgrade['userid'])) {
+        // Grading is disabled (locked/overridden in the gradebook), return. Don't also check the
+        // workflow state here: by this point it may have just been set to released (see above), and
+        // re-checking it against the current user's capability could block the very push that
+        // releasing is meant to trigger.
+        if ($this->grading_disabled($gradebookgrade['userid'], false)) {
             return false;
         }
         $assign = clone $this->get_instance();
@@ -7717,7 +7738,8 @@ class assign {
 
             $workflowstatechanged = $this->get_instance()->markingworkflow &&
                                             ($modified->workflowstate !== false) &&
-                                            ($current->workflowstate != $modified->workflowstate);
+                                            ($current->workflowstate != $modified->workflowstate) &&
+                                            array_key_exists($modified->workflowstate, $this->get_marking_workflow_filters());
 
             // Have any of the marks changed?
             $markschanged = array_filter(
@@ -7761,9 +7783,13 @@ class assign {
 
             $grade = $this->get_user_grade($userid, true);
             $flags = $this->get_user_flags($userid, true);
-            $grade->grade= grade_floatval(unformat_float($modified->grade));
-            $grade->grader= $USER->id;
+            // The grade column may not have been present in the submitted form (e.g. it is read-only
+            // once released), in which case the existing grade must be left untouched.
             $gradecolpresent = optional_param('quickgrade_' . $userid, false, PARAM_INT) !== false;
+            if ($gradecolpresent && !$this->grading_locked($userid)) {
+                $grade->grade = grade_floatval(unformat_float($modified->grade));
+            }
+            $grade->grader = $USER->id;
 
             // Save plugins data.
             foreach ($this->feedbackplugins as $plugin) {
@@ -7781,7 +7807,8 @@ class assign {
             // These will be set to false if they are not present in the quickgrading
             // form (e.g. column hidden).
             $workflowstatemodified = ($modified->workflowstate !== false) &&
-                                        ($flags->workflowstate != $modified->workflowstate);
+                                        ($flags->workflowstate != $modified->workflowstate) &&
+                                        array_key_exists($modified->workflowstate, $this->get_marking_workflow_filters());
 
             if ($workflowstatemodified) {
                 $flags->workflowstate = $modified->workflowstate;
@@ -8263,9 +8290,14 @@ class assign {
      */
     public function grading_disabled($userid, $checkworkflow = true, $gradinginfo = null) {
         if ($checkworkflow && $this->get_instance()->markingworkflow) {
-            $grade = $this->get_user_grade($userid, false);
+            $flags = $this->get_user_flags($userid, false);
+            $workflowstate = $flags ? ($flags->workflowstate ?? null) : null;
             $validstates = $this->get_marking_workflow_states_for_current_user();
-            if (!empty($grade) && !empty($grade->workflowstate) && !array_key_exists($grade->workflowstate, $validstates)) {
+            if (
+                !empty($workflowstate) &&
+                $workflowstate !== ASSIGN_MARKING_WORKFLOW_STATE_NOTMARKED &&
+                !array_key_exists($workflowstate, $validstates)
+            ) {
                 return true;
             }
         }
@@ -8290,6 +8322,37 @@ class assign {
         return $gradingdisabled;
     }
 
+    /**
+     * Determine if this user's grade/mark value is read-only because it is ready for release, or
+     * already released.
+     *
+     * @param int $userid The student userid
+     * @return bool
+     */
+    public function grading_locked(int $userid): bool {
+        $flags = $this->get_user_flags($userid, false);
+        $workflowstate = $flags ? ($flags->workflowstate ?? null) : null;
+
+        return $this->workflow_state_locked($workflowstate);
+    }
+
+    /**
+     * Determine if the given workflow state means the grade/mark value is read-only, because it is
+     * ready for release, or already released.
+     *
+     * @param string|null $workflowstate The overall grade workflow state.
+     * @return bool
+     */
+    public function workflow_state_locked(?string $workflowstate): bool {
+        if (!$this->get_instance()->markingworkflow) {
+            return false;
+        }
+
+        return in_array($workflowstate, [
+            ASSIGN_MARKING_WORKFLOW_STATE_READYFORRELEASE,
+            ASSIGN_MARKING_WORKFLOW_STATE_RELEASED,
+        ]);
+    }
 
     /**
      * Get an instance of a grading form if advanced grading is enabled.
@@ -8516,7 +8579,19 @@ class assign {
                 $select->addOption($allworkflowstates[$currentstate], $currentstate);
                 $mform->freeze('workflowstate');
             }
+
+            // The grade and mark should be read-only once it has already been released, or ready for release.
             $gradingstatus = $this->get_grading_status($userid);
+            $gradinglocked = $this->grading_locked($userid);
+            if ($gradinglocked && $mform->elementExists('grade')) {
+                $mform->freeze('grade');
+            }
+            if ($gradinglocked && $mform->elementExists('mark')) {
+                $mform->freeze('mark');
+            }
+            if ($gradinglocked && $marker) {
+                $mform->freeze('workflowstate');
+            }
             if ($gradingstatus != ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
                 if ($grade->grade && $grade->grade != -1) {
                     if ($settings->grade > 0) {
@@ -9355,7 +9430,7 @@ class assign {
         global $USER, $CFG, $DB;
         // If we are using marker allocation, are we allocated to this student? If not, we should not be able to update
         // their marks, even if they are in the same group as a student we are allocated to.
-        if (isset($formdata->mark) && $this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
+        if ($this->ismarking && $this->get_instance()->markingworkflow && $this->get_instance()->markingallocation) {
             $markerids = array_column($this->get_allocated_markers($userid), 'marker');
             if (!in_array($USER->id, $markerids)) {
                 return;
@@ -9366,31 +9441,47 @@ class assign {
         $originalgrade = $grade->grade;
         $gradingdisabled = $this->grading_disabled($userid);
         $gradinginstance = $this->get_grading_instance($userid, $grade, $gradingdisabled);
-        if (!$gradingdisabled) {
+
+        // Captured before the workflow state is changed below, so that a submission which both
+        // enters a grade and moves the workflow on (e.g. releasing it) can still save that grade.
+        $valuelocked = $gradingdisabled || $this->grading_locked($userid);
+
+        // This must run even when grading is disabled, otherwise a grade could never be released
+        // (or sent back for review) once its current state makes it read-only.
+        // When saving a mark, the overall workflow state is calculated from the individual
+        // markers' states below, so it must not be overwritten with the submitted form value here.
+        if (isset($formdata->workflowstate) && !$this->ismarking) {
+            $flags = $this->get_user_flags($userid, true);
+            $oldworkflowstate = $flags->workflowstate;
+            $validstates = $this->get_marking_workflow_states_for_current_user();
+            // A request is valid if the requested state is one the user's capabilities allow them to
+            // set (per $validstates above), or if they're blanking the state and already had authority
+            // over the state being cleared (or it was already blank). An invalid request is ignored,
+            // leaving the stored state unchanged.
+            if (empty($formdata->workflowstate)) {
+                $validrequest = empty($oldworkflowstate) || array_key_exists($oldworkflowstate, $validstates);
+            } else {
+                $validrequest = array_key_exists($formdata->workflowstate, $validstates);
+            }
+            $flags->workflowstate = $validrequest ? $formdata->workflowstate : $oldworkflowstate;
+
+            if (
+                $validrequest &&
+                $this->update_user_flags($flags) &&
+                $formdata->workflowstate !== $oldworkflowstate
+            ) {
+                $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
+                \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $formdata->workflowstate)->trigger();
+            }
+        }
+
+        if (!$valuelocked) {
             if ($gradinginstance) {
-                $grade->grade = $gradinginstance->submit_and_get_grade($formdata->advancedgrading,
-                                                                       $grade->id);
+                $grade->grade = $gradinginstance->submit_and_get_grade($formdata->advancedgrading, $grade->id);
             } else {
                 // Handle the case when grade is set to No Grade.
                 if (isset($formdata->grade)) {
                     $grade->grade = grade_floatval(unformat_float($formdata->grade));
-                }
-            }
-            if (isset($formdata->workflowstate)) {
-                $flags = $this->get_user_flags($userid, true);
-                $oldworkflowstate = $flags->workflowstate;
-                $flags->workflowstate = isset($formdata->workflowstate) ? $formdata->workflowstate : $flags->workflowstate;
-                // If we are saving a mark, set the overall workflow state to null and we will calculate it again shortly.
-                if (property_exists($formdata, 'mark')) {
-                    $flags->workflowstate = null;
-                }
-                if (
-                    $this->update_user_flags($flags) &&
-                    isset($formdata->workflowstate) &&
-                    $formdata->workflowstate !== $oldworkflowstate
-                ) {
-                    $user = $DB->get_record('user', array('id' => $userid), '*', MUST_EXIST);
-                    \mod_assign\event\workflow_state_updated::create_from_user($this, $user, $formdata->workflowstate)->trigger();
                 }
             }
 
@@ -9400,7 +9491,7 @@ class assign {
                 $this->update_allocated_markers($userid, $formdata->allocatedmarker);
             }
         }
-        $grade->grader= $USER->id;
+        $grade->grader = $USER->id;
 
         $adminconfig = $this->get_admin_config();
         $gradebookplugin = $adminconfig->feedback_plugin_for_gradebook;
@@ -9431,8 +9522,13 @@ class assign {
         // We do not want to update the timemodified if no grade was added.
         if (empty($formdata->addattempt) && property_exists($formdata, 'mark')) {
             if (isset($formdata->workflowstate)) {
-                $this->update_mark($grade, $formdata->mark, $formdata->workflowstate);
-                $this->calculate_and_save_overall_workflow_state($grade, $flags, $oldworkflowstate);
+                // A locked grade (ready for release, or released) must not have its mark or overall
+                // workflow state recalculated from the individual markers' states.
+                if (!$valuelocked) {
+                    $this->update_mark($grade, $formdata->mark, $formdata->workflowstate);
+                    $flags = $this->get_user_flags($userid, true);
+                    $this->calculate_and_save_overall_workflow_state($grade, $flags, $flags->workflowstate);
+                }
             } else {
                 $this->update_mark($grade, $formdata->mark);
             }
